@@ -1,0 +1,68 @@
+{
+  "option": {
+    "home":     "Inicio",
+    "about":    "Acerca de nosotros",
+    "sessions": "Sesiones"
+  },
+  "authoring-phrase": {
+    "intro":  "Hecho con",
+    "use":    "utilizando",
+    "author": "por el equipo de Desarrollo de {brand}"
+  },
+  "about": {
+    "title":   "Acerca de nosotros",
+    "content": "SkillSwap es una plataforma de aprendizaje colaborativo que conecta estudiantes universitarios de todo el Peru."
+  },
+  "home": {
+    "title":   "Bienvenido",
+    "content": "Bienvenido a SkillSwap - Conecta, Aprende y Enseña."
+  },
+  "page-not-found": {
+    "title":   "Pagina no encontrada",
+    "content": "La ruta {unavailable-route} no esta disponible.",
+    "go-home": "Ir al Inicio"
+  },
+  "sessions": {
+    "title":            "Sesiones de Tutoria",
+    "id":               "ID",
+    "topic":            "Tema",
+    "learnerId":        "ID Aprendiz",
+    "tutorId":          "ID Tutor",
+    "status":           "Estado",
+    "scheduledAt":      "Fecha Programada",
+    "actions":          "Acciones",
+    "new":              "Nueva Sesion",
+    "confirm-delete":   "Estas seguro de que quieres eliminar la sesion '{topic}'?",
+    "delete-header":    "Confirmar eliminacion",
+    "status-pending":   "Pendiente",
+    "status-scheduled": "Programada",
+    "status-completed": "Completada",
+    "status-cancelled": "Cancelada",
+    "status-rejected":  "Rechazada"
+  },
+  "session": {
+    "new-title":   "Crear Nueva Sesion",
+    "edit-title":  "Editar Sesion",
+    "learnerId":   "ID Aprendiz",
+    "tutorId":     "ID Tutor",
+    "topic":       "Tema",
+    "status":      "Estado",
+    "scheduledAt": "Fecha Programada",
+    "courseId":    "ID Curso",
+    "save":        "Guardar",
+    "cancel":      "Cancelar"
+  },
+  "workspace": {
+    "title":               "Sala de Trabajo",
+    "topic":               "Tema",
+    "status":              "Estado",
+    "start-call":          "Iniciar Videollamada",
+    "no-messages":         "Sin mensajes aun. Empieza la conversacion!",
+    "message-placeholder": "Escribe un mensaje...",
+    "send":                "Enviar",
+    "video-call-message":  "Iniciando videollamada... (integracion WebRTC pendiente)"
+  },
+  "errors": {
+    "occurred": "Ocurrieron errores"
+  }
+}
