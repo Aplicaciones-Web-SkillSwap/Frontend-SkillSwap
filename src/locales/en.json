@@ -1,0 +1,68 @@
+{
+  "option": {
+    "home":     "Home",
+    "about":    "About",
+    "sessions": "Sessions"
+  },
+  "authoring-phrase": {
+    "intro":  "Made with",
+    "use":    "using",
+    "author": "by {brand} Developer Team"
+  },
+  "about": {
+    "title":   "About Us",
+    "content": "SkillSwap is a collaborative learning platform connecting university students across Peru."
+  },
+  "home": {
+    "title":   "Welcome",
+    "content": "Welcome to SkillSwap - Connect, Learn and Teach."
+  },
+  "page-not-found": {
+    "title":   "Page Not Found",
+    "content": "The path {unavailable-route} is not available.",
+    "go-home": "Go Home"
+  },
+  "sessions": {
+    "title":            "Tutoring Sessions",
+    "id":               "ID",
+    "topic":            "Topic",
+    "learnerId":        "Learner ID",
+    "tutorId":          "Tutor ID",
+    "status":           "Status",
+    "scheduledAt":      "Scheduled At",
+    "actions":          "Actions",
+    "new":              "New Session",
+    "confirm-delete":   "Are you sure you want to delete the session '{topic}'?",
+    "delete-header":    "Confirm Deletion",
+    "status-pending":   "Pending",
+    "status-scheduled": "Scheduled",
+    "status-completed": "Completed",
+    "status-cancelled": "Cancelled",
+    "status-rejected":  "Rejected"
+  },
+  "session": {
+    "new-title":   "Create New Session",
+    "edit-title":  "Edit Session",
+    "learnerId":   "Learner ID",
+    "tutorId":     "Tutor ID",
+    "topic":       "Topic",
+    "status":      "Status",
+    "scheduledAt": "Scheduled At",
+    "courseId":    "Course ID",
+    "save":        "Save",
+    "cancel":      "Cancel"
+  },
+  "workspace": {
+    "title":               "Session Workspace",
+    "topic":               "Topic",
+    "status":              "Status",
+    "start-call":          "Start Video Call",
+    "no-messages":         "No messages yet. Start the conversation!",
+    "message-placeholder": "Type a message...",
+    "send":                "Send",
+    "video-call-message":  "Starting video call... (WebRTC integration pending)"
+  },
+  "errors": {
+    "occurred": "Errors occurred"
+  }
+}
