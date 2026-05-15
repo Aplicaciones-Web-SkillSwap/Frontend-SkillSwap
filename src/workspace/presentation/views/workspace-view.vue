@@ -18,6 +18,15 @@ const session = computed(() => store.getSessionById(route.params.id));
 
 const sessionMessages = computed(() => store.getMessagesBySessionId(route.params.id));
 
+// US10 - Chat solo habilitado para sesiones 'scheduled'
+const isChatEnabled = computed(() => session.value?.status === 'scheduled');
+
+// US12 - Videollamada solo disponible si está 'scheduled'
+const isVideoEnabled = computed(() => session.value?.status === 'scheduled');
+
+// US18 - Botón de donación aparece solo cuando la sesión está 'completed'
+const isCompleted = computed(() => session.value?.status === 'completed');
+
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
   if (!store.messagesLoaded) fetchMessages();
@@ -38,7 +47,19 @@ const sendMessage = () => {
 };
 
 const startVideoCall = () => {
+  if (!isVideoEnabled.value) return;
   alert(t('workspace.video-call-message'));
+};
+
+// US18 - Navega a nueva transacción con el receiverId del tutor ya prellenado
+const navigateToDonation = () => {
+  router.push({
+    name:  'payment-transactions-new',
+    query: {
+      receiverId: session.value?.tutorId,
+      walletId:   session.value?.tutorId,
+    }
+  });
 };
 
 const navigateBack = () => {
@@ -49,37 +70,86 @@ const navigateBack = () => {
 <template>
   <div class="p-4 workspace-container">
 
-    <div class="flex align-items-center gap-3 mb-4">
-      <pv-button icon="pi pi-arrow-left" text @click="navigateBack" class="back-btn"/>
-      <div>
-        <h2 class="m-0 title-text">{{ t('workspace.title') }}</h2>
-        <p v-if="session" class="m-0 text-600 session-info">
-          {{ t('workspace.topic') }}: <strong>{{ session.topic }}</strong>
-          &mdash;
-          {{ t('workspace.status') }}:
-          <span :class="{
-            'status-pending': session.status === 'pending',
-            'status-scheduled':  session.status === 'scheduled',
-            'status-completed':   session.status === 'completed',
-            'status-cancelled':    session.status === 'cancelled' || session.status === 'rejected',
-          }">{{ session.status }}</span>
-        </p>
+    <!-- Header -->
+    <div class="header-actions flex align-items-center justify-content-between mb-4">
+      <div class="flex align-items-center gap-3">
+        <pv-button icon="pi pi-arrow-left" text @click="navigateBack" class="action-btn-view"/>
+        <div>
+          <h2 class="page-title m-0">{{ t('workspace.title') }}</h2>
+          <p v-if="session" class="subtitle m-0 mt-1">
+            {{ t('workspace.topic') }}: <strong class="text-color">{{ session.topic }}</strong>
+            <span class="mx-2 text-300">|</span>
+            {{ t('workspace.status') }}:
+            <span :class="'status-badge status-' + session.status">
+              {{ session.status }}
+            </span>
+          </p>
+        </div>
       </div>
-      <div class="ml-auto">
+
+      <div class="flex gap-2">
+        <!-- US12: Botón videollamada - deshabilitado si no es 'scheduled' -->
         <pv-button
             :label="t('workspace.start-call')"
             icon="pi pi-video"
-            class="btn-call"
+            :class="isVideoEnabled ? 'btn-call' : 'btn-call-disabled'"
+            :disabled="!isVideoEnabled"
+            :title="!isVideoEnabled ? t('workspace.call-locked') : ''"
             @click="startVideoCall"/>
       </div>
     </div>
 
-    <pv-card v-if="session" class="chat-card">
-      <template #content>
+    <!-- US10: Sesión pendiente → chat bloqueado -->
+    <div v-if="session && session.status === 'pending'" class="locked-state">
+      <div class="locked-card">
+        <i class="pi pi-lock locked-icon"/>
+        <h3 class="locked-title">{{ t('workspace.locked-title') }}</h3>
+        <p class="locked-sub">{{ t('workspace.locked-sub') }}</p>
+        <div class="status-flow">
+          <span class="flow-step flow-active">Pending</span>
+          <i class="pi pi-arrow-right flow-arrow"/>
+          <span class="flow-step">Scheduled → Chat habilitado</span>
+          <i class="pi pi-arrow-right flow-arrow"/>
+          <span class="flow-step">Completed → Donación</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- US10: Sesión rechazada o cancelada -->
+    <div v-else-if="session && (session.status === 'rejected' || session.status === 'cancelled')" class="locked-state">
+      <div class="locked-card locked-cancelled">
+        <i class="pi pi-times-circle locked-icon locked-icon-red"/>
+        <h3 class="locked-title">{{ t('workspace.session-' + session.status) }}</h3>
+        <p class="locked-sub">{{ t('workspace.session-ended-sub') }}</p>
+      </div>
+    </div>
+
+    <!-- US18: Sesión completada → Botón de donación -->
+    <div v-else-if="isCompleted" class="donation-banner mb-4">
+      <div class="donation-content">
+        <div class="icon-wrapper">
+          <i class="pi pi-heart donation-icon"/>
+        </div>
+        <div>
+          <p class="donation-title">{{ t('workspace.donation-title') }}</p>
+          <p class="donation-sub">{{ t('workspace.donation-sub') }}</p>
+        </div>
+      </div>
+      <pv-button
+          :label="t('workspace.btn-donate')"
+          icon="pi pi-credit-card"
+          class="btn-donate"
+          @click="navigateToDonation"/>
+    </div>
+
+    <!-- US10: Chat habilitado solo si 'scheduled' o 'completed' -->
+    <div v-if="session && (isChatEnabled || isCompleted)" class="table-card p-0">
+      <div class="p-4">
 
         <div class="chat-box mb-4">
-          <div v-if="sessionMessages.length === 0" class="text-center empty-chat">
-            {{ t('workspace.no-messages') }}
+          <div v-if="sessionMessages.length === 0" class="empty-chat">
+            <i class="pi pi-comments text-4xl mb-2 text-300"></i>
+            <p class="m-0">{{ t('workspace.no-messages') }}</p>
           </div>
 
           <div
@@ -96,23 +166,27 @@ const navigateBack = () => {
           </div>
         </div>
 
-        <div class="flex gap-2 align-items-center">
+        <!-- Input de mensaje -->
+        <div class="flex gap-3 align-items-center pt-2">
           <pv-input-text
               v-model="newMessageContent"
-              :placeholder="t('workspace.message-placeholder')"
+              :placeholder="isCompleted ? t('workspace.chat-completed') : t('workspace.message-placeholder')"
               class="flex-1 custom-input"
+              :disabled="isCompleted"
               @keyup.enter="sendMessage"/>
           <pv-button
               icon="pi pi-send"
               :label="t('workspace.send')"
               class="btn-send"
+              :disabled="isCompleted"
               @click="sendMessage"/>
         </div>
 
-      </template>
-    </pv-card>
+      </div>
+    </div>
 
-    <div v-if="errors.length" class="error-msg mt-3">
+    <div v-if="errors.length" class="error-msg mt-4">
+      <i class="pi pi-exclamation-circle mr-2"></i>
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
     </div>
 
@@ -121,135 +195,278 @@ const navigateBack = () => {
 </template>
 
 <style scoped>
-/* Contenedor general para limitar el ancho si la pantalla es muy grande */
+/* Contenedor principal */
 .workspace-container {
   width: 100%;
   padding: 0 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Tipografía del Header */
-.title-text {
+/* Títulos y Header */
+.page-title {
   color: #1a2a40;
+  font-weight: 800;
+  font-size: 2rem;
+}
+
+.subtitle {
+  color: #718096;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.text-color { color: #1a2a40; }
+
+.action-btn-view { color: #1a2a40 !important; }
+.action-btn-view:hover { background-color: #f8fafc !important; }
+
+/* --- PÍLDORAS DE ESTADO --- */
+.status-badge {
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
   font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: capitalize;
+  display: inline-block;
+  margin-left: 0.5rem;
 }
 
-.session-info {
-  font-size: 0.9rem;
-  margin-top: 0.2rem !important;
+.status-scheduled { background-color: #e0f2fe; color: #0284c7; } /* Azul claro */
+.status-pending   { background-color: #fef3c7; color: #d97706; } /* Amarillo */
+.status-completed { background-color: #dcfce7; color: #16a34a; } /* Verde claro */
+.status-cancelled,
+.status-rejected  { background-color: #fee2e2; color: #dc2626; } /* Rojo */
+
+/* --- TARJETA PRINCIPAL --- */
+.table-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  border: 1px solid #f0f2f5;
 }
 
-/* Colores de estado más limpios */
-.status-pending { color: #f59e0b; font-weight: bold; }
-.status-scheduled { color: #10b981; font-weight: bold; }
-.status-completed { color: #3b82f6; font-weight: bold; }
-.status-cancelled { color: #e53e4f; font-weight: bold; }
-
-/* Botones personalizados */
-.back-btn {
-  color: #1a2a40 !important;
-}
-
+/* Botón videollamada */
 .btn-call {
-  background-color: #e53e4f !important; /* Rojo del acento */
+  background-color: #e53e4f !important;
   border: none !important;
   color: white !important;
   border-radius: 8px;
   font-weight: 600;
+  padding: 0.6rem 1.2rem;
 }
 
-.btn-call:hover {
-  background-color: #d03544 !important;
-}
+.btn-call:hover { background-color: #d03544 !important; }
 
-.btn-send {
-  background-color: #1a2a40 !important; /* Azul principal */
-  border: none !important;
-  color: white !important;
+.btn-call-disabled {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #94a3b8 !important;
   border-radius: 8px;
   font-weight: 600;
+  cursor: not-allowed !important;
 }
 
-.btn-send:hover {
-  background-color: #111d2e !important;
-}
+/* Estado bloqueado */
+.locked-state { margin-bottom: 1.5rem; }
 
-/* Estilos de la tarjeta y caja de chat */
-.chat-card {
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.locked-card {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
   border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
 }
 
+.locked-cancelled { border-color: #fecaca; background-color: #fef2f2; }
+
+.locked-icon {
+  font-size: 3rem;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.locked-icon-red { color: #f87171; }
+
+.locked-title {
+  color: #1a2a40;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.locked-sub {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0 0 2rem 0;
+}
+
+/* Flujo de estados visual */
+.status-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.flow-step {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.flow-active {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+.flow-arrow { color: #cbd5e1; font-size: 0.9rem; }
+
+/* Banner de donación */
+.donation-banner {
+  background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(26, 42, 64, 0.15);
+}
+
+.donation-content {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donation-icon {
+  font-size: 1.8rem;
+  color: #ff8a98;
+}
+
+.donation-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 0 0.2rem 0;
+}
+
+.donation-sub {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.btn-donate {
+  background-color: #e53e4f !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  padding: 0.6rem 1.5rem;
+  white-space: nowrap;
+}
+
+.btn-donate:hover { background-color: #d03544 !important; }
+
+/* Chat */
 .chat-box {
-  height: 450px;
+  height: 400px;
   overflow-y: auto;
-  border: 1px solid #eaeaea;
-  border-radius: 12px;
+  border: 1px solid #f0f2f5;
+  border-radius: 8px;
   padding: 1.5rem;
-  background-color: #fcfcfc;
+  background-color: #f8fafc;
 }
 
 .empty-chat {
-  color: #999;
-  font-style: italic;
-  padding-top: 2rem;
-}
-
-/* Disposición de los mensajes */
-.message-row {
+  height: 100%;
   display: flex;
-  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.own-message {
-  justify-content: flex-end;
-}
+.message-row { display: flex; width: 100%; }
+.own-message   { justify-content: flex-end; }
+.other-message { justify-content: flex-start; }
 
-.other-message {
-  justify-content: flex-start;
-}
-
-/* Burbujas de chat modernas */
 .bubble {
-  max-width: 70%;
-  border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  max-width: 75%;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .own-message .bubble {
-  background-color: #1a2a40; /* Azul principal */
+  background-color: #1a2a40;
   color: #ffffff;
-  border-bottom-right-radius: 4px; /* Punta hacia la derecha */
+  border-bottom-right-radius: 2px;
 }
 
 .other-message .bubble {
-  background-color: #ffffff; /* Blanco */
+  background-color: #ffffff;
   color: #1a2a40;
-  border: 1px solid #eaeaea;
-  border-bottom-left-radius: 4px; /* Punta hacia la izquierda */
+  border: 1px solid #e2e8f0;
+  border-bottom-left-radius: 2px;
 }
 
-/* Texto de la hora */
 .msg-time {
   display: block;
-  font-size: 0.7rem;
-  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
   text-align: right;
-  opacity: 0.7; /* Ligeramente transparente para no resaltar demasiado */
+  opacity: 0.7;
 }
 
-.other-message .msg-time {
-  text-align: left;
-}
+.other-message .msg-time { text-align: left; opacity: 0.5; }
 
-/* Input text limpio */
 .custom-input {
   border-radius: 8px;
-  border: 1px solid #eaeaea;
-  padding: 0.8rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.8rem 1rem;
 }
 
+.custom-input:focus { border-color: #1a2a40; box-shadow: none; }
+
+.btn-send {
+  background-color: #1a2a40 !important;
+  border: none !important;
+  color: white !important;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+}
+
+.btn-send:hover { background-color: #2d4a6e !important; }
+
+/* Mensaje de error */
 .error-msg {
   font-weight: bold;
+  background-color: #fee2e2;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  color: #dc2626;
 }
 </style>

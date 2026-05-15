@@ -13,7 +13,8 @@ const { addSession, errors, updateSession } = store;
 
 const form = ref({
   learnerId:   null,
-  tutorId:     null,
+  // Pre-llena tutorId si viene desde perfil del tutor (US08)
+  tutorId:     route.query.tutorId ? parseInt(route.query.tutorId) : null,
   topic:       '',
   status:      'pending',
   scheduledAt: '',
@@ -21,6 +22,9 @@ const form = ref({
 });
 
 const isEdit = computed(() => !!route.params.id);
+
+// Si viene desde Discovery, mostramos el banner del tutor
+const comesFromDiscovery = computed(() => !!route.query.tutorId && !isEdit.value);
 
 const statusOptions = [
   { label: 'Pending',   value: 'pending'   },
@@ -32,7 +36,9 @@ const statusOptions = [
 
 onMounted(() => {
   console.log('route params:', route.params.id);
+  console.log('route query tutorId:', route.query.tutorId);
   if (isEdit.value) {
+    if (!store.sessionsLoaded) store.fetchSessions();
     const sessionFound = getSessionById(route.params.id);
     console.log('session found:', sessionFound);
     if (sessionFound) {
@@ -67,39 +73,66 @@ const saveSession = () => {
 };
 
 const navigateBack = () => {
-  router.push({name: 'workspace-sessions'});
+  // Si venía del perfil del tutor, vuelve ahí
+  if (route.query.tutorId && !isEdit.value) {
+    router.push({ name: 'discovery-search' });
+  } else {
+    router.push({name: 'workspace-sessions'});
+  }
 };
 </script>
 
 <template>
-  <div class="p-4 form-container">
+  <div class="p-4 session-container">
 
-    <div class="form-wrapper">
+    <!-- Header -->
+    <div class="header-actions flex align-items-center gap-3 mb-4">
+      <pv-button icon="pi pi-arrow-left" text class="action-btn-view" @click="navigateBack"/>
+      <h1 class="page-title m-0">{{ isEdit ? t('session.edit-title') : t('session.new-title') }}</h1>
+    </div>
 
-      <div class="flex align-items-center mb-4 gap-3">
-        <pv-button icon="pi pi-arrow-left" text rounded class="back-btn" @click="navigateBack" />
-        <h1 class="page-title m-0">{{ isEdit ? t('session.edit-title') : t('session.new-title') }}</h1>
+    <!-- Banner informativo cuando viene desde Discovery (US08) -->
+    <div v-if="comesFromDiscovery" class="discovery-banner mb-4">
+      <div class="icon-wrapper">
+        <i class="pi pi-send banner-icon"/>
       </div>
+      <div>
+        <p class="banner-title">{{ t('session.from-discovery-title') }}</p>
+        <p class="banner-sub">{{ t('session.from-discovery-sub') }}</p>
+      </div>
+    </div>
 
-      <div class="form-card">
-        <form @submit.prevent="saveSession">
+    <!-- Formulario en tarjeta -->
+    <div class="table-card form-wrapper">
+      <form @submit.prevent="saveSession" class="p-fluid">
 
-          <div class="field mb-4">
+        <div class="grid">
+
+          <div class="col-12 md:col-6 field mb-4">
             <label for="learnerId" class="custom-label">{{ t('session.learnerId') }}</label>
-            <pv-input-number id="learnerId" v-model="form.learnerId" class="w-full custom-input" :min="1" required/>
+            <pv-input-number id="learnerId" v-model="form.learnerId" class="w-full" :min="1" required/>
           </div>
 
-          <div class="field mb-4">
+          <div class="col-12 md:col-6 field mb-4">
             <label for="tutorId" class="custom-label">{{ t('session.tutorId') }}</label>
-            <pv-input-number id="tutorId" v-model="form.tutorId" class="w-full custom-input" :min="1" required/>
+            <pv-input-number
+                id="tutorId"
+                v-model="form.tutorId"
+                class="w-full"
+                :min="1"
+                :disabled="comesFromDiscovery"
+                required/>
+            <small v-if="comesFromDiscovery" class="field-hint">
+              <i class="pi pi-info-circle mr-1"/> {{ t('session.tutor-prefilled') }}
+            </small>
           </div>
 
-          <div class="field mb-4">
+          <div class="col-12 field mb-4">
             <label for="topic" class="custom-label">{{ t('session.topic') }}</label>
-            <pv-input-text id="topic" v-model="form.topic" class="w-full custom-input" required/>
+            <pv-input-text id="topic" v-model="form.topic" class="w-full" required/>
           </div>
 
-          <div class="field mb-4">
+          <div class="col-12 md:col-4 field mb-4">
             <label for="status" class="custom-label">{{ t('session.status') }}</label>
             <pv-select
                 id="status"
@@ -107,65 +140,57 @@ const navigateBack = () => {
                 :options="statusOptions"
                 option-label="label"
                 option-value="value"
-                class="w-full custom-input"/>
+                class="w-full"/>
           </div>
 
-          <div class="field mb-4">
+          <div class="col-12 md:col-4 field mb-4">
             <label for="scheduledAt" class="custom-label">{{ t('session.scheduledAt') }}</label>
-            <pv-input-text id="scheduledAt" v-model="form.scheduledAt" class="w-full custom-input" placeholder="2026-06-01T10:00"/>
+            <pv-input-text id="scheduledAt" v-model="form.scheduledAt" class="w-full" placeholder="2026-06-01T10:00"/>
           </div>
 
-          <div class="field mb-5">
+          <div class="col-12 md:col-4 field mb-4">
             <label for="courseId" class="custom-label">{{ t('session.courseId') }}</label>
-            <pv-input-number id="courseId" v-model="form.courseId" class="w-full custom-input" :min="1"/>
+            <pv-input-number id="courseId" v-model="form.courseId" class="w-full" :min="1"/>
           </div>
 
-          <div class="flex justify-content-end gap-3 mt-2 border-top-1 pt-4 border-gray-200">
-            <pv-button :label="t('session.cancel')" text class="cancel-btn" @click="navigateBack"/>
-            <pv-button :label="t('session.save')" type="submit" class="save-btn"/>
-          </div>
+        </div>
 
-        </form>
-      </div>
+        <!-- Acciones del formulario -->
+        <div class="flex justify-content-end gap-3 mt-4 pt-4 border-top-1 border-300">
+          <pv-button :label="t('session.cancel')" text class="btn-cancel" @click="navigateBack"/>
+          <pv-button :label="t('session.save')"   type="submit" class="btn-save"/>
+        </div>
 
-      <div v-if="errors.length" class="text-red-500 mt-3 error-msg">
-        {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
-      </div>
-
+      </form>
     </div>
+
+    <!-- Errores -->
+    <div v-if="errors.length" class="text-red-500 mt-4 error-msg">
+      <i class="pi pi-exclamation-circle mr-2"></i>
+      {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
+    </div>
+
   </div>
 </template>
 
 <style scoped>
-/* Contenedor general (aprovecha el espacio, igual que la tabla) */
-.form-container {
+/* Contenedor principal */
+.session-container {
   width: 100%;
   padding: 0 2rem;
-}
-
-/* Envoltorio del formulario para que tenga un tamaño máximo prudente */
-.form-wrapper {
-  max-width: 600px;
-  margin: 0 auto; /* Centra la tarjeta en la pantalla */
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* Título */
 .page-title {
   color: #1a2a40;
   font-weight: 800;
-  font-size: 1.8rem;
+  font-size: 2rem;
 }
 
-.back-btn {
-  color: #1a2a40 !important;
-}
-
-.back-btn:hover {
-  background-color: #f0f2f5 !important;
-}
-
-/* Estilo de la tarjeta blanca */
-.form-card {
+/* Efecto tarjeta unificado */
+.table-card {
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
@@ -173,53 +198,102 @@ const navigateBack = () => {
   border: 1px solid #f0f2f5;
 }
 
-/* Estilo para los nombres de los campos (Labels) */
+/* Banner de Discovery (US08) */
+.discovery-banner {
+  background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%);
+  border-radius: 12px;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  box-shadow: 0 4px 15px rgba(26, 42, 64, 0.15);
+}
+
+.icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-icon {
+  font-size: 1.6rem;
+  color: #60a5fa; /* Azul claro para contrastar */
+}
+
+.banner-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 0 0.2rem 0;
+}
+
+.banner-sub {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Etiquetas del formulario */
 .custom-label {
   display: block;
   font-weight: 700;
-  color: #4a5568;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  color: #1a2a40;
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
 }
 
-/* Modificando los inputs de PrimeVue para que se vean modernos */
-:deep(.custom-input),
-:deep(.p-inputtext),
-:deep(.p-select) {
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+.field-hint {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
 }
 
-:deep(.p-inputtext:focus),
-:deep(.p-select.p-focus) {
-  border-color: #1a2a40;
-  box-shadow: 0 0 0 1px #1a2a40;
+/* --- BOTONES --- */
+.action-btn-view {
+  color: #1a2a40 !important;
 }
 
-/* Botones de acción */
-.save-btn {
-  background-color: #e2e8f0 !important; /* Azul oscuro del proyecto */
+.action-btn-view:hover {
+  background-color: #f8fafc !important;
+}
+
+.btn-save {
+  background-color: #e53e4f !important;
   border: none !important;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 0.6rem 1.8rem;
+  color: white !important;
+}
+
+.btn-save:hover {
+  background-color: #d03544 !important;
+}
+
+.btn-cancel {
+  color: #4a5568 !important;
   font-weight: bold;
   border-radius: 8px;
   padding: 0.6rem 1.5rem;
 }
 
-.save-btn:hover {
-  background-color: #a0aec0 !important;
+.btn-cancel:hover {
+  background-color: #f8f9fa !important;
 }
 
-.cancel-btn {
-  color: #64748b !important; /* Color gris sutil */
-  font-weight: bold;
-}
-
-.cancel-btn:hover {
-  background-color: #f8fafc !important;
-}
-
+/* Mensaje de error */
 .error-msg {
   font-weight: bold;
-  text-align: center;
+  background-color: #fee2e2;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  color: #dc2626;
 }
 </style>

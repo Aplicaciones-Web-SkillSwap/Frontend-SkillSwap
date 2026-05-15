@@ -1,10 +1,10 @@
 {
   "option": {
-    "home":         "Inicio",
-    "about":        "Acerca de nosotros",
-    "sessions":     "Sesiones",
-    "wallets":      "Billeteras",
-    "transactions": "Transacciones"
+    "home":     "Inicio",
+    "about":    "Acerca de nosotros",
+    "search":   "Buscar Tutores",
+    "sessions": "Sesiones",
+    "wallets":  "Billeteras"
   },
   "authoring-phrase": {
     "intro":  "Hecho con",
@@ -23,6 +23,34 @@
     "title":   "Pagina no encontrada",
     "content": "La ruta {unavailable-route} no esta disponible.",
     "go-home": "Ir al Inicio"
+  },
+  "discovery": {
+    "hero-title":             "Encuentra al tutor perfecto para ti",
+    "hero-sub":               "Conéctate con estudiantes verificados de distintas universidades",
+    "search-placeholder":     "Busca por materia, habilidad o nombre... ej. Cálculo, React, Física",
+    "filters-title":          "Filtros",
+    "clear-filters":          "Limpiar filtros",
+    "filter-rating":          "Calificación mínima",
+    "filter-all-ratings":     "Todas las calificaciones",
+    "filter-university":      "Universidad",
+    "filter-all-universities":"Todas las universidades",
+    "results-found":          "tutores encontrados",
+    "loading":                "Cargando tutores...",
+    "no-results-title":       "No se encontraron tutores para tu búsqueda.",
+    "no-results-sub":         "Intenta con otros términos o ajusta los filtros.",
+    "verified":               "Verificado",
+    "reviews":                "reseñas",
+    "skills":                 "Cursos que enseña",
+    "view-profile":           "Ver Perfil",
+    "profile-title":          "Perfil del Tutor",
+    "bio":                    "Sobre mí",
+    "no-bio":                 "Este tutor aún no ha agregado una biografía.",
+    "reviews-title":          "Reseñas de estudiantes",
+    "no-reviews":             "Este tutor aún no ha recibido ninguna calificación.",
+    "send-request":           "Enviar solicitud de tutoría",
+    "request-note":           "Serás dirigido a crear una sesión con este tutor.",
+    "tutor-not-found":        "Tutor no encontrado.",
+    "back-to-search":         "Volver a la búsqueda"
   },
   "sessions": {
     "title":            "Sesiones de Tutoria",
@@ -55,26 +83,39 @@
     "action-delete":    "Eliminar"
   },
   "session": {
-    "new-title":   "Crear Nueva Sesion",
-    "edit-title":  "Editar Sesion",
-    "learnerId":   "ID Aprendiz",
-    "tutorId":     "ID Tutor",
-    "topic":       "Tema",
-    "status":      "Estado",
-    "scheduledAt": "Fecha Programada",
-    "courseId":    "ID Curso",
-    "save":        "Guardar",
-    "cancel":      "Cancelar"
+    "new-title":            "Crear Nueva Sesion",
+    "edit-title":           "Editar Sesion",
+    "learnerId":            "ID Aprendiz",
+    "tutorId":              "ID Tutor",
+    "topic":                "Tema",
+    "status":               "Estado",
+    "scheduledAt":          "Fecha Programada",
+    "courseId":             "ID Curso",
+    "save":                 "Guardar",
+    "cancel":               "Cancelar",
+    "from-discovery-title": "Solicitud desde perfil de tutor",
+    "from-discovery-sub":   "El ID del tutor ha sido prellenado. Completa el tema y la fecha para enviar la solicitud.",
+    "tutor-prefilled":      "Prellenado desde el perfil del tutor seleccionado."
   },
   "workspace": {
     "title":               "Sala de Trabajo",
     "topic":               "Tema",
     "status":              "Estado",
     "start-call":          "Iniciar Videollamada",
+    "call-locked":         "La videollamada solo esta disponible para sesiones programadas",
     "no-messages":         "Sin mensajes aun. Empieza la conversacion!",
     "message-placeholder": "Escribe un mensaje...",
+    "chat-completed":      "Esta sesion ha finalizado.",
     "send":                "Enviar",
-    "video-call-message":  "Iniciando videollamada... (integracion WebRTC pendiente)"
+    "video-call-message":  "Iniciando videollamada... (integracion WebRTC pendiente)",
+    "locked-title":        "Esperando confirmacion del tutor",
+    "locked-sub":          "El chat y la videollamada se habilitaran cuando el tutor acepte esta sesion.",
+    "session-rejected":    "Sesion Rechazada",
+    "session-cancelled":   "Sesion Cancelada",
+    "session-ended-sub":   "Esta sesion ya no esta activa.",
+    "donation-title":      "Sesion completada! Quieres recompensar a tu tutor?",
+    "donation-sub":        "Haz una donacion voluntaria — el tutor recibe el 95%, SkillSwap el 5%.",
+    "btn-donate":          "Hacer Donacion"
   },
   "wallets": {
     "title":          "Billeteras",

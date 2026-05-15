@@ -1,21 +1,25 @@
 <script setup>
 import {useI18n} from "vue-i18n";
+import {useRouter} from "vue-router";
 import {ref} from "vue";
 import LanguageSwitcher from "@/shared/presentation/components/language-switcher.vue";
 import FooterContent from "@/shared/presentation/components/footer-content.vue";
 
 const { t } = useI18n();
+const router = useRouter();
 
 const drawer = ref(false);
-const toggleDrawer = () => {
-  drawer.value = !drawer.value;
-}
+const toggleDrawer = () => { drawer.value = !drawer.value; }
 
 const items = [
   { label: 'option.home',     path: '/home'               },
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
 ]
+
+const navigateToSearch = () => {
+  router.push({ name: 'discovery-search' });
+}
 </script>
 
 <template>
@@ -32,6 +36,39 @@ const items = [
           <pv-button class="p-button-text text-color" icon="pi pi-bars" @click="toggleDrawer" />
           <div class="brand-container">
             <h3>SkillSwap</h3>
+  <div class="header">
+    <pv-toolbar class="custom-toolbar">
+      <template #start>
+        <pv-button class="p-button-text text-color" icon="pi pi-bars" @click="toggleDrawer" />
+        <div class="brand-container">
+          <h3>SkillSwap</h3>
+        </div>
+      </template>
+
+      <template #center>
+      </template>
+
+      <template #end>
+        <div class="right-actions">
+          <router-link
+              v-for="item in items"
+              :key="item.label"
+              :to="item.path"
+              class="nav-link"
+          >
+            {{ t(item.label) }}
+          </router-link>
+
+          <!-- Lupa → navega a Find Tutors -->
+          <i
+              class="pi pi-search action-icon search-icon"
+              :title="t('option.search')"
+              @click="navigateToSearch">
+          </i>
+
+          <div class="notification-container action-icon">
+            <i class="pi pi-bell"></i>
+            <span class="notification-badge">2</span>
           </div>
         </template>
         <template #center></template>
@@ -88,6 +125,32 @@ const items = [
       </div>
     </div>
 
+          <pv-avatar
+              image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+              shape="circle"
+              class="user-avatar"
+          />
+
+          <pv-button
+              label="Cerrar Sesión"
+              class="logout-btn"
+              rounded
+          />
+
+          <language-switcher/>
+        </div>
+      </template>
+    </pv-toolbar>
+
+    <pv-drawer v-model:visible="drawer"/>
+  </div>
+
+  <div class="main-content">
+    <router-view/>
+  </div>
+
+  <div class="footer">
+    <footer-content/>
   </div>
 </template>
 
@@ -105,8 +168,8 @@ const items = [
   top: 0;
   width: 100%;
   background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Sombra ligera inferior */
+  z-index: 1000;
 }
 
 /* Quitar fondo azul del Toolbar de PrimeVue */
@@ -168,6 +231,12 @@ const items = [
   font-size: 1.4rem;
   color: #000000;
   cursor: pointer;
+  transition: color 0.2s;
+}
+
+/* Efecto hover específico para la lupa */
+.search-icon:hover {
+  color: #e53e4f;
 }
 
 /* Campanita (sin badge) */
