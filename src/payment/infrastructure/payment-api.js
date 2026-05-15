@@ -9,7 +9,7 @@ export class PaymentApi extends BaseApi {
     #transactionsEndpoint;
 
     constructor() {
-        super();
+        super(import.meta.env.VITE_PAYMENT_API_URL);
         this.#walletsEndpoint      = new BaseEndpoint(this, walletsEndpointPath);
         this.#transactionsEndpoint = new BaseEndpoint(this, transactionsEndpointPath);
     }

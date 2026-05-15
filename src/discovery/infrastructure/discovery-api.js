@@ -7,7 +7,7 @@ export class DiscoveryApi extends BaseApi {
     #tutorsEndpoint;
 
     constructor() {
-        super();
+        super(import.meta.env.VITE_DISCOVERY_API_URL);
         this.#tutorsEndpoint = new BaseEndpoint(this, tutorsEndpointPath);
     }
 

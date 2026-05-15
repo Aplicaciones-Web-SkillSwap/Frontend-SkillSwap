@@ -9,7 +9,7 @@ export class WorkspaceApi extends BaseApi {
     #messagesEndpoint;
 
     constructor() {
-        super();
+        super(import.meta.env.VITE_WORKSPACE_API_URL);
         this.#sessionsEndpoint = new BaseEndpoint(this, sessionsEndpointPath);
         this.#messagesEndpoint = new BaseEndpoint(this, messagesEndpointPath);
     }
