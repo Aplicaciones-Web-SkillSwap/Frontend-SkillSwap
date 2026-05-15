@@ -9,7 +9,7 @@ export class ModerationApi extends BaseApi {
     #sanctionsEndpoint;
 
     constructor() {
-        super();
+        super(import.meta.env.VITE_MODERATION_API_BASE_URL);
         this.#reportsEndpoint   = new BaseEndpoint(this, reportsPath);
         this.#sanctionsEndpoint = new BaseEndpoint(this, sanctionsPath);
     }
