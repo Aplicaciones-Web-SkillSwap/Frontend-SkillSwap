@@ -1,26 +1,50 @@
 <script setup>
-import {useI18n} from "vue-i18n";
-import {useRoute, useRouter} from "vue-router";
-import useDiscoveryStore from "@/discovery/application/discovery.store.js";
-import {computed, onMounted} from "vue";
+import {useI18n}              from "vue-i18n";
+import {useRoute, useRouter}  from "vue-router";
+import useDiscoveryStore      from "@/discovery/application/discovery.store.js";
+import useReputationStore     from "@/reputation/application/reputation.store.js";
+import {computed, onMounted}  from "vue";
 
 const {t}    = useI18n();
 const route  = useRoute();
 const router = useRouter();
-const store  = useDiscoveryStore();
-const { fetchTutors } = store;
 
-const tutor = computed(() => store.getTutorById(route.params.id));
+const discoveryStore   = useDiscoveryStore();
+const reputationStore  = useReputationStore();
 
-// Mock de reseñas — Reputation BC no implementado aún
-const mockReviews = [
-  { id: 1, learnerName: 'Carlos Paredes',   rating: 5, comment: 'Excelente explicación, muy paciente y claro. 100% recomendado.',      date: '2026-05-10' },
-  { id: 2, learnerName: 'Ana Quispe',        rating: 4, comment: 'Buen dominio del tema, me ayudó a entender cálculo en una sola sesión.',date: '2026-04-28' },
-  { id: 3, learnerName: 'Bruno Salcedo',     rating: 5, comment: 'Muy didáctico, se nota que le apasiona enseñar.',                     date: '2026-04-15' },
-];
+const { fetchTutors }     = discoveryStore;
+const { fetchReviews }    = reputationStore;
+
+const tutor = computed(() => discoveryStore.getTutorById(route.params.id));
+
+// US07 — Reseñas reales del reputation store filtradas por tutorId
+const tutorReviews = computed(() => {
+  if (!tutor.value) return [];
+  return reputationStore
+      .getReviewsByTutorId(tutor.value.userId)
+      .filter(r => r.isPublished())
+      .slice(0, 3);
+});
+
+const hasReviews = computed(() => tutorReviews.value.length > 0);
+
+// Reputación real del tutor
+const tutorReputation = computed(() =>
+    reputationStore.getReputationByTutorId(tutor.value?.userId)
+);
+
+const averageScore = computed(() =>
+    tutorReputation.value?.averageScore ?? tutor.value?.rating ?? 0
+);
+
+const reviewCount = computed(() =>
+    tutorReputation.value?.publishedReviews ?? tutor.value?.reviewCount ?? 0
+);
 
 onMounted(() => {
-  if (!store.tutorsLoaded) fetchTutors();
+  if (!discoveryStore.tutorsLoaded)       fetchTutors();
+  if (!reputationStore.reviewsLoaded)     fetchReviews();
+  if (!reputationStore.reputationsLoaded) reputationStore.fetchReputations();
 });
 
 const renderStars = (rating) => {
@@ -30,10 +54,20 @@ const renderStars = (rating) => {
   return { full, half, empty };
 };
 
-// US08 — Enviar solicitud de tutoría → crea sesión nueva en Workspace BC
+const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
+
+// US08 — Enviar solicitud de tutoría
 const sendRequest = () => {
   router.push({
     name:  'workspace-sessions-new',
+    query: { tutorId: tutor.value?.userId }
+  });
+};
+
+// Ver todas las reseñas del tutor → review-list filtrado
+const navigateToAllReviews = () => {
+  router.push({
+    name:  'reputation-reviews',
     query: { tutorId: tutor.value?.userId }
   });
 };
@@ -80,13 +114,13 @@ const navigateBack = () => {
             <i class="pi pi-building"/> {{ tutor.university }}
           </p>
 
-          <!-- Rating -->
+          <!-- Rating real desde reputation store -->
           <div class="rating-row">
-            <span v-for="n in renderStars(tutor.rating).full"  :key="'f'+n" class="star star-full">★</span>
-            <span v-for="n in renderStars(tutor.rating).half"  :key="'h'+n" class="star star-half">★</span>
-            <span v-for="n in renderStars(tutor.rating).empty" :key="'e'+n" class="star star-empty">★</span>
-            <span class="rating-number">{{ tutor.rating.toFixed(1) }}</span>
-            <span class="review-count">({{ tutor.reviewCount }} {{ t('discovery.reviews') }})</span>
+            <span v-for="n in renderStars(averageScore).full"  :key="'f'+n" class="star star-full">★</span>
+            <span v-for="n in renderStars(averageScore).half"  :key="'h'+n" class="star star-half">★</span>
+            <span v-for="n in renderStars(averageScore).empty" :key="'e'+n" class="star star-empty">★</span>
+            <span class="rating-number">{{ Number(averageScore).toFixed(1) }}</span>
+            <span class="review-count">({{ reviewCount }} {{ t('discovery.reviews') }})</span>
           </div>
 
           <!-- Skills -->
@@ -97,7 +131,7 @@ const navigateBack = () => {
             </div>
           </div>
 
-          <!-- US08 — Botón principal: Enviar solicitud de tutoría -->
+          <!-- US08 — Botón principal: Enviar solicitud -->
           <pv-button
               :label="t('discovery.send-request')"
               icon="pi pi-send"
@@ -110,7 +144,7 @@ const navigateBack = () => {
 
       </aside>
 
-      <!-- ── COLUMNA DERECHA: Bio + Reseñas ── -->
+      <!-- ── COLUMNA DERECHA: Bio + Reseñas reales ── -->
       <main class="profile-main">
 
         <!-- Biografía -->
@@ -119,20 +153,29 @@ const navigateBack = () => {
           <p class="bio-text">{{ tutor.bio || t('discovery.no-bio') }}</p>
         </div>
 
-        <!-- Reseñas (US07) -->
+        <!-- Reseñas reales (US07) -->
         <div class="section-card">
-          <h3 class="section-title">{{ t('discovery.reviews-title') }}</h3>
+          <div class="reviews-header-row">
+            <h3 class="section-title m-0">{{ t('discovery.reviews-title') }}</h3>
+            <span
+                v-if="hasReviews"
+                class="see-all-link"
+                @click="navigateToAllReviews">
+              {{ t('discovery.see-all-reviews') }}
+              <i class="pi pi-external-link"/>
+            </span>
+          </div>
 
           <!-- Sin reseñas (US07 Scenario 2) -->
-          <div v-if="tutor.reviewCount === 0" class="empty-reviews">
+          <div v-if="!hasReviews" class="empty-reviews">
             <i class="pi pi-star empty-icon"/>
             <p class="empty-title">{{ t('discovery.no-reviews') }}</p>
           </div>
 
-          <!-- Con reseñas (US07 Scenario 1) -->
+          <!-- Con reseñas reales (US07 Scenario 1) -->
           <div v-else class="reviews-list">
             <div
-                v-for="review in mockReviews"
+                v-for="review in tutorReviews"
                 :key="review.id"
                 class="review-card">
               <div class="review-header">
@@ -141,16 +184,28 @@ const navigateBack = () => {
                     <i class="pi pi-user reviewer-avatar-icon"/>
                   </div>
                   <div>
-                    <p class="reviewer-name">{{ review.learnerName }}</p>
-                    <p class="review-date">{{ review.date }}</p>
+                    <p class="reviewer-name">{{ t('discovery.student') }} #{{ review.studentId }}</p>
+                    <p class="review-date">{{ formatDate(review.date) }}</p>
                   </div>
                 </div>
                 <div class="review-stars">
-                  <span v-for="n in review.rating"       :key="'f'+n" class="star star-full">★</span>
-                  <span v-for="n in (5 - review.rating)" :key="'e'+n" class="star star-empty">★</span>
+                  <span v-for="n in Math.floor(review.score)"       :key="'f'+n" class="star star-full">★</span>
+                  <span v-for="n in (5 - Math.floor(review.score))" :key="'e'+n" class="star star-empty">★</span>
+                  <span class="score-badge">{{ review.score }}</span>
                 </div>
               </div>
               <p class="review-comment">{{ review.comment }}</p>
+            </div>
+
+            <!-- Ver todas -->
+            <div class="see-all-row">
+              <pv-button
+                  :label="t('discovery.see-all-reviews')"
+                  link
+                  icon="pi pi-external-link"
+                  icon-pos="right"
+                  class="see-all-btn"
+                  @click="navigateToAllReviews"/>
             </div>
           </div>
         </div>
@@ -160,7 +215,7 @@ const navigateBack = () => {
     </div>
 
     <!-- Tutor no encontrado -->
-    <div v-else-if="store.tutorsLoaded" class="empty-state">
+    <div v-else-if="discoveryStore.tutorsLoaded" class="empty-state">
       <i class="pi pi-user-minus empty-icon"/>
       <p class="empty-title">{{ t('discovery.tutor-not-found') }}</p>
       <pv-button :label="t('discovery.back-to-search')" class="btn-back-search" @click="navigateBack"/>
@@ -247,15 +302,15 @@ const navigateBack = () => {
   font-weight: 700;
 }
 
-.profile-career    { color: #4a5568; font-size: 0.9rem; margin: 0 0 0.25rem 0; }
+.profile-career     { color: #4a5568; font-size: 0.9rem; margin: 0 0 0.25rem 0; }
 .profile-university { color: #718096; font-size: 0.85rem; margin: 0 0 1rem 0; display: flex; align-items: center; justify-content: center; gap: 0.3rem; }
 
 /* Estrellas */
-.rating-row { display: flex; align-items: center; justify-content: center; gap: 0.15rem; margin-bottom: 1rem; }
-.star       { font-size: 1rem; }
-.star-full  { color: #f5a623; }
-.star-half  { color: #f5a623; opacity: 0.6; }
-.star-empty { color: #e2e8f0; }
+.rating-row    { display: flex; align-items: center; justify-content: center; gap: 0.15rem; margin-bottom: 1rem; }
+.star          { font-size: 1rem; }
+.star-full     { color: #f5a623; }
+.star-half     { color: #f5a623; opacity: 0.6; }
+.star-empty    { color: #e2e8f0; }
 .rating-number { color: #1a2a40; font-weight: 700; font-size: 0.9rem; margin-left: 0.25rem; }
 .review-count  { color: #a0aec0; font-size: 0.8rem; }
 
@@ -275,15 +330,8 @@ const navigateBack = () => {
   padding: 0.8rem !important;
   font-size: 0.95rem !important;
 }
-
 .btn-send-request:hover { background-color: #d03544 !important; }
-
-.request-note {
-  color: #a0aec0;
-  font-size: 0.75rem;
-  margin: 0.5rem 0 0 0;
-}
-
+.request-note { color: #a0aec0; font-size: 0.75rem; margin: 0.5rem 0 0 0; }
 .w-full { width: 100%; }
 
 /* Columna principal */
@@ -297,14 +345,28 @@ const navigateBack = () => {
   border: 1px solid #f0f2f5;
 }
 
-.section-title {
-  color: #1a2a40;
-  font-weight: 800;
-  font-size: 1.05rem;
-  margin: 0 0 1rem 0;
+.section-title { color: #1a2a40; font-weight: 800; font-size: 1.05rem; margin: 0 0 1rem 0; }
+.bio-text      { color: #4a5568; line-height: 1.7; margin: 0; }
+
+/* Header de reseñas con link ver todas */
+.reviews-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.bio-text { color: #4a5568; line-height: 1.7; margin: 0; }
+.see-all-link {
+  color: #e53e4f;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.see-all-link:hover { text-decoration: underline; }
 
 /* Reseñas */
 .reviews-list { display: flex; flex-direction: column; gap: 1rem; }
@@ -332,20 +394,33 @@ const navigateBack = () => {
 }
 
 .reviewer-avatar-icon { color: #718096; font-size: 0.9rem; }
-
 .reviewer-name { color: #1a2a40; font-weight: 700; font-size: 0.9rem; margin: 0; }
 .review-date   { color: #a0aec0; font-size: 0.75rem; margin: 0; }
 
-.review-stars { display: flex; gap: 0.1rem; }
+.review-stars  { display: flex; align-items: center; gap: 0.1rem; }
+
+.score-badge {
+  background-color: #fef3c7;
+  color: #d97706;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 0.3rem;
+}
 
 .review-comment { color: #4a5568; font-size: 0.88rem; margin: 0; line-height: 1.6; }
 
-/* Empty reviews */
+/* Empty */
 .empty-reviews { text-align: center; padding: 2rem; }
 .empty-icon    { font-size: 2.5rem; color: #cbd5e0; display: block; margin-bottom: 0.75rem; }
 .empty-title   { color: #a0aec0; font-size: 0.9rem; margin: 0; }
 
-/* Tutor no encontrado */
-.empty-state { text-align: center; padding: 4rem; }
+/* Ver todas */
+.see-all-row { display: flex; justify-content: flex-end; }
+.see-all-btn { color: #e53e4f !important; font-weight: 600 !important; }
+
+/* No encontrado */
+.empty-state     { text-align: center; padding: 4rem; }
 .btn-back-search { background-color: #1a2a40 !important; border: none !important; border-radius: 8px !important; margin-top: 1rem; }
 </style>

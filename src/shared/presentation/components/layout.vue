@@ -11,10 +11,12 @@ const router = useRouter();
 const drawer = ref(false);
 const toggleDrawer = () => { drawer.value = !drawer.value; }
 
+// FUSIÓN: Tu base manda, pero inyectamos las rutas "about" y "reviews" del compañero
 const items = [
   { label: 'option.home',     path: '/home'               },
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
+  { label: 'option.reviews',  path: '/reputation/reviews' },
 ]
 
 const navigateToSearch = () => {

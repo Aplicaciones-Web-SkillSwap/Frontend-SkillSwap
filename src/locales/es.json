@@ -4,7 +4,8 @@
     "about":    "Acerca de nosotros",
     "search":   "Buscar Tutores",
     "sessions": "Sesiones",
-    "wallets":  "Billeteras"
+    "wallets":  "Billeteras",
+    "reviews":  "Reseñas"
   },
   "authoring-phrase": {
     "intro":  "Hecho con",
@@ -50,7 +51,9 @@
     "send-request":           "Enviar solicitud de tutoría",
     "request-note":           "Serás dirigido a crear una sesión con este tutor.",
     "tutor-not-found":        "Tutor no encontrado.",
-    "back-to-search":         "Volver a la búsqueda"
+    "back-to-search":         "Volver a la búsqueda",
+    "see-all-reviews": "Ver todas las reseñas",
+    "student":         "Estudiante"
   },
   "sessions": {
     "title":            "Sesiones de Tutoria",
@@ -115,7 +118,10 @@
     "session-ended-sub":   "Esta sesion ya no esta activa.",
     "donation-title":      "Sesion completada! Quieres recompensar a tu tutor?",
     "donation-sub":        "Haz una donacion voluntaria — el tutor recibe el 95%, SkillSwap el 5%.",
-    "btn-donate":          "Hacer Donacion"
+    "btn-donate":          "Hacer Donacion",
+    "review-title":  "Sesion completada! Califica a tu tutor.",
+    "review-sub":    "Tu calificacion ayuda a construir la reputacion del tutor en SkillSwap.",
+    "btn-review":    "Dejar Reseña"
   },
   "wallets": {
     "title":          "Billeteras",
@@ -246,5 +252,41 @@
     "chat-student":       "Estudiante / Reportado",
     "chat-messages":      "Mensajes",
     "chat-no-messages":   "No se encontraron mensajes para este reporte."
+  },
+  "reviews": {
+    "title":          "Reseñas",
+    "id":             "ID",
+    "tutorId":        "ID Tutor",
+    "studentId":      "ID Estudiante",
+    "score":          "Puntaje",
+    "comment":        "Comentario",
+    "status":         "Estado",
+    "date":           "Fecha",
+    "actions":        "Acciones",
+    "new":            "Nueva Reseña",
+    "confirm-delete": "Estas seguro de que quieres eliminar la reseña #{id}?",
+    "delete-header":  "Confirmar eliminacion",
+    "title-filtered": "Reseñas — Tutor #{tutorId}",
+    "filter-label":   "Filtrado por tutor"
+  },
+  "review": {
+    "new-title":   "Escribir una Reseña",
+    "edit-title":  "Editar Reseña",
+    "tutorId":     "ID Tutor",
+    "studentId":   "ID Estudiante",
+    "sessionId":   "ID Sesion",
+    "score":       "Puntaje",
+    "comment":     "Comentario",
+    "status":      "Estado",
+    "save":        "Guardar",
+    "cancel":      "Cancelar"
+  },
+  "reputations": {
+    "title":            "Reputaciones de Tutores",
+    "tutorId":          "ID Tutor",
+    "averageScore":     "Puntaje Promedio",
+    "totalReviews":     "Total Reseñas",
+    "publishedReviews": "Publicadas",
+    "published":        "publicadas"
   }
 }
