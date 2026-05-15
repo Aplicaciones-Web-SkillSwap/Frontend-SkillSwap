@@ -182,5 +182,78 @@
       "fileName": null,
       "sentAt": "2026-06-10T16:30:00.000Z"
     }
+  ],
+  "wallets": [
+    { "id": 1, "userId": 1, "balance": 142.50, "currency": "PEN" },
+    { "id": 2, "userId": 2, "balance": 71.25,  "currency": "PEN" },
+    { "id": 3, "userId": 3, "balance": 190.00, "currency": "PEN" },
+    { "id": 4, "userId": 4, "balance": 28.50,  "currency": "PEN" }
+  ],
+  "transactions": [
+    {
+      "id": 1,
+      "walletId": 1,
+      "senderId": 2,
+      "receiverId": 1,
+      "originalAmount": 25.00,
+      "commissionFee": 1.25,
+      "netAmount": 23.75,
+      "type": "donation",
+      "status": "completed",
+      "description": "Donación por sesión de Cálculo diferencial",
+      "createdAt": "2026-06-01T10:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "walletId": 1,
+      "senderId": 3,
+      "receiverId": 1,
+      "originalAmount": 20.00,
+      "commissionFee": 1.00,
+      "netAmount": 19.00,
+      "type": "donation",
+      "status": "pending",
+      "description": "Donación por sesión de React Hooks",
+      "createdAt": "2026-06-03T14:15:00.000Z"
+    },
+    {
+      "id": 3,
+      "walletId": 1,
+      "senderId": null,
+      "receiverId": 1,
+      "originalAmount": 100.00,
+      "commissionFee": 5.00,
+      "netAmount": 95.00,
+      "type": "deposit",
+      "status": "completed",
+      "description": "Recarga de billetera",
+      "createdAt": "2026-05-20T09:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "walletId": 4,
+      "senderId": 2,
+      "receiverId": 4,
+      "originalAmount": 15.00,
+      "commissionFee": 0.75,
+      "netAmount": 14.25,
+      "type": "donation",
+      "status": "completed",
+      "description": "Donación por sesión de Estadística",
+      "createdAt": "2026-05-28T10:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "walletId": 2,
+      "senderId": null,
+      "receiverId": 2,
+      "originalAmount": 75.00,
+      "commissionFee": 3.75,
+      "netAmount": 71.25,
+      "type": "deposit",
+      "status": "completed",
+      "description": "Saldo inicial de billetera",
+      "createdAt": "2026-05-15T09:00:00.000Z"
+    }
   ]
 }

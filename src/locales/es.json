@@ -1,8 +1,10 @@
 {
   "option": {
-    "home":     "Inicio",
-    "about":    "Acerca de nosotros",
-    "sessions": "Sesiones"
+    "home":         "Inicio",
+    "about":        "Acerca de nosotros",
+    "sessions":     "Sesiones",
+    "wallets":      "Billeteras",
+    "transactions": "Transacciones"
   },
   "authoring-phrase": {
     "intro":  "Hecho con",
@@ -34,11 +36,23 @@
     "new":              "Nueva Sesion",
     "confirm-delete":   "Estas seguro de que quieres eliminar la sesion '{topic}'?",
     "delete-header":    "Confirmar eliminacion",
+    "confirm-accept":   "Estas seguro de que quieres aceptar la sesion '{topic}'?",
+    "accept-header":    "Aceptar Sesion",
+    "confirm-reject":   "Estas seguro de que quieres rechazar la sesion '{topic}'?",
+    "reject-header":    "Rechazar Sesion",
+    "confirm-cancel":   "Estas seguro de que quieres cancelar la sesion '{topic}'?",
+    "cancel-header":    "Cancelar Sesion",
     "status-pending":   "Pendiente",
     "status-scheduled": "Programada",
     "status-completed": "Completada",
     "status-cancelled": "Cancelada",
-    "status-rejected":  "Rechazada"
+    "status-rejected":  "Rechazada",
+    "action-view":      "Abrir Workspace",
+    "action-accept":    "Aceptar",
+    "action-reject":    "Rechazar",
+    "action-cancel":    "Cancelar",
+    "action-edit":      "Editar",
+    "action-delete":    "Eliminar"
   },
   "session": {
     "new-title":   "Crear Nueva Sesion",
@@ -61,6 +75,64 @@
     "message-placeholder": "Escribe un mensaje...",
     "send":                "Enviar",
     "video-call-message":  "Iniciando videollamada... (integracion WebRTC pendiente)"
+  },
+  "wallets": {
+    "title":          "Billeteras",
+    "id":             "ID",
+    "userId":         "ID Usuario",
+    "balance":        "Saldo",
+    "currency":       "Moneda",
+    "actions":        "Acciones",
+    "confirm-delete": "Estas seguro de que quieres eliminar la billetera del usuario {userId}?",
+    "delete-header":  "Confirmar eliminacion",
+    "action-view":    "Ver Billetera",
+    "action-delete":  "Eliminar"
+  },
+  "wallet": {
+    "title":                   "Billetera",
+    "userId":                  "ID Usuario",
+    "balance":                 "Saldo Disponible",
+    "currency":                "Moneda",
+    "total-transactions":      "Transacciones",
+    "transactions-cta-title":  "Historial de Transacciones",
+    "transactions-cta-sub":    "{count} transacciones registradas",
+    "btn-new-transaction":     "Nueva Transaccion",
+    "btn-view-transactions":   "Ver Todas las Transacciones",
+    "recent-transactions":     "Transacciones Recientes",
+    "see-all-transactions":    "Ver todas las transacciones"
+  },
+  "transactions": {
+    "title":            "Transacciones",
+    "title-filtered":   "Transacciones — Billetera #{walletId}",
+    "filter-label":     "Filtrado por billetera",
+    "back-to-wallet":   "Volver a Billetera",
+    "back-to-wallets":  "Volver a Billeteras",
+    "id":               "ID",
+    "walletId":         "ID Billetera",
+    "senderId":         "ID Emisor",
+    "receiverId":       "ID Receptor",
+    "amount":           "Monto",
+    "type":             "Tipo",
+    "status":           "Estado",
+    "description":      "Descripcion",
+    "createdAt":        "Fecha de Creacion",
+    "actions":          "Acciones",
+    "new":              "Nueva Transaccion",
+    "confirm-delete":   "Estas seguro de que quieres eliminar la transaccion #{id}?",
+    "delete-header":    "Confirmar eliminacion"
+  },
+  "transaction": {
+    "new-title":   "Crear Nueva Transaccion",
+    "edit-title":  "Editar Transaccion",
+    "walletId":    "ID Billetera",
+    "senderId":    "ID Emisor",
+    "receiverId":  "ID Receptor",
+    "amount":      "Monto",
+    "type":        "Tipo",
+    "status":      "Estado",
+    "description": "Descripcion",
+    "save":        "Guardar",
+    "cancel":      "Cancelar"
   },
   "errors": {
     "occurred": "Ocurrieron errores"
