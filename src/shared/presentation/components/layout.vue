@@ -17,6 +17,7 @@ const items = [
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
   { label: 'option.reviews',  path: '/reputation/reviews' },
+  { label: 'option.quizzes',  path: '/learning/quizzes'   },
 ]
 
 const navigateToSearch = () => {

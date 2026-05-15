@@ -193,555 +193,93 @@
     }
   ],
   "wallets": [
-    {
-      "id": 1,
-      "userId": 1,
-      "balance": 142.5,
-      "currency": "PEN"
-    },
-    {
-      "id": 2,
-      "userId": 2,
-      "balance": 71.25,
-      "currency": "PEN"
-    },
-    {
-      "id": 3,
-      "userId": 3,
-      "balance": 190,
-      "currency": "PEN"
-    },
-    {
-      "id": 4,
-      "userId": 4,
-      "balance": 47.5,
-      "currency": "PEN"
-    }
+    { "id": 1, "userId": 1, "balance": 142.5, "currency": "PEN" },
+    { "id": 2, "userId": 2, "balance": 71.25, "currency": "PEN" },
+    { "id": 3, "userId": 3, "balance": 190,   "currency": "PEN" },
+    { "id": 4, "userId": 4, "balance": 47.5,  "currency": "PEN" }
   ],
   "transactions": [
-    {
-      "id": 1,
-      "walletId": 1,
-      "senderId": 2,
-      "receiverId": 1,
-      "originalAmount": 25,
-      "commissionFee": 1.25,
-      "netAmount": 23.75,
-      "type": "donation",
-      "status": "completed",
-      "description": "Donación por sesión de Cálculo diferencial",
-      "createdAt": "2026-06-01T10:30:00.000Z"
-    },
-    {
-      "id": 2,
-      "walletId": 1,
-      "senderId": 3,
-      "receiverId": 1,
-      "originalAmount": 20,
-      "commissionFee": 1,
-      "netAmount": 19,
-      "type": "donation",
-      "status": "pending",
-      "description": "Donación por sesión de React Hooks",
-      "createdAt": "2026-06-03T14:15:00.000Z"
-    },
-    {
-      "id": 3,
-      "walletId": 1,
-      "senderId": null,
-      "receiverId": 1,
-      "originalAmount": 100,
-      "commissionFee": 5,
-      "netAmount": 95,
-      "type": "deposit",
-      "status": "completed",
-      "description": "Recarga de billetera",
-      "createdAt": "2026-05-20T09:00:00.000Z"
-    },
-    {
-      "id": 4,
-      "walletId": 4,
-      "senderId": 2,
-      "receiverId": 4,
-      "originalAmount": 15,
-      "commissionFee": 0.75,
-      "netAmount": 14.25,
-      "type": "donation",
-      "status": "completed",
-      "description": "Donación por sesión de Estadística",
-      "createdAt": "2026-05-28T10:00:00.000Z"
-    },
-    {
-      "id": 5,
-      "walletId": 2,
-      "senderId": null,
-      "receiverId": 2,
-      "originalAmount": 75,
-      "commissionFee": 3.75,
-      "netAmount": 71.25,
-      "type": "deposit",
-      "status": "completed",
-      "description": "Saldo inicial de billetera",
-      "createdAt": "2026-05-15T09:00:00.000Z"
-    },
-    {
-      "id": 7,
-      "walletId": 1,
-      "senderId": 15,
-      "receiverId": 1,
-      "originalAmount": 10,
-      "commissionFee": 0.5,
-      "netAmount": 9.5,
-      "type": "donation",
-      "status": "pending",
-      "description": "gracias por la clase",
-      "createdAt": "2026-05-15T13:24:02.322Z"
-    },
-    {
-      "id": 8,
-      "walletId": 4,
-      "senderId": 100,
-      "receiverId": 4,
-      "originalAmount": 20,
-      "commissionFee": 1,
-      "netAmount": 19,
-      "type": "donation",
-      "status": "completed",
-      "description": "",
-      "createdAt": "2026-05-15T13:29:49.133Z"
-    }
+    { "id": 1, "walletId": 1, "senderId": 2,    "receiverId": 1, "originalAmount": 25,  "commissionFee": 1.25, "netAmount": 23.75, "type": "donation", "status": "completed", "description": "Donación por sesión de Cálculo diferencial", "createdAt": "2026-06-01T10:30:00.000Z" },
+    { "id": 2, "walletId": 1, "senderId": 3,    "receiverId": 1, "originalAmount": 20,  "commissionFee": 1,    "netAmount": 19,    "type": "donation", "status": "pending",   "description": "Donación por sesión de React Hooks",        "createdAt": "2026-06-03T14:15:00.000Z" },
+    { "id": 3, "walletId": 1, "senderId": null, "receiverId": 1, "originalAmount": 100, "commissionFee": 5,    "netAmount": 95,    "type": "deposit",  "status": "completed", "description": "Recarga de billetera",                       "createdAt": "2026-05-20T09:00:00.000Z" },
+    { "id": 4, "walletId": 4, "senderId": 2,    "receiverId": 4, "originalAmount": 15,  "commissionFee": 0.75, "netAmount": 14.25, "type": "donation", "status": "completed", "description": "Donación por sesión de Estadística",         "createdAt": "2026-05-28T10:00:00.000Z" },
+    { "id": 5, "walletId": 2, "senderId": null, "receiverId": 2, "originalAmount": 75,  "commissionFee": 3.75, "netAmount": 71.25, "type": "deposit",  "status": "completed", "description": "Saldo inicial de billetera",                 "createdAt": "2026-05-15T09:00:00.000Z" },
+    { "id": 7, "walletId": 1, "senderId": 15,   "receiverId": 1, "originalAmount": 10,  "commissionFee": 0.5,  "netAmount": 9.5,   "type": "donation", "status": "pending",   "description": "gracias por la clase",                       "createdAt": "2026-05-15T13:24:02.322Z" },
+    { "id": 8, "walletId": 4, "senderId": 100,  "receiverId": 4, "originalAmount": 20,  "commissionFee": 1,    "netAmount": 19,    "type": "donation", "status": "completed", "description": "",                                           "createdAt": "2026-05-15T13:29:49.133Z" }
   ],
   "tutors": [
-    {
-      "id": 1,
-      "userId": 1,
-      "name": "Miguel Santos Medina",
-      "university": "PUCP",
-      "career": "Ing. Software",
-      "bio": "Estudiante de 8vo ciclo en la PUCP. Me especializo en cálculo, álgebra lineal y programación orientada a objetos. He ayudado a más de 20 compañeros a aprobar sus cursos. Me apasiona enseñar de forma visual y práctica.",
-      "skills": [
-        "Cálculo I",
-        "Cálculo II",
-        "Álgebra Lineal",
-        "Python",
-        "Java"
-      ],
-      "rating": 4.9,
-      "reviewCount": 18,
-      "verified": true,
-      "online": true,
-      "avatarUrl": null
-    },
-    {
-      "id": 2,
-      "userId": 2,
-      "name": "Adrian Guevara Romero",
-      "university": "Ulima",
-      "career": "Ing. Sistemas",
-      "bio": "6to ciclo en la Universidad de Lima. Apasionado por el desarrollo web y las bases de datos. He dado tutorías en React, SQL y estructuras de datos a compañeros de distintas universidades.",
-      "skills": [
-        "React",
-        "SQL",
-        "Estructuras de Datos",
-        "JavaScript",
-        "Node.js"
-      ],
-      "rating": 4.7,
-      "reviewCount": 12,
-      "verified": true,
-      "online": true,
-      "avatarUrl": null
-    },
-    {
-      "id": 3,
-      "userId": 3,
-      "name": "Lucía Fernández Torres",
-      "university": "UPC",
-      "career": "Ing. Industrial",
-      "bio": "7mo ciclo en la UPC. Me encanta la estadística y la investigación de operaciones. Puedo explicar desde conceptos básicos hasta modelos avanzados de optimización.",
-      "skills": [
-        "Estadística",
-        "Investigación de Operaciones",
-        "Excel Avanzado",
-        "Probabilidad"
-      ],
-      "rating": 4.5,
-      "reviewCount": 8,
-      "verified": true,
-      "online": false,
-      "avatarUrl": null
-    },
-    {
-      "id": 4,
-      "userId": 4,
-      "name": "Carlos Paredes Quispe",
-      "university": "UNMSM",
-      "career": "Ing. Electrónica",
-      "bio": "Estudiante de 9no ciclo de la UNMSM. Especialista en física, circuitos eléctricos y programación en C++. Tengo experiencia como monitor académico en mi facultad.",
-      "skills": [
-        "Física I",
-        "Física II",
-        "Circuitos Eléctricos",
-        "C++",
-        "Arduino"
-      ],
-      "rating": 4.8,
-      "reviewCount": 22,
-      "verified": true,
-      "online": false,
-      "avatarUrl": null
-    },
-    {
-      "id": 5,
-      "userId": 5,
-      "name": "Valeria Morales Díaz",
-      "university": "UPC",
-      "career": "Administración de Empresas",
-      "bio": "5to ciclo en UPC. Me especializo en contabilidad, finanzas y marketing digital. He ayudado a compañeros a entender los estados financieros y análisis de mercado.",
-      "skills": [
-        "Contabilidad",
-        "Finanzas",
-        "Marketing Digital",
-        "Excel"
-      ],
-      "rating": 4.3,
-      "reviewCount": 5,
-      "verified": true,
-      "online": true,
-      "avatarUrl": null
-    },
-    {
-      "id": 6,
-      "userId": 6,
-      "name": "Rodrigo Huamán Solis",
-      "university": "PUCP",
-      "career": "Derecho",
-      "bio": "8vo ciclo de Derecho en la PUCP. Puedo ayudar con introducción al derecho, derecho civil y redacción jurídica. Soy monitor en el área de Derecho Romano.",
-      "skills": [
-        "Derecho Civil",
-        "Derecho Romano",
-        "Introducción al Derecho",
-        "Redacción Jurídica"
-      ],
-      "rating": 0,
-      "reviewCount": 0,
-      "verified": false,
-      "online": false,
-      "avatarUrl": null
-    }
+    { "id": 1, "userId": 1, "name": "Miguel Santos Medina",  "university": "PUCP",   "career": "Ing. Software",              "bio": "Estudiante de 8vo ciclo en la PUCP. Me especializo en cálculo, álgebra lineal y programación orientada a objetos.",    "skills": ["Cálculo I","Cálculo II","Álgebra Lineal","Python","Java"],          "rating": 4.9, "reviewCount": 18, "verified": true,  "online": true,  "avatarUrl": null },
+    { "id": 2, "userId": 2, "name": "Adrian Guevara Romero", "university": "Ulima",  "career": "Ing. Sistemas",              "bio": "6to ciclo en la Universidad de Lima. Apasionado por el desarrollo web y las bases de datos.",                              "skills": ["React","SQL","Estructuras de Datos","JavaScript","Node.js"],        "rating": 4.7, "reviewCount": 12, "verified": true,  "online": true,  "avatarUrl": null },
+    { "id": 3, "userId": 3, "name": "Lucía Fernández Torres", "university": "UPC",   "career": "Ing. Industrial",            "bio": "7mo ciclo en la UPC. Me encanta la estadística y la investigación de operaciones.",                                        "skills": ["Estadística","Investigación de Operaciones","Excel Avanzado","Probabilidad"], "rating": 4.5, "reviewCount": 8, "verified": true, "online": false, "avatarUrl": null },
+    { "id": 4, "userId": 4, "name": "Carlos Paredes Quispe", "university": "UNMSM",  "career": "Ing. Electrónica",           "bio": "Estudiante de 9no ciclo de la UNMSM. Especialista en física, circuitos eléctricos y programación en C++.",                "skills": ["Física I","Física II","Circuitos Eléctricos","C++","Arduino"],      "rating": 4.8, "reviewCount": 22, "verified": true,  "online": false, "avatarUrl": null },
+    { "id": 5, "userId": 5, "name": "Valeria Morales Díaz",  "university": "UPC",   "career": "Administración de Empresas", "bio": "5to ciclo en UPC. Me especializo en contabilidad, finanzas y marketing digital.",                                          "skills": ["Contabilidad","Finanzas","Marketing Digital","Excel"],              "rating": 4.3, "reviewCount": 5,  "verified": true,  "online": true,  "avatarUrl": null },
+    { "id": 6, "userId": 6, "name": "Rodrigo Huamán Solis",  "university": "PUCP",  "career": "Derecho",                    "bio": "8vo ciclo de Derecho en la PUCP. Puedo ayudar con introducción al derecho, derecho civil y redacción jurídica.",          "skills": ["Derecho Civil","Derecho Romano","Introducción al Derecho","Redacción Jurídica"], "rating": 0, "reviewCount": 0, "verified": false, "online": false, "avatarUrl": null }
   ],
   "reviews": [
-    {
-      "id": 101,
-      "tutorId": 1,
-      "studentId": 501,
-      "sessionId": 10002,
-      "score": 5,
-      "comment": "Excelente explicación de integrales múltiples. Rompió los silos y lo entendí perfecto.",
-      "status": "PUBLISHED",
-      "date": "2026-05-01T14:30:00Z"
-    },
-    {
-      "id": 102,
-      "tutorId": 1,
-      "studentId": 502,
-      "sessionId": 10005,
-      "score": 4.6,
-      "comment": "Muy paciente, me ayudó a prepararme para mi parcial de física.",
-      "status": "PUBLISHED",
-      "date": "2026-05-03T09:15:00Z"
-    },
-    {
-      "id": 103,
-      "tutorId": 2,
-      "studentId": 503,
-      "sessionId": 10012,
-      "score": 5,
-      "comment": "Domina Angular a la perfección. La sesión por videollamada fue sin cortes.",
-      "status": "PUBLISHED",
-      "date": "2026-05-05T18:45:00Z"
-    },
-    {
-      "id": 104,
-      "tutorId": 3,
-      "studentId": 501,
-      "sessionId": 10020,
-      "score": 3,
-      "comment": "El tutor sabía del tema, pero había mucho ruido en su entorno y fue difícil concentrarse.",
-      "status": "PUBLISHED",
-      "date": "2026-05-06T11:20:00Z"
-    },
-    {
-      "id": 105,
-      "tutorId": 3,
-      "studentId": 504,
-      "sessionId": 10025,
-      "score": 1,
-      "comment": "Este comentario contiene lenguaje inapropiado y ataques personales.",
-      "status": "REMOVED",
-      "date": "2026-05-07T16:00:00Z"
-    },
-    {
-      "id": 106,
-      "tutorId": 4,
-      "studentId": 505,
-      "sessionId": 10030,
-      "score": 5,
-      "comment": "Increíble tutor de Python. Aprendí más en una hora que en semanas de tutoriales.",
-      "status": "PUBLISHED",
-      "date": "2026-05-08T10:00:00Z"
-    },
-    {
-      "id": 107,
-      "tutorId": 4,
-      "studentId": 506,
-      "sessionId": 10031,
-      "score": 4,
-      "comment": "Muy buen manejo de estructuras de datos. Explicó los árboles binarios de forma clara.",
-      "status": "PUBLISHED",
-      "date": "2026-05-08T15:30:00Z"
-    },
-    {
-      "id": 108,
-      "tutorId": 5,
-      "studentId": 507,
-      "sessionId": 10040,
-      "score": 4.5,
-      "comment": "Excelente clase de diseño UX. Me ayudó a entender el flujo de usuario y wireframes.",
-      "status": "PUBLISHED",
-      "date": "2026-05-09T09:00:00Z"
-    },
-    {
-      "id": 109,
-      "tutorId": 5,
-      "studentId": 508,
-      "sessionId": 10041,
-      "score": 2,
-      "comment": "Llegó tarde a la sesión y no tenía el material preparado.",
-      "status": "PUBLISHED",
-      "date": "2026-05-09T14:00:00Z"
-    },
-    {
-      "id": 110,
-      "tutorId": 6,
-      "studentId": 509,
-      "sessionId": 10050,
-      "score": 5,
-      "comment": "El mejor tutor de cálculo que he tenido. Muy didáctico y paciente.",
-      "status": "PUBLISHED",
-      "date": "2026-05-10T08:30:00Z"
-    },
-    {
-      "id": 111,
-      "tutorId": 6,
-      "studentId": 510,
-      "sessionId": 10051,
-      "score": 5,
-      "comment": "Explicó límites y derivadas con ejemplos del mundo real. Muy recomendado.",
-      "status": "PUBLISHED",
-      "date": "2026-05-10T11:00:00Z"
-    },
-    {
-      "id": 112,
-      "tutorId": 6,
-      "studentId": 511,
-      "sessionId": 10052,
-      "score": 4.8,
-      "comment": "Muy organizado, puntual y claro. La sesión de álgebra lineal fue perfecta.",
-      "status": "PUBLISHED",
-      "date": "2026-05-10T16:00:00Z"
-    },
-    {
-      "id": 113,
-      "tutorId": 7,
-      "studentId": 512,
-      "sessionId": 10060,
-      "score": 3.5,
-      "comment": "Conoce el tema de React, pero a veces se perdía explicando. Mejorable.",
-      "status": "PUBLISHED",
-      "date": "2026-05-11T10:00:00Z"
-    },
-    {
-      "id": 114,
-      "tutorId": 7,
-      "studentId": 513,
-      "sessionId": 10061,
-      "score": 4,
-      "comment": "Buena sesión de hooks en React. Los ejemplos fueron muy prácticos.",
-      "status": "PUBLISHED",
-      "date": "2026-05-11T13:00:00Z"
-    },
-    {
-      "id": 115,
-      "tutorId": 7,
-      "studentId": 514,
-      "sessionId": 10062,
-      "score": 1,
-      "comment": "Spam y contenido irrelevante.",
-      "status": "REMOVED",
-      "date": "2026-05-11T17:00:00Z"
-    },
-    {
-      "id": 116,
-      "tutorId": 8,
-      "studentId": 515,
-      "sessionId": 10070,
-      "score": 5,
-      "comment": "Domina SQL avanzado. Me explicó queries complejos con JOINs y subconsultas en minutos.",
-      "status": "PUBLISHED",
-      "date": "2026-05-12T09:00:00Z"
-    },
-    {
-      "id": 117,
-      "tutorId": 8,
-      "studentId": 516,
-      "sessionId": 10071,
-      "score": 4.5,
-      "comment": "Muy buena clase de bases de datos. Aprendí a optimizar queries lento.",
-      "status": "PUBLISHED",
-      "date": "2026-05-12T14:30:00Z"
-    },
-    {
-      "id": 118,
-      "tutorId": 9,
-      "studentId": 517,
-      "sessionId": 10080,
-      "score": 3,
-      "comment": "La sesión estuvo bien pero esperaba más profundidad en los temas de estadística.",
-      "status": "PENDING",
-      "date": "2026-05-13T10:00:00Z"
-    },
-    {
-      "id": 119,
-      "tutorId": 9,
-      "studentId": 518,
-      "sessionId": 10081,
-      "score": 4,
-      "comment": "Buen tutor de probabilidad. Explicó distribuciones con claridad.",
-      "status": "PUBLISHED",
-      "date": "2026-05-13T15:00:00Z"
-    },
-    {
-      "id": 120,
-      "tutorId": 10,
-      "studentId": 519,
-      "sessionId": 10090,
-      "score": 5,
-      "comment": "Clase de inglés de negocios excelente. Practicamos vocabulario y presentaciones.",
-      "status": "PUBLISHED",
-      "date": "2026-05-14T08:00:00Z"
-    },
-    {
-      "id": 121,
-      "tutorId": 10,
-      "studentId": 520,
-      "sessionId": 10091,
-      "score": 4.8,
-      "comment": "Muy dinámico y motivador. Mejoré mucho mi pronunciación en una sola sesión.",
-      "status": "PUBLISHED",
-      "date": "2026-05-14T11:30:00Z"
-    },
-    {
-      "id": 122,
-      "tutorId": 2,
-      "studentId": 521,
-      "sessionId": 10013,
-      "score": 4.5,
-      "comment": "Vue.js muy bien explicado. La reactividad y el Composition API quedaron claros.",
-      "status": "PUBLISHED",
-      "date": "2026-05-14T16:00:00Z"
-    },
-    {
-      "id": 123,
-      "tutorId": 1,
-      "studentId": 522,
-      "sessionId": 10006,
-      "score": 4,
-      "comment": "Buena clase de ecuaciones diferenciales, aunque fue un poco rápido al final.",
-      "status": "PENDING",
-      "date": "2026-05-15T09:00:00Z"
-    },
-    {
-      "tutorId": 4,
-      "studentId": 101,
-      "sessionId": 3,
-      "score": 5,
-      "comment": "Buena clase",
-      "status": "PUBLISHED",
-      "date": "2026-05-15T20:43:20.997Z",
-      "id": 124
-    }
+    { "id": 101, "tutorId": 1,  "studentId": 501, "sessionId": 10002, "score": 5,   "comment": "Excelente explicación de integrales múltiples.",                              "status": "PUBLISHED", "date": "2026-05-01T14:30:00Z" },
+    { "id": 102, "tutorId": 1,  "studentId": 502, "sessionId": 10005, "score": 4.6, "comment": "Muy paciente, me ayudó a prepararme para mi parcial de física.",              "status": "PUBLISHED", "date": "2026-05-03T09:15:00Z" },
+    { "id": 103, "tutorId": 2,  "studentId": 503, "sessionId": 10012, "score": 5,   "comment": "Domina Angular a la perfección. La sesión por videollamada fue sin cortes.",  "status": "PUBLISHED", "date": "2026-05-05T18:45:00Z" },
+    { "id": 104, "tutorId": 3,  "studentId": 501, "sessionId": 10020, "score": 3,   "comment": "El tutor sabía del tema, pero había mucho ruido en su entorno.",              "status": "PUBLISHED", "date": "2026-05-06T11:20:00Z" },
+    { "id": 105, "tutorId": 3,  "studentId": 504, "sessionId": 10025, "score": 1,   "comment": "Este comentario contiene lenguaje inapropiado y ataques personales.",          "status": "REMOVED",   "date": "2026-05-07T16:00:00Z" },
+    { "id": 106, "tutorId": 4,  "studentId": 505, "sessionId": 10030, "score": 5,   "comment": "Increíble tutor de Python. Aprendí más en una hora que en semanas.",           "status": "PUBLISHED", "date": "2026-05-08T10:00:00Z" },
+    { "id": 107, "tutorId": 4,  "studentId": 506, "sessionId": 10031, "score": 4,   "comment": "Muy buen manejo de estructuras de datos.",                                     "status": "PUBLISHED", "date": "2026-05-08T15:30:00Z" },
+    { "id": 108, "tutorId": 5,  "studentId": 507, "sessionId": 10040, "score": 4.5, "comment": "Excelente clase de diseño UX.",                                                "status": "PUBLISHED", "date": "2026-05-09T09:00:00Z" },
+    { "id": 109, "tutorId": 5,  "studentId": 508, "sessionId": 10041, "score": 2,   "comment": "Llegó tarde a la sesión y no tenía el material preparado.",                    "status": "PUBLISHED", "date": "2026-05-09T14:00:00Z" },
+    { "id": 110, "tutorId": 6,  "studentId": 509, "sessionId": 10050, "score": 5,   "comment": "El mejor tutor de cálculo que he tenido.",                                     "status": "PUBLISHED", "date": "2026-05-10T08:30:00Z" },
+    { "id": 111, "tutorId": 6,  "studentId": 510, "sessionId": 10051, "score": 5,   "comment": "Explicó límites y derivadas con ejemplos del mundo real.",                     "status": "PUBLISHED", "date": "2026-05-10T11:00:00Z" },
+    { "id": 112, "tutorId": 6,  "studentId": 511, "sessionId": 10052, "score": 4.8, "comment": "Muy organizado, puntual y claro.",                                             "status": "PUBLISHED", "date": "2026-05-10T16:00:00Z" },
+    { "id": 113, "tutorId": 7,  "studentId": 512, "sessionId": 10060, "score": 3.5, "comment": "Conoce el tema de React, pero a veces se perdía explicando.",                  "status": "PUBLISHED", "date": "2026-05-11T10:00:00Z" },
+    { "id": 114, "tutorId": 7,  "studentId": 513, "sessionId": 10061, "score": 4,   "comment": "Buena sesión de hooks en React.",                                              "status": "PUBLISHED", "date": "2026-05-11T13:00:00Z" },
+    { "id": 115, "tutorId": 7,  "studentId": 514, "sessionId": 10062, "score": 1,   "comment": "Spam y contenido irrelevante.",                                                 "status": "REMOVED",   "date": "2026-05-11T17:00:00Z" },
+    { "id": 116, "tutorId": 8,  "studentId": 515, "sessionId": 10070, "score": 5,   "comment": "Domina SQL avanzado.",                                                          "status": "PUBLISHED", "date": "2026-05-12T09:00:00Z" },
+    { "id": 117, "tutorId": 8,  "studentId": 516, "sessionId": 10071, "score": 4.5, "comment": "Muy buena clase de bases de datos.",                                            "status": "PUBLISHED", "date": "2026-05-12T14:30:00Z" },
+    { "id": 118, "tutorId": 9,  "studentId": 517, "sessionId": 10080, "score": 3,   "comment": "La sesión estuvo bien pero esperaba más profundidad.",                         "status": "PENDING",   "date": "2026-05-13T10:00:00Z" },
+    { "id": 119, "tutorId": 9,  "studentId": 518, "sessionId": 10081, "score": 4,   "comment": "Buen tutor de probabilidad.",                                                   "status": "PUBLISHED", "date": "2026-05-13T15:00:00Z" },
+    { "id": 120, "tutorId": 10, "studentId": 519, "sessionId": 10090, "score": 5,   "comment": "Clase de inglés de negocios excelente.",                                        "status": "PUBLISHED", "date": "2026-05-14T08:00:00Z" },
+    { "id": 121, "tutorId": 10, "studentId": 520, "sessionId": 10091, "score": 4.8, "comment": "Muy dinámico y motivador.",                                                     "status": "PUBLISHED", "date": "2026-05-14T11:30:00Z" },
+    { "id": 122, "tutorId": 2,  "studentId": 521, "sessionId": 10013, "score": 4.5, "comment": "Vue.js muy bien explicado.",                                                    "status": "PUBLISHED", "date": "2026-05-14T16:00:00Z" },
+    { "id": 123, "tutorId": 1,  "studentId": 522, "sessionId": 10006, "score": 4,   "comment": "Buena clase de ecuaciones diferenciales.",                                      "status": "PENDING",   "date": "2026-05-15T09:00:00Z" },
+    { "id": 124, "tutorId": 4,  "studentId": 101, "sessionId": 3,     "score": 5,   "comment": "Buena clase",                                                                   "status": "PUBLISHED", "date": "2026-05-15T20:43:20.997Z" }
   ],
   "reputations": [
+    { "id": 1,  "tutorId": 1,  "averageScore": 4.5, "totalReviews": 3, "publishedReviews": 2 },
+    { "id": 2,  "tutorId": 2,  "averageScore": 4.8, "totalReviews": 2, "publishedReviews": 2 },
+    { "id": 3,  "tutorId": 3,  "averageScore": 2,   "totalReviews": 2, "publishedReviews": 1 },
+    { "id": 4,  "tutorId": 4,  "averageScore": 4.5, "totalReviews": 2, "publishedReviews": 2 },
+    { "id": 5,  "tutorId": 5,  "averageScore": 3.3, "totalReviews": 2, "publishedReviews": 2 },
+    { "id": 6,  "tutorId": 6,  "averageScore": 4.9, "totalReviews": 3, "publishedReviews": 3 },
+    { "id": 7,  "tutorId": 7,  "averageScore": 3.8, "totalReviews": 3, "publishedReviews": 2 },
+    { "id": 8,  "tutorId": 8,  "averageScore": 4.8, "totalReviews": 2, "publishedReviews": 2 },
+    { "id": 9,  "tutorId": 9,  "averageScore": 3.5, "totalReviews": 2, "publishedReviews": 1 },
+    { "id": 10, "tutorId": 10, "averageScore": 4.9, "totalReviews": 2, "publishedReviews": 2 }
+  ],
+  "quizzes": [
     {
       "id": 1,
       "tutorId": 1,
-      "averageScore": 4.5,
-      "totalReviews": 3,
-      "publishedReviews": 2
+      "course": "Cálculo I",
+      "title": "Quiz de Límites y Continuidad",
+      "description": "Evaluación básica sobre límites laterales y continuidad de funciones.",
+      "questions": [
+        { "text": "¿Cuál es el límite de f(x) = x² cuando x tiende a 3?", "options": ["6","9","3","12"], "correctIndex": 1 },
+        { "text": "Una función es continua en un punto si...", "options": ["El límite existe","La función está definida en ese punto","El límite existe, la función está definida y ambos son iguales","La derivada existe"], "correctIndex": 2 },
+        { "text": "¿Qué valor hace que f(x) = (x²-4)/(x-2) sea indeterminada?", "options": ["x = 4","x = 2","x = -2","x = 0"], "correctIndex": 1 }
+      ],
+      "status": "published",
+      "createdAt": "2026-05-01T10:00:00.000Z"
     },
     {
       "id": 2,
-      "tutorId": 2,
-      "averageScore": 4.8,
-      "totalReviews": 2,
-      "publishedReviews": 2
-    },
-    {
-      "id": 3,
-      "tutorId": 3,
-      "averageScore": 2,
-      "totalReviews": 2,
-      "publishedReviews": 1
-    },
-    {
-      "id": 4,
-      "tutorId": 4,
-      "averageScore": 4.5,
-      "totalReviews": 2,
-      "publishedReviews": 2
-    },
-    {
-      "id": 5,
-      "tutorId": 5,
-      "averageScore": 3.3,
-      "totalReviews": 2,
-      "publishedReviews": 2
-    },
-    {
-      "id": 6,
-      "tutorId": 6,
-      "averageScore": 4.9,
-      "totalReviews": 3,
-      "publishedReviews": 3
-    },
-    {
-      "id": 7,
-      "tutorId": 7,
-      "averageScore": 3.8,
-      "totalReviews": 3,
-      "publishedReviews": 2
-    },
-    {
-      "id": 8,
-      "tutorId": 8,
-      "averageScore": 4.8,
-      "totalReviews": 2,
-      "publishedReviews": 2
-    },
-    {
-      "id": 9,
-      "tutorId": 9,
-      "averageScore": 3.5,
-      "totalReviews": 2,
-      "publishedReviews": 1
-    },
-    {
-      "id": 10,
-      "tutorId": 10,
-      "averageScore": 4.9,
-      "totalReviews": 2,
-      "publishedReviews": 2
+      "tutorId": 1,
+      "course": "Programación Web",
+      "title": "Quiz de React Hooks",
+      "description": "Preguntas sobre useState, useEffect y useCallback.",
+      "questions": [
+        { "text": "¿Qué hook se usa para manejar el estado en componentes funcionales?", "options": ["useEffect","useState","useContext","useReducer"], "correctIndex": 1 },
+        { "text": "¿Cuándo se ejecuta useEffect sin dependencias?", "options": ["Solo al montar","En cada render","Solo al desmontar","Nunca"], "correctIndex": 1 }
+      ],
+      "status": "draft",
+      "createdAt": "2026-05-10T14:00:00.000Z"
     }
   ]
 }
