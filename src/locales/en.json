@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home":         "Home",
+    "about":        "About",
+    "tutors":       "Tutors",
+    "reviews":      "Reviews",
+    "reputations":  "Reputations"
+  },
+  "reviews": {
+    "title":      "Reviews",
+    "add":        "Add Review",
+    "id":         "ID",
+    "tutor_id":   "Tutor ID",
+    "student_id": "Student ID",
+    "session_id": "Session ID",
+    "score":      "Score",
+    "comment":    "Comment",
+    "status":     "Status",
+    "date":       "Date",
+    "actions":    "Actions",
+    "edit":       "Edit",
+    "delete":     "Delete"
+  },
+  "review": {
+    "new_title":      "Add Review",
+    "edit_title":     "Edit Review",
+    "tutor_id":       "Tutor ID",
+    "student_id":     "Student ID",
+    "session_id":     "Session ID",
+    "score":          "Score",
+    "comment":        "Comment",
+    "status":         "Status",
+    "save":           "Save",
+    "cancel":         "Cancel",
+    "created":        "Review created",
+    "updated":        "Review updated",
+    "deleted":        "Review deleted",
+    "confirm_delete": "Delete review #{id}?",
+    "delete_header":  "Confirm"
+  },
+  "reputations": {
+    "title":            "Reputations",
+    "tutor_id":         "Tutor ID",
+    "average_score":    "Average Score",
+    "total_reviews":    "Total Reviews",
+    "published_reviews":"Published Reviews"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home":         "Inicio",
+    "about":        "Acerca de",
+    "tutors":       "Tutores",
+    "reviews":      "Reseñas",
+    "reputations":  "Reputaciones"
+  },
+  "reviews": {
+    "title":      "Reseñas",
+    "add":        "Agregar Reseña",
+    "id":         "ID",
+    "tutor_id":   "ID Tutor",
+    "student_id": "ID Estudiante",
+    "session_id": "ID Sesión",
+    "score":      "Puntaje",
+    "comment":    "Comentario",
+    "status":     "Estado",
+    "date":       "Fecha",
+    "actions":    "Acciones",
+    "edit":       "Editar",
+    "delete":     "Eliminar"
+  },
+  "review": {
+    "new_title":      "Agregar Reseña",
+    "edit_title":     "Editar Reseña",
+    "tutor_id":       "ID Tutor",
+    "student_id":     "ID Estudiante",
+    "session_id":     "ID Sesión",
+    "score":          "Puntaje",
+    "comment":        "Comentario",
+    "status":         "Estado",
+    "save":           "Guardar",
+    "cancel":         "Cancelar",
+    "created":        "Reseña creada",
+    "updated":        "Reseña actualizada",
+    "deleted":        "Reseña eliminada",
+    "confirm_delete": "¿Eliminar reseña #{id}?",
+    "delete_header":  "Confirmar"
+  },
+  "reputations": {
+    "title":            "Reputaciones",
+    "tutor_id":         "ID Tutor",
+    "average_score":    "Puntaje Promedio",
+    "total_reviews":    "Total Reseñas",
+    "published_reviews":"Reseñas Publicadas"
+  }
+}
