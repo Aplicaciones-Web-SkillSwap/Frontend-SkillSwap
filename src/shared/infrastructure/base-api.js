@@ -4,12 +4,11 @@ export class BaseApi {
 
     #http;
 
-    constructor() {
+    constructor(baseURL = import.meta.env.VITE_LEARNING_PLATFORM_API_URL) {
         this.#http = axios.create({
-            baseURL: 'http://localhost:3000/api/v1',
+            baseURL: baseURL,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
             },
         });
     }
