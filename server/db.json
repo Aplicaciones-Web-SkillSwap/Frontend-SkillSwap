@@ -184,10 +184,30 @@
     }
   ],
   "wallets": [
-    { "id": 1, "userId": 1, "balance": 142.50, "currency": "PEN" },
-    { "id": 2, "userId": 2, "balance": 71.25,  "currency": "PEN" },
-    { "id": 3, "userId": 3, "balance": 190.00, "currency": "PEN" },
-    { "id": 4, "userId": 4, "balance": 28.50,  "currency": "PEN" }
+    {
+      "id": 1,
+      "userId": 1,
+      "balance": 142.5,
+      "currency": "PEN"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "balance": 71.25,
+      "currency": "PEN"
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "balance": 190,
+      "currency": "PEN"
+    },
+    {
+      "id": 4,
+      "userId": 4,
+      "balance": 47.5,
+      "currency": "PEN"
+    }
   ],
   "transactions": [
     {
@@ -195,7 +215,7 @@
       "walletId": 1,
       "senderId": 2,
       "receiverId": 1,
-      "originalAmount": 25.00,
+      "originalAmount": 25,
       "commissionFee": 1.25,
       "netAmount": 23.75,
       "type": "donation",
@@ -208,9 +228,9 @@
       "walletId": 1,
       "senderId": 3,
       "receiverId": 1,
-      "originalAmount": 20.00,
-      "commissionFee": 1.00,
-      "netAmount": 19.00,
+      "originalAmount": 20,
+      "commissionFee": 1,
+      "netAmount": 19,
       "type": "donation",
       "status": "pending",
       "description": "Donación por sesión de React Hooks",
@@ -221,9 +241,9 @@
       "walletId": 1,
       "senderId": null,
       "receiverId": 1,
-      "originalAmount": 100.00,
-      "commissionFee": 5.00,
-      "netAmount": 95.00,
+      "originalAmount": 100,
+      "commissionFee": 5,
+      "netAmount": 95,
       "type": "deposit",
       "status": "completed",
       "description": "Recarga de billetera",
@@ -234,7 +254,7 @@
       "walletId": 4,
       "senderId": 2,
       "receiverId": 4,
-      "originalAmount": 15.00,
+      "originalAmount": 15,
       "commissionFee": 0.75,
       "netAmount": 14.25,
       "type": "donation",
@@ -247,13 +267,158 @@
       "walletId": 2,
       "senderId": null,
       "receiverId": 2,
-      "originalAmount": 75.00,
+      "originalAmount": 75,
       "commissionFee": 3.75,
       "netAmount": 71.25,
       "type": "deposit",
       "status": "completed",
       "description": "Saldo inicial de billetera",
       "createdAt": "2026-05-15T09:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "walletId": 1,
+      "senderId": 15,
+      "receiverId": 1,
+      "originalAmount": 10,
+      "commissionFee": 0.5,
+      "netAmount": 9.5,
+      "type": "donation",
+      "status": "pending",
+      "description": "gracias por la clase",
+      "createdAt": "2026-05-15T13:24:02.322Z"
+    },
+    {
+      "id": 8,
+      "walletId": 4,
+      "senderId": 100,
+      "receiverId": 4,
+      "originalAmount": 20,
+      "commissionFee": 1,
+      "netAmount": 19,
+      "type": "donation",
+      "status": "completed",
+      "description": "",
+      "createdAt": "2026-05-15T13:29:49.133Z"
+    }
+  ],
+  "tutors": [
+    {
+      "id": 1,
+      "userId": 1,
+      "name": "Miguel Santos Medina",
+      "university": "PUCP",
+      "career": "Ing. Software",
+      "bio": "Estudiante de 8vo ciclo en la PUCP. Me especializo en cálculo, álgebra lineal y programación orientada a objetos. He ayudado a más de 20 compañeros a aprobar sus cursos. Me apasiona enseñar de forma visual y práctica.",
+      "skills": [
+        "Cálculo I",
+        "Cálculo II",
+        "Álgebra Lineal",
+        "Python",
+        "Java"
+      ],
+      "rating": 4.9,
+      "reviewCount": 18,
+      "verified": true,
+      "online": true,
+      "avatarUrl": null
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "name": "Adrian Guevara Romero",
+      "university": "Ulima",
+      "career": "Ing. Sistemas",
+      "bio": "6to ciclo en la Universidad de Lima. Apasionado por el desarrollo web y las bases de datos. He dado tutorías en React, SQL y estructuras de datos a compañeros de distintas universidades.",
+      "skills": [
+        "React",
+        "SQL",
+        "Estructuras de Datos",
+        "JavaScript",
+        "Node.js"
+      ],
+      "rating": 4.7,
+      "reviewCount": 12,
+      "verified": true,
+      "online": true,
+      "avatarUrl": null
+    },
+    {
+      "id": 3,
+      "userId": 3,
+      "name": "Lucía Fernández Torres",
+      "university": "UPC",
+      "career": "Ing. Industrial",
+      "bio": "7mo ciclo en la UPC. Me encanta la estadística y la investigación de operaciones. Puedo explicar desde conceptos básicos hasta modelos avanzados de optimización.",
+      "skills": [
+        "Estadística",
+        "Investigación de Operaciones",
+        "Excel Avanzado",
+        "Probabilidad"
+      ],
+      "rating": 4.5,
+      "reviewCount": 8,
+      "verified": true,
+      "online": false,
+      "avatarUrl": null
+    },
+    {
+      "id": 4,
+      "userId": 4,
+      "name": "Carlos Paredes Quispe",
+      "university": "UNMSM",
+      "career": "Ing. Electrónica",
+      "bio": "Estudiante de 9no ciclo de la UNMSM. Especialista en física, circuitos eléctricos y programación en C++. Tengo experiencia como monitor académico en mi facultad.",
+      "skills": [
+        "Física I",
+        "Física II",
+        "Circuitos Eléctricos",
+        "C++",
+        "Arduino"
+      ],
+      "rating": 4.8,
+      "reviewCount": 22,
+      "verified": true,
+      "online": false,
+      "avatarUrl": null
+    },
+    {
+      "id": 5,
+      "userId": 5,
+      "name": "Valeria Morales Díaz",
+      "university": "UPC",
+      "career": "Administración de Empresas",
+      "bio": "5to ciclo en UPC. Me especializo en contabilidad, finanzas y marketing digital. He ayudado a compañeros a entender los estados financieros y análisis de mercado.",
+      "skills": [
+        "Contabilidad",
+        "Finanzas",
+        "Marketing Digital",
+        "Excel"
+      ],
+      "rating": 4.3,
+      "reviewCount": 5,
+      "verified": true,
+      "online": true,
+      "avatarUrl": null
+    },
+    {
+      "id": 6,
+      "userId": 6,
+      "name": "Rodrigo Huamán Solis",
+      "university": "PUCP",
+      "career": "Derecho",
+      "bio": "8vo ciclo de Derecho en la PUCP. Puedo ayudar con introducción al derecho, derecho civil y redacción jurídica. Soy monitor en el área de Derecho Romano.",
+      "skills": [
+        "Derecho Civil",
+        "Derecho Romano",
+        "Introducción al Derecho",
+        "Redacción Jurídica"
+      ],
+      "rating": 0,
+      "reviewCount": 0,
+      "verified": false,
+      "online": false,
+      "avatarUrl": null
     }
   ]
 }
