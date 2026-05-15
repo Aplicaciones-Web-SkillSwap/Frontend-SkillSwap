@@ -10,7 +10,7 @@ const router  = useRouter();
 const confirm = useConfirm();
 const store   = useWorkspaceStore();
 const { sessions, errors, sessionsLoaded } = toRefs(store);
-const { fetchSessions, deleteSession }     = store;
+const { fetchSessions, deleteSession, acceptSession, rejectSession, cancelSession } = store;
 
 onMounted(() => {
   if (!store.sessionsLoaded) {
@@ -37,9 +37,34 @@ const confirmDelete = (session) => {
     message: t('sessions.confirm-delete', {topic: session.topic}),
     header:  t('sessions.delete-header'),
     icon:    'pi pi-exclamation-triangle',
-    accept:  () => {
-      deleteSession(session);
-    },
+    accept:  () => { deleteSession(session); },
+  });
+};
+
+const confirmAccept = (session) => {
+  confirm.require({
+    message: t('sessions.confirm-accept', {topic: session.topic}),
+    header:  t('sessions.accept-header'),
+    icon:    'pi pi-check-circle',
+    accept:  () => { acceptSession(session); },
+  });
+};
+
+const confirmReject = (session) => {
+  confirm.require({
+    message: t('sessions.confirm-reject', {topic: session.topic}),
+    header:  t('sessions.reject-header'),
+    icon:    'pi pi-times-circle',
+    accept:  () => { rejectSession(session); },
+  });
+};
+
+const confirmCancel = (session) => {
+  confirm.require({
+    message: t('sessions.confirm-cancel', {topic: session.topic}),
+    header:  t('sessions.cancel-header'),
+    icon:    'pi pi-exclamation-triangle',
+    accept:  () => { cancelSession(session); },
   });
 };
 </script>
@@ -82,7 +107,7 @@ const confirmDelete = (session) => {
         <pv-column :header="t('sessions.status')" field="status" sortable>
           <template #body="slotProps">
             <span :class="'status-badge status-' + slotProps.data.status">
-              {{ slotProps.data.status }}
+              {{ t('sessions.status-' + slotProps.data.status) }}
             </span>
           </template>
         </pv-column>
@@ -110,9 +135,60 @@ const confirmDelete = (session) => {
 
         <pv-column :header="t('sessions.actions')">
           <template #body="slotProps">
-            <pv-button icon="pi pi-comments" rounded text class="action-btn-view" @click="navigateToWorkspace(slotProps.data.id)" />
-            <pv-button icon="pi pi-pencil"   rounded text class="action-btn-edit" @click="navigateToEdit(slotProps.data.id)"      />
-            <pv-button icon="pi pi-trash"    rounded text class="action-btn-delete" @click="confirmDelete(slotProps.data)"          />
+            <div class="actions-cell">
+
+              <!-- Ver workspace (siempre visible) -->
+              <pv-button
+                  icon="pi pi-comments"
+                  rounded text
+                  class="action-btn-view"
+                  :title="t('sessions.action-view')"
+                  @click="navigateToWorkspace(slotProps.data.id)" />
+
+              <!-- Aceptar (solo pending) -->
+              <pv-button
+                  v-if="slotProps.data.status === 'pending'"
+                  icon="pi pi-check"
+                  rounded text
+                  class="action-btn-accept"
+                  :title="t('sessions.action-accept')"
+                  @click="confirmAccept(slotProps.data)" />
+
+              <!-- Rechazar (solo pending) -->
+              <pv-button
+                  v-if="slotProps.data.status === 'pending'"
+                  icon="pi pi-times"
+                  rounded text
+                  class="action-btn-reject"
+                  :title="t('sessions.action-reject')"
+                  @click="confirmReject(slotProps.data)" />
+
+              <!-- Cancelar (solo pending o scheduled) -->
+              <pv-button
+                  v-if="slotProps.data.status === 'pending' || slotProps.data.status === 'scheduled'"
+                  icon="pi pi-ban"
+                  rounded text
+                  class="action-btn-cancel"
+                  :title="t('sessions.action-cancel')"
+                  @click="confirmCancel(slotProps.data)" />
+
+              <!-- Editar (siempre visible) -->
+              <pv-button
+                  icon="pi pi-pencil"
+                  rounded text
+                  class="action-btn-edit"
+                  :title="t('sessions.action-edit')"
+                  @click="navigateToEdit(slotProps.data.id)" />
+
+              <!-- Eliminar (siempre visible) -->
+              <pv-button
+                  icon="pi pi-trash"
+                  rounded text
+                  class="action-btn-delete"
+                  :title="t('sessions.action-delete')"
+                  @click="confirmDelete(slotProps.data)" />
+
+            </div>
           </template>
         </pv-column>
 
@@ -128,7 +204,7 @@ const confirmDelete = (session) => {
 </template>
 
 <style scoped>
-/* Contenedor principal para centrar la vista */
+/* Contenedor principal */
 .sessions-container {
   width: 100%;
   padding: 0 2rem;
@@ -153,7 +229,7 @@ const confirmDelete = (session) => {
   background-color: #d03544 !important;
 }
 
-/* Efecto tarjeta para envolver la tabla */
+/* Tarjeta de tabla */
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -162,9 +238,7 @@ const confirmDelete = (session) => {
   border: 1px solid #f0f2f5;
 }
 
-/* --- ESTILOS DE LA TABLA LIMPIA --- */
-
-/* Cabeceras (Gris, mayúsculas, separadas) */
+/* Cabeceras */
 :deep(.clean-table .p-datatable-thead > tr > th) {
   background-color: #ffffff;
   color: #8c98a4;
@@ -175,14 +249,14 @@ const confirmDelete = (session) => {
   padding: 1.5rem 1rem;
 }
 
-/* Filas (Blancas, con borde sutil abajo) */
+/* Filas */
 :deep(.clean-table .p-datatable-tbody > tr) {
   background-color: #ffffff;
   color: #333333;
 }
 
 :deep(.clean-table .p-datatable-tbody > tr > td) {
-  padding: 1.5rem 1rem; /* Da ese efecto espacioso de tu imagen */
+  padding: 1.2rem 1rem;
   border-bottom: 1px solid #f0f2f5;
 }
 
@@ -190,34 +264,14 @@ const confirmDelete = (session) => {
   background-color: #fcfcfc;
 }
 
-/* --- ESTILOS DE TEXTO INTERNO --- */
-.text-id {
-  color: #a0aec0;
-  font-weight: 700;
-}
+/* Textos */
+.text-id      { color: #a0aec0; font-weight: 700; }
+.text-topic   { color: #1a2a40; font-weight: 800; font-size: 0.95rem; }
+.text-neutral { color: #4a5568; }
+.text-date    { color: #718096; display: flex; align-items: center; }
+.icon-clock   { margin-right: 0.5rem; color: #a0aec0; }
 
-.text-topic {
-  color: #1a2a40;
-  font-weight: 800;
-  font-size: 0.95rem;
-}
-
-.text-neutral {
-  color: #4a5568;
-}
-
-.text-date {
-  color: #718096;
-  display: flex;
-  align-items: center;
-}
-
-.icon-clock {
-  margin-right: 0.5rem;
-  color: #a0aec0;
-}
-
-/* --- PÍLDORAS DE ESTADO (Colores de la imagen) --- */
+/* Píldoras de estado */
 .status-badge {
   padding: 0.4rem 1rem;
   border-radius: 20px;
@@ -226,15 +280,25 @@ const confirmDelete = (session) => {
   text-transform: capitalize;
 }
 
-.status-scheduled { background-color: #e0f2fe; color: #0284c7; } /* Azul claro */
-.status-pending   { background-color: #fef3c7; color: #d97706; } /* Amarillo */
-.status-completed { background-color: #dcfce7; color: #16a34a; } /* Verde claro */
+.status-scheduled { background-color: #e0f2fe; color: #0284c7; }
+.status-pending   { background-color: #fef3c7; color: #d97706; }
+.status-completed { background-color: #dcfce7; color: #16a34a; }
 .status-cancelled,
-.status-rejected  { background-color: #fee2e2; color: #dc2626; } /* Rojo */
+.status-rejected  { background-color: #fee2e2; color: #dc2626; }
 
-/* --- BOTONES DE ACCIÓN --- */
-.action-btn-view { color: #1a2a40 !important; }
-.action-btn-edit { color: #a0aec0 !important; }
+/* Celda de acciones */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+/* Botones de acción */
+.action-btn-view   { color: #1a2a40 !important; }
+.action-btn-accept { color: #16a34a !important; }
+.action-btn-reject { color: #dc2626 !important; }
+.action-btn-cancel { color: #d97706 !important; }
+.action-btn-edit   { color: #a0aec0 !important; }
 .action-btn-delete { color: #e53e4f !important; }
 
 .error-msg { font-weight: bold; }

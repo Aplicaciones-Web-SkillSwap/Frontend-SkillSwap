@@ -13,8 +13,8 @@ const toggleDrawer = () => {
 
 const items = [
   { label: 'option.home',     path: '/home'               },
-  { label: 'option.about',    path: '/about'              },
   { label: 'option.sessions', path: '/workspace/sessions' },
+  { label: 'option.wallets',  path: '/payment/wallets'    },
 ]
 </script>
 
@@ -143,7 +143,7 @@ const items = [
   position: absolute;
   top: -6px;
   right: -8px;
-  background-color: #e53e4f; /* Rojo parecido a la imagen */
+  background-color: #e53e4f;
   color: white;
   border-radius: 50%;
   padding: 2px 6px;

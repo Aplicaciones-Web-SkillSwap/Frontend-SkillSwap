@@ -94,6 +94,46 @@ const useWorkspaceStore = defineStore('workspace', () => {
         });
     }
 
+    // ── Nuevas acciones de estado ────────────────────────────────────────────
+
+    function acceptSession(session) {
+        const updated = { ...session, status: 'scheduled' };
+        workspaceApi.updateSession(updated).then(response => {
+            const resource       = response.data;
+            const updatedSession = SessionAssembler.toEntityFromResource(resource);
+            const index = sessions.value.findIndex(s => s['id'] === updatedSession.id);
+            if (index !== -1) sessions.value[index] = updatedSession;
+        }).catch(error => {
+            errors.value.push(error);
+        });
+    }
+
+    function rejectSession(session) {
+        const updated = { ...session, status: 'rejected' };
+        workspaceApi.updateSession(updated).then(response => {
+            const resource       = response.data;
+            const updatedSession = SessionAssembler.toEntityFromResource(resource);
+            const index = sessions.value.findIndex(s => s['id'] === updatedSession.id);
+            if (index !== -1) sessions.value[index] = updatedSession;
+        }).catch(error => {
+            errors.value.push(error);
+        });
+    }
+
+    function cancelSession(session) {
+        const updated = { ...session, status: 'cancelled' };
+        workspaceApi.updateSession(updated).then(response => {
+            const resource       = response.data;
+            const updatedSession = SessionAssembler.toEntityFromResource(resource);
+            const index = sessions.value.findIndex(s => s['id'] === updatedSession.id);
+            if (index !== -1) sessions.value[index] = updatedSession;
+        }).catch(error => {
+            errors.value.push(error);
+        });
+    }
+
+    // ── Acciones de borrado ──────────────────────────────────────────────────
+
     function deleteSession(session) {
         workspaceApi.deleteSession(session.id).then(() => {
             const index = sessions.value.findIndex(s => s['id'] === session.id);
@@ -121,6 +161,7 @@ const useWorkspaceStore = defineStore('workspace', () => {
         getSessionById, getMessagesBySessionId,
         addSession, addMessage,
         updateSession, updateMessage,
+        acceptSession, rejectSession, cancelSession,
         deleteSession, deleteMessage
     };
 });
