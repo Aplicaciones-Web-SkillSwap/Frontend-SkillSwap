@@ -26,6 +26,16 @@ const navigateToSearch = () => {
   <pv-toast/>
   <pv-confirm-dialog/>
 
+  <!-- app-shell ocupa el 100% del alto de la pantalla y apila header → contenido → footer -->
+  <div class="app-shell">
+
+    <!-- ═══ HEADER (sticky: queda arriba al hacer scroll y no sale del flujo) ═══ -->
+    <div class="header">
+      <pv-toolbar class="custom-toolbar">
+        <template #start>
+          <pv-button class="p-button-text text-color" icon="pi pi-bars" @click="toggleDrawer" />
+          <div class="brand-container">
+            <h3>SkillSwap</h3>
   <div class="header">
     <pv-toolbar class="custom-toolbar">
       <template #start>
@@ -60,6 +70,60 @@ const navigateToSearch = () => {
             <i class="pi pi-bell"></i>
             <span class="notification-badge">2</span>
           </div>
+        </template>
+        <template #center></template>
+        <template #end>
+          <div class="right-actions">
+            <router-link
+                v-for="item in items"
+                :key="item.label"
+                :to="item.path"
+                class="nav-link"
+            >
+              {{ t(item.label) }}
+            </router-link>
+
+            <i class="pi pi-search action-icon"></i>
+
+            <!-- Campanita SIN badge de notificación -->
+            <div class="notification-container action-icon">
+              <i class="pi pi-bell"></i>
+            </div>
+
+            <pv-avatar
+                image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+                shape="circle"
+                class="user-avatar"
+            />
+
+            <pv-button
+                label="Cerrar Sesión"
+                class="logout-btn"
+                rounded
+            />
+
+            <language-switcher/>
+          </div>
+        </template>
+      </pv-toolbar>
+      <pv-drawer v-model:visible="drawer"/>
+    </div>
+
+    <!-- ═══ CONTENIDO PRINCIPAL (crece para llenar el espacio disponible) ═══ -->
+    <div class="main-content">
+      <router-view/>
+    </div>
+
+    <!-- ═══ FOOTER (siempre al fondo, nunca encima del contenido) ═══ -->
+    <div class="footer">
+      <footer-content/>
+      <div class="admin-bar">
+        <router-link to="/moderation/reports" class="btn-admin">
+          <i class="pi pi-shield"></i>
+          {{ t('moderation.admin-btn') }}
+        </router-link>
+      </div>
+    </div>
 
           <pv-avatar
               image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
@@ -91,9 +155,16 @@ const navigateToSearch = () => {
 </template>
 
 <style scoped>
+/* ── Estructura general de página ── */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header sticky (permanece arriba al hacer scroll, ocupa espacio en el flujo) ── */
 .header {
-  position: absolute;
-  left: 0;
+  position: sticky;
   top: 0;
   width: 100%;
   background-color: #ffffff;
@@ -101,7 +172,7 @@ const navigateToSearch = () => {
   z-index: 1000;
 }
 
-/* Sobrescribiendo estilos del Toolbar para quitar el fondo azul */
+/* Quitar fondo azul del Toolbar de PrimeVue */
 .custom-toolbar {
   background-color: transparent !important;
   border: none !important;
@@ -120,27 +191,42 @@ const navigateToSearch = () => {
   color: #1a2a40 !important;
 }
 
-/* Contenedor derecho usando Flexbox para separar los elementos */
+/* ── Contenido principal (flex: 1 lo hace crecer y empuja el footer hacia abajo) ── */
+.main-content {
+  flex: 1;
+  padding: 28px 2.5rem;   /* margen lateral para que nada quede pegado a los bordes */
+}
+
+/* ── Acciones de la navbar ── */
 .right-actions {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
-/* Estilo para los links simulando texto plano */
+/* Links de navegación */
 .nav-link {
   text-decoration: none;
   color: #000000;
   font-weight: 600;
   font-size: 1rem;
   transition: color 0.2s;
+  padding-bottom: 3px;
+  border-bottom: 2px solid transparent;
 }
 
 .nav-link:hover {
   color: #e53e4f;
 }
 
-/* Íconos de acción */
+/* Indicador de sección activa */
+.nav-link.router-link-active,
+.nav-link.router-link-exact-active {
+  color: #e53e4f;
+  border-bottom: 2px solid #e53e4f;
+}
+
+/* Íconos */
 .action-icon {
   font-size: 1.4rem;
   color: #000000;
@@ -153,25 +239,10 @@ const navigateToSearch = () => {
   color: #e53e4f;
 }
 
-/* Contenedor de la campanita y su número */
+/* Campanita (sin badge) */
 .notification-container {
-  position: relative;
   display: flex;
   align-items: center;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  background-color: #e53e4f;
-  color: white;
-  border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  min-width: 18px;
-  text-align: center;
 }
 
 /* Avatar */
@@ -181,7 +252,7 @@ const navigateToSearch = () => {
   cursor: pointer;
 }
 
-/* Botón de Cerrar Sesión tipo "píldora" */
+/* Botón Cerrar Sesión */
 .logout-btn {
   background-color: #e53e4f !important;
   border: none !important;
@@ -194,16 +265,39 @@ const navigateToSearch = () => {
   background-color: #d03544 !important;
 }
 
-.main-content {
-  margin-top: 80px; /* Ajustado para que el header no tape la vista */
+/* ── Footer (siempre al fondo, nunca flotante) ── */
+.footer {
+  width: 100%;
+  background-color: #f8f9fa;
 }
 
-.footer {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  padding: 10px;
-  background-color: #f8f9fa;
+/* ── Barra con botón Profesor Admin ── */
+.admin-bar {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 8px;
+  background-color: #1a2a40;
+}
+
+.btn-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.08);
+  color: #c8d9f0;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+}
+
+.btn-admin:hover {
+  background: rgba(255,255,255,0.18);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.4);
 }
 </style>
