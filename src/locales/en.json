@@ -4,7 +4,8 @@
     "about":    "About",
     "search":   "Find Tutors",
     "sessions": "Sessions",
-    "wallets":  "Wallets"
+    "wallets":  "Wallets",
+    "reviews":  "Reviews"
   },
   "authoring-phrase": {
     "intro":  "Made with",
@@ -50,7 +51,9 @@
     "send-request":           "Send tutoring request",
     "request-note":           "You will be directed to create a session with this tutor.",
     "tutor-not-found":        "Tutor not found.",
-    "back-to-search":         "Back to search"
+    "back-to-search":         "Back to search",
+    "see-all-reviews": "See all reviews",
+    "student":         "Student"
   },
   "sessions": {
     "title":            "Tutoring Sessions",
@@ -115,7 +118,10 @@
     "session-ended-sub":   "This session is no longer active.",
     "donation-title":      "Session completed! Would you like to reward your tutor?",
     "donation-sub":        "Make a voluntary donation — the tutor keeps 95%, SkillSwap 5%.",
-    "btn-donate":          "Make Donation"
+    "btn-donate":          "Make Donation",
+    "review-title":  "Session completed! Rate your tutor.",
+    "review-sub":    "Your rating helps build the tutor's reputation on SkillSwap.",
+    "btn-review":    "Leave a Review"
   },
   "wallets": {
     "title":          "Wallets",
@@ -258,5 +264,41 @@
     "chat-student":       "Student / Reported",
     "chat-messages":      "Messages",
     "chat-no-messages":   "No messages found for this report."
+  },
+  "reviews": {
+    "title":          "Reviews",
+    "id":             "ID",
+    "tutorId":        "Tutor ID",
+    "studentId":      "Student ID",
+    "score":          "Score",
+    "comment":        "Comment",
+    "status":         "Status",
+    "date":           "Date",
+    "actions":        "Actions",
+    "new":            "New Review",
+    "confirm-delete": "Are you sure you want to delete review #{id}?",
+    "delete-header":  "Confirm Deletion",
+    "title-filtered": "Reviews — Tutor #{tutorId}",
+    "filter-label":   "Filtered by tutor"
+  },
+  "review": {
+    "new-title":   "Write a Review",
+    "edit-title":  "Edit Review",
+    "tutorId":     "Tutor ID",
+    "studentId":   "Student ID",
+    "sessionId":   "Session ID",
+    "score":       "Score",
+    "comment":     "Comment",
+    "status":      "Status",
+    "save":        "Save",
+    "cancel":      "Cancel"
+  },
+  "reputations": {
+    "title":            "Tutor Reputations",
+    "tutorId":          "Tutor ID",
+    "averageScore":     "Average Score",
+    "totalReviews":     "Total Reviews",
+    "publishedReviews": "Published",
+    "published":        "published"
   }
 }

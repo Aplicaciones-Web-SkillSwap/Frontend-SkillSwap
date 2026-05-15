@@ -62,6 +62,17 @@ const navigateToDonation = () => {
   });
 };
 
+// FUSIÓN: US17 - Aporte del compañero. Navega al form de reseña.
+const navigateToReview = () => {
+  router.push({
+    name:  'reputation-reviews-new',
+    query: {
+      tutorId:   session.value?.tutorId,
+      sessionId: route.params.id,
+    }
+  });
+};
+
 const navigateBack = () => {
   router.push({name: 'workspace-sessions'});
 };
@@ -70,7 +81,6 @@ const navigateBack = () => {
 <template>
   <div class="p-4 workspace-container">
 
-    <!-- Header -->
     <div class="header-actions flex align-items-center justify-content-between mb-4">
       <div class="flex align-items-center gap-3">
         <pv-button icon="pi pi-arrow-left" text @click="navigateBack" class="action-btn-view"/>
@@ -88,7 +98,6 @@ const navigateBack = () => {
       </div>
 
       <div class="flex gap-2">
-        <!-- US12: Botón videollamada - deshabilitado si no es 'scheduled' -->
         <pv-button
             :label="t('workspace.start-call')"
             icon="pi pi-video"
@@ -99,7 +108,6 @@ const navigateBack = () => {
       </div>
     </div>
 
-    <!-- US10: Sesión pendiente → chat bloqueado -->
     <div v-if="session && session.status === 'pending'" class="locked-state">
       <div class="locked-card">
         <i class="pi pi-lock locked-icon"/>
@@ -115,7 +123,6 @@ const navigateBack = () => {
       </div>
     </div>
 
-    <!-- US10: Sesión rechazada o cancelada -->
     <div v-else-if="session && (session.status === 'rejected' || session.status === 'cancelled')" class="locked-state">
       <div class="locked-card locked-cancelled">
         <i class="pi pi-times-circle locked-icon locked-icon-red"/>
@@ -124,25 +131,44 @@ const navigateBack = () => {
       </div>
     </div>
 
-    <!-- US18: Sesión completada → Botón de donación -->
-    <div v-else-if="isCompleted" class="donation-banner mb-4">
-      <div class="donation-content">
-        <div class="icon-wrapper">
-          <i class="pi pi-heart donation-icon"/>
+    <div v-else-if="isCompleted" class="completed-actions mb-4">
+
+      <div class="action-banner review-banner">
+        <div class="banner-content">
+          <div class="icon-wrapper">
+            <i class="pi pi-star-fill banner-icon review-icon"/>
+          </div>
+          <div>
+            <p class="banner-title">{{ t('workspace.review-title') }}</p>
+            <p class="banner-sub">{{ t('workspace.review-sub') }}</p>
+          </div>
         </div>
-        <div>
-          <p class="donation-title">{{ t('workspace.donation-title') }}</p>
-          <p class="donation-sub">{{ t('workspace.donation-sub') }}</p>
-        </div>
+        <pv-button
+            :label="t('workspace.btn-review')"
+            icon="pi pi-star"
+            class="btn-action btn-review"
+            @click="navigateToReview"/>
       </div>
-      <pv-button
-          :label="t('workspace.btn-donate')"
-          icon="pi pi-credit-card"
-          class="btn-donate"
-          @click="navigateToDonation"/>
+
+      <div class="action-banner donation-banner">
+        <div class="banner-content">
+          <div class="icon-wrapper">
+            <i class="pi pi-heart banner-icon donation-icon"/>
+          </div>
+          <div>
+            <p class="banner-title">{{ t('workspace.donation-title') }}</p>
+            <p class="banner-sub">{{ t('workspace.donation-sub') }}</p>
+          </div>
+        </div>
+        <pv-button
+            :label="t('workspace.btn-donate')"
+            icon="pi pi-credit-card"
+            class="btn-action btn-donate"
+            @click="navigateToDonation"/>
+      </div>
+
     </div>
 
-    <!-- US10: Chat habilitado solo si 'scheduled' o 'completed' -->
     <div v-if="session && (isChatEnabled || isCompleted)" class="table-card p-0">
       <div class="p-4">
 
@@ -166,7 +192,6 @@ const navigateBack = () => {
           </div>
         </div>
 
-        <!-- Input de mensaje -->
         <div class="flex gap-3 align-items-center pt-2">
           <pv-input-text
               v-model="newMessageContent"
@@ -330,9 +355,14 @@ const navigateBack = () => {
 
 .flow-arrow { color: #cbd5e1; font-size: 0.9rem; }
 
-/* Banner de donación */
-.donation-banner {
-  background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%);
+/* FUSIÓN: Acciones Completadas (Donación + Reseña) */
+.completed-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-banner {
   border-radius: 12px;
   padding: 1.5rem 2rem;
   display: flex;
@@ -342,7 +372,7 @@ const navigateBack = () => {
   box-shadow: 0 4px 15px rgba(26, 42, 64, 0.15);
 }
 
-.donation-content {
+.banner-content {
   display: flex;
   align-items: center;
   gap: 1.2rem;
@@ -357,35 +387,45 @@ const navigateBack = () => {
   justify-content: center;
 }
 
-.donation-icon {
-  font-size: 1.8rem;
-  color: #ff8a98;
-}
+.banner-icon { font-size: 1.8rem; }
+.donation-icon { color: #ff8a98; }
+.review-icon { color: #fbbf24; }
 
-.donation-title {
+.banner-title {
   color: #ffffff;
   font-weight: 700;
   font-size: 1.1rem;
   margin: 0 0 0.2rem 0;
 }
 
-.donation-sub {
+.banner-sub {
   color: #cbd5e1;
   font-size: 0.9rem;
   margin: 0;
 }
 
-.btn-donate {
-  background-color: #e53e4f !important;
+.donation-banner { background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%); }
+.review-banner   { background: linear-gradient(135deg, #1a4731 0%, #166534 100%); }
+
+.btn-action {
   border: none !important;
-  color: #ffffff !important;
   font-weight: 700 !important;
   border-radius: 8px !important;
   padding: 0.6rem 1.5rem;
   white-space: nowrap;
 }
 
+.btn-donate {
+  background-color: #e53e4f !important;
+  color: #ffffff !important;
+}
 .btn-donate:hover { background-color: #d03544 !important; }
+
+.btn-review {
+  background-color: #fbbf24 !important;
+  color: #1a2a40 !important;
+}
+.btn-review:hover { background-color: #f59e0b !important; }
 
 /* Chat */
 .chat-box {
