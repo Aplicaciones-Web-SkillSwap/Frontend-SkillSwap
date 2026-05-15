@@ -1,7 +1,8 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import Home from "@/shared/presentation/views/home.vue";
-import workspaceRoutes from "@/workspace/presentation/workspace-routes.js";
-import paymentRoutes from "@/payment/presentation/payment-routes.js";
+import workspaceRoutes   from "@/workspace/presentation/workspace-routes.js";
+import paymentRoutes     from "@/payment/presentation/payment-routes.js";
+import moderationRoutes  from "@/moderation/presentation/moderation-routes.js";
 
 const about        = () => import("@/shared/presentation/views/about.vue");
 const pageNotFound = () => import("@/shared/presentation/views/page-not-found.vue");
@@ -9,8 +10,9 @@ const pageNotFound = () => import("@/shared/presentation/views/page-not-found.vu
 const routes = [
     { path: '/home',            name: 'home',       component: Home,        meta: { title: 'Home'          } },
     { path: '/about',           name: 'about',      component: about,       meta: { title: 'About'         } },
-    { path: '/workspace',       name: 'workspace',  children: workspaceRoutes                                },
-    { path: '/payment',         name: 'payment',    children: paymentRoutes                                  },
+    { path: '/workspace',       name: 'workspace',   children: workspaceRoutes                                 },
+    { path: '/payment',         name: 'payment',     children: paymentRoutes                                   },
+    { path: '/moderation',      name: 'moderation',  children: moderationRoutes                                },
     { path: '/',                redirect: '/home'                                                            },
     { path: '/:pathMatch(.*)*', name: 'not-found',  component: pageNotFound, meta: { title: 'Page Not Found'} }
 ];

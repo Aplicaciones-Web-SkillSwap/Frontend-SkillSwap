@@ -8,6 +8,7 @@ import Material from '@primeuix/themes/material';
 import PrimeVue from 'primevue/config';
 import i18n from "@/i18n.js";
 import {
+    Avatar,
     Button,
     Card,
     Checkbox,
@@ -29,6 +30,7 @@ createApp(App)
     .use(ConfirmationService)
     .use(DialogService)
     .use(ToastService)
+    .component('pv-avatar',         Avatar)
     .component('pv-button',         Button)
     .component('pv-card',           Card)
     .component('pv-column',         Column)
