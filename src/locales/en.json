@@ -1,10 +1,10 @@
 {
   "option": {
-    "home":         "Home",
-    "about":        "About",
-    "sessions":     "Sessions",
-    "wallets":      "Wallets",
-    "transactions": "Transactions"
+    "home":     "Home",
+    "about":    "About",
+    "search":   "Find Tutors",
+    "sessions": "Sessions",
+    "wallets":  "Wallets"
   },
   "authoring-phrase": {
     "intro":  "Made with",
@@ -23,6 +23,34 @@
     "title":   "Page Not Found",
     "content": "The path {unavailable-route} is not available.",
     "go-home": "Go Home"
+  },
+  "discovery": {
+    "hero-title":             "Find the perfect tutor for you",
+    "hero-sub":               "Connect with verified students from different universities",
+    "search-placeholder":     "Search by subject, skill or name... e.g. Calculus, React, Physics",
+    "filters-title":          "Filters",
+    "clear-filters":          "Clear filters",
+    "filter-rating":          "Minimum rating",
+    "filter-all-ratings":     "All ratings",
+    "filter-university":      "University",
+    "filter-all-universities":"All universities",
+    "results-found":          "tutors found",
+    "loading":                "Loading tutors...",
+    "no-results-title":       "No tutors found for your search.",
+    "no-results-sub":         "Try different terms or adjust your filters.",
+    "verified":               "Verified",
+    "reviews":                "reviews",
+    "skills":                 "Courses they teach",
+    "view-profile":           "View Profile",
+    "profile-title":          "Tutor Profile",
+    "bio":                    "About me",
+    "no-bio":                 "This tutor has not added a biography yet.",
+    "reviews-title":          "Reviews from students",
+    "no-reviews":             "This tutor has not received any ratings yet.",
+    "send-request":           "Send tutoring request",
+    "request-note":           "You will be directed to create a session with this tutor.",
+    "tutor-not-found":        "Tutor not found.",
+    "back-to-search":         "Back to search"
   },
   "sessions": {
     "title":            "Tutoring Sessions",
@@ -55,26 +83,39 @@
     "action-delete":    "Delete"
   },
   "session": {
-    "new-title":   "Create New Session",
-    "edit-title":  "Edit Session",
-    "learnerId":   "Learner ID",
-    "tutorId":     "Tutor ID",
-    "topic":       "Topic",
-    "status":      "Status",
-    "scheduledAt": "Scheduled At",
-    "courseId":    "Course ID",
-    "save":        "Save",
-    "cancel":      "Cancel"
+    "new-title":            "Create New Session",
+    "edit-title":           "Edit Session",
+    "learnerId":            "Learner ID",
+    "tutorId":              "Tutor ID",
+    "topic":                "Topic",
+    "status":               "Status",
+    "scheduledAt":          "Scheduled At",
+    "courseId":             "Course ID",
+    "save":                 "Save",
+    "cancel":               "Cancel",
+    "from-discovery-title": "Request from tutor profile",
+    "from-discovery-sub":   "The tutor ID has been pre-filled. Complete the topic and date to send the request.",
+    "tutor-prefilled":      "Pre-filled from the selected tutor profile."
   },
   "workspace": {
     "title":               "Session Workspace",
     "topic":               "Topic",
     "status":              "Status",
     "start-call":          "Start Video Call",
+    "call-locked":         "Video call only available for scheduled sessions",
     "no-messages":         "No messages yet. Start the conversation!",
     "message-placeholder": "Type a message...",
+    "chat-completed":      "This session has ended.",
     "send":                "Send",
-    "video-call-message":  "Starting video call... (WebRTC integration pending)"
+    "video-call-message":  "Starting video call... (WebRTC integration pending)",
+    "locked-title":        "Waiting for tutor confirmation",
+    "locked-sub":          "The chat and video call will be enabled once the tutor accepts this session.",
+    "session-rejected":    "Session Rejected",
+    "session-cancelled":   "Session Cancelled",
+    "session-ended-sub":   "This session is no longer active.",
+    "donation-title":      "Session completed! Would you like to reward your tutor?",
+    "donation-sub":        "Make a voluntary donation — the tutor keeps 95%, SkillSwap 5%.",
+    "btn-donate":          "Make Donation"
   },
   "wallets": {
     "title":          "Wallets",

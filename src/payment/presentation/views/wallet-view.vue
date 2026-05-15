@@ -18,12 +18,9 @@ const recentTransactions = computed(() => walletTransactions.value.slice(0, 3));
 
 const totalTransactions = computed(() => walletTransactions.value.length);
 
-// Saldo neto real = suma de netAmounts de transacciones completed
+// Saldo real de la wallet (campo balance del db.json)
 const netBalance = computed(() => {
-  return walletTransactions.value
-      .filter(t => t.status === 'completed')
-      .reduce((sum, t) => sum + Number(t.netAmount || 0), 0)
-      .toFixed(2);
+  return Number(wallet.value?.balance || 0).toFixed(2);
 });
 
 // Total de comisiones retenidas
@@ -138,18 +135,18 @@ const statusClass = (status) => {
         </div>
       </div>
 
-      <!-- Preview últimas donaciones con desglose de comisión -->
+      <!-- Preview últimas donaciones con desglose de comisión (US19) -->
       <div class="recent-section">
         <p class="recent-label">{{ t('wallet.recent-transactions') }}</p>
 
-        <!-- Estado vacío -->
+        <!-- Estado vacío (US19 Scenario 2) -->
         <div v-if="walletTransactions.length === 0" class="empty-state">
           <i class="pi pi-inbox empty-icon"/>
           <p class="empty-title">{{ t('wallet.no-donations-title') }}</p>
           <p class="empty-sub">{{ t('wallet.no-donations-sub') }}</p>
         </div>
 
-        <!-- Tabla con desglose -->
+        <!-- Tabla con desglose (US19 Scenario 1) -->
         <div v-else class="table-card">
           <pv-data-table
               :value="recentTransactions"
@@ -162,7 +159,7 @@ const statusClass = (status) => {
               </template>
             </pv-column>
 
-            <!-- Monto original -->
+            <!-- Monto original (lo que donó el aprendiz) -->
             <pv-column :header="t('transactions.original-amount')" field="originalAmount" sortable>
               <template #body="slotProps">
                 <span class="text-balance">
@@ -251,37 +248,17 @@ const statusClass = (status) => {
 .recent-section { margin-top: 0.5rem; }
 .recent-label { color: #8c98a4; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; font-weight: 700; }
 
-/* Empty state */
+/* Empty state (US19 Scenario 2) */
 .empty-state { background: #ffffff; border-radius: 12px; border: 1px dashed #e2e8f0; padding: 3rem 2rem; text-align: center; }
 .empty-icon  { font-size: 3rem; color: #cbd5e0; display: block; margin-bottom: 1rem; }
 .empty-title { color: #4a5568; font-weight: 700; font-size: 1rem; margin: 0 0 0.5rem 0; }
 .empty-sub   { color: #a0aec0; font-size: 0.85rem; margin: 0; }
 
-/* Table overrides - AQUÍ ESTÁ LA MAGIA PARA EVITAR EL NEGRO */
+/* Table */
 .table-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); padding: 1rem; border: 1px solid #f0f2f5; }
-
-:deep(.clean-table .p-datatable-thead > tr > th) {
-  background-color: #ffffff !important;
-  color: #8c98a4 !important;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid #f0f2f5 !important;
-  padding: 1rem;
-}
-
-/* Aplicamos el fondo blanco directo al TD para sobreescribir el tema de PrimeVue */
-:deep(.clean-table .p-datatable-tbody > tr > td) {
-  background-color: #ffffff !important;
-  color: #1a2a40 !important;
-  padding: 1rem;
-  border-bottom: 1px solid #f0f2f5 !important;
-}
-
-/* Efecto hover explícito también en los TD */
-:deep(.clean-table .p-datatable-tbody > tr:hover > td) {
-  background-color: #f8fafc !important;
-}
+:deep(.clean-table .p-datatable-thead > tr > th) { background-color: #ffffff; color: #8c98a4; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f0f2f5; padding: 1rem; }
+:deep(.clean-table .p-datatable-tbody > tr > td) { padding: 1rem; border-bottom: 1px solid #f0f2f5; }
+:deep(.clean-table .p-datatable-tbody > tr:hover) { background-color: #fcfcfc; }
 
 /* Textos de montos */
 .text-id         { color: #a0aec0; font-weight: 700; }

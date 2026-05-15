@@ -1,26 +1,31 @@
 <script setup>
 import {useI18n} from "vue-i18n";
+import {useRouter} from "vue-router";
 import {ref} from "vue";
 import LanguageSwitcher from "@/shared/presentation/components/language-switcher.vue";
 import FooterContent from "@/shared/presentation/components/footer-content.vue";
 
 const { t } = useI18n();
+const router = useRouter();
 
 const drawer = ref(false);
-const toggleDrawer = () => {
-  drawer.value = !drawer.value;
-}
+const toggleDrawer = () => { drawer.value = !drawer.value; }
 
 const items = [
   { label: 'option.home',     path: '/home'               },
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
 ]
+
+const navigateToSearch = () => {
+  router.push({ name: 'discovery-search' });
+}
 </script>
 
 <template>
   <pv-toast/>
   <pv-confirm-dialog/>
+
   <div class="header">
     <pv-toolbar class="custom-toolbar">
       <template #start>
@@ -29,9 +34,10 @@ const items = [
           <h3>SkillSwap</h3>
         </div>
       </template>
-      <template #center>
 
+      <template #center>
       </template>
+
       <template #end>
         <div class="right-actions">
           <router-link
@@ -43,7 +49,12 @@ const items = [
             {{ t(item.label) }}
           </router-link>
 
-          <i class="pi pi-search action-icon"></i>
+          <!-- Lupa → navega a Find Tutors -->
+          <i
+              class="pi pi-search action-icon search-icon"
+              :title="t('option.search')"
+              @click="navigateToSearch">
+          </i>
 
           <div class="notification-container action-icon">
             <i class="pi pi-bell"></i>
@@ -66,11 +77,14 @@ const items = [
         </div>
       </template>
     </pv-toolbar>
+
     <pv-drawer v-model:visible="drawer"/>
   </div>
+
   <div class="main-content">
     <router-view/>
   </div>
+
   <div class="footer">
     <footer-content/>
   </div>
@@ -84,6 +98,7 @@ const items = [
   width: 100%;
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Sombra ligera inferior */
+  z-index: 1000;
 }
 
 /* Sobrescribiendo estilos del Toolbar para quitar el fondo azul */
@@ -125,11 +140,17 @@ const items = [
   color: #e53e4f;
 }
 
-/* Íconos */
+/* Íconos de acción */
 .action-icon {
   font-size: 1.4rem;
   color: #000000;
   cursor: pointer;
+  transition: color 0.2s;
+}
+
+/* Efecto hover específico para la lupa */
+.search-icon:hover {
+  color: #e53e4f;
 }
 
 /* Contenedor de la campanita y su número */

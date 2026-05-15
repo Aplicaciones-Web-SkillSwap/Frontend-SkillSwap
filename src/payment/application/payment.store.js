@@ -67,14 +67,55 @@ const usePaymentStore = defineStore('payment', () => {
         });
     }
 
+    // ── addTransaction ──────
     function addTransaction(transaction) {
         paymentApi.createTransaction(transaction).then(response => {
-            const resource        = response.data;
-            const newTransaction  = TransactionAssembler.toEntityFromResource(resource);
+            const resource       = response.data;
+            const newTransaction = TransactionAssembler.toEntityFromResource(resource);
             transactions.value.push(newTransaction);
+
+            // Si la transacción es "completed", sumamos el netAmount al balance de la wallet
+            if (newTransaction.status === 'completed') {
+                _applyTransactionToWallet(newTransaction.walletId, newTransaction.netAmount);
+            }
+        }).catch(error => {
+            errors.value.push(error);
+            console.log('Error creating transaction:', error);
+        });
+    }
+
+    //  updateTransaction
+    function updateTransaction(transaction) {
+
+        const previousTransaction = getTransactionById(transaction.id);
+        const wasAlreadyCompleted = previousTransaction?.status === 'completed';
+
+        paymentApi.updateTransaction(transaction).then(response => {
+            const resource           = response.data;
+            const updatedTransaction = TransactionAssembler.toEntityFromResource(resource);
+            const index = transactions.value.findIndex(t => t['id'] === updatedTransaction.id);
+            if (index !== -1) transactions.value[index] = updatedTransaction;
+
+            if (updatedTransaction.status === 'completed' && !wasAlreadyCompleted) {
+                _applyTransactionToWallet(updatedTransaction.walletId, updatedTransaction.netAmount);
+            }
         }).catch(error => {
             errors.value.push(error);
         });
+    }
+
+    function _applyTransactionToWallet(walletId, netAmount) {
+        const wallet = getWalletById(walletId);
+        if (!wallet) {
+            console.warn(`Wallet ${walletId} no encontrada. No se actualizó el balance.`);
+            return;
+        }
+        const updatedWallet = {
+            ...wallet,
+            balance: parseFloat((Number(wallet.balance) + Number(netAmount)).toFixed(2))
+        };
+        updateWallet(updatedWallet);
+        console.log(`Wallet #${walletId} balance actualizado: +${netAmount} → ${updatedWallet.balance}`);
     }
 
     function updateWallet(wallet) {
@@ -83,17 +124,6 @@ const usePaymentStore = defineStore('payment', () => {
             const updatedWallet = WalletAssembler.toEntityFromResource(resource);
             const index = wallets.value.findIndex(w => w['id'] === updatedWallet.id);
             if (index !== -1) wallets.value[index] = updatedWallet;
-        }).catch(error => {
-            errors.value.push(error);
-        });
-    }
-
-    function updateTransaction(transaction) {
-        paymentApi.updateTransaction(transaction).then(response => {
-            const resource           = response.data;
-            const updatedTransaction = TransactionAssembler.toEntityFromResource(resource);
-            const index = transactions.value.findIndex(t => t['id'] === updatedTransaction.id);
-            if (index !== -1) transactions.value[index] = updatedTransaction;
         }).catch(error => {
             errors.value.push(error);
         });
