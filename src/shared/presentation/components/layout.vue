@@ -36,42 +36,12 @@ const navigateToSearch = () => {
           <pv-button class="p-button-text text-color" icon="pi pi-bars" @click="toggleDrawer" />
           <div class="brand-container">
             <h3>SkillSwap</h3>
-  <div class="header">
-    <pv-toolbar class="custom-toolbar">
-      <template #start>
-        <pv-button class="p-button-text text-color" icon="pi pi-bars" @click="toggleDrawer" />
-        <div class="brand-container">
-          <h3>SkillSwap</h3>
-        </div>
-      </template>
-
-      <template #center>
-      </template>
-
-      <template #end>
-        <div class="right-actions">
-          <router-link
-              v-for="item in items"
-              :key="item.label"
-              :to="item.path"
-              class="nav-link"
-          >
-            {{ t(item.label) }}
-          </router-link>
-
-          <!-- Lupa → navega a Find Tutors -->
-          <i
-              class="pi pi-search action-icon search-icon"
-              :title="t('option.search')"
-              @click="navigateToSearch">
-          </i>
-
-          <div class="notification-container action-icon">
-            <i class="pi pi-bell"></i>
-            <span class="notification-badge">2</span>
           </div>
         </template>
-        <template #center></template>
+
+        <template #center>
+        </template>
+
         <template #end>
           <div class="right-actions">
             <router-link
@@ -83,11 +53,17 @@ const navigateToSearch = () => {
               {{ t(item.label) }}
             </router-link>
 
-            <i class="pi pi-search action-icon"></i>
+            <!-- Lupa → navega a Find Tutors -->
+            <i
+                class="pi pi-search action-icon search-icon"
+                :title="t('option.search')"
+                @click="navigateToSearch">
+            </i>
 
-            <!-- Campanita SIN badge de notificación -->
+            <!-- Campanita con badge -->
             <div class="notification-container action-icon">
               <i class="pi pi-bell"></i>
+              <span class="notification-badge">2</span>
             </div>
 
             <pv-avatar
@@ -106,6 +82,7 @@ const navigateToSearch = () => {
           </div>
         </template>
       </pv-toolbar>
+
       <pv-drawer v-model:visible="drawer"/>
     </div>
 
@@ -125,32 +102,6 @@ const navigateToSearch = () => {
       </div>
     </div>
 
-          <pv-avatar
-              image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-              shape="circle"
-              class="user-avatar"
-          />
-
-          <pv-button
-              label="Cerrar Sesión"
-              class="logout-btn"
-              rounded
-          />
-
-          <language-switcher/>
-        </div>
-      </template>
-    </pv-toolbar>
-
-    <pv-drawer v-model:visible="drawer"/>
-  </div>
-
-  <div class="main-content">
-    <router-view/>
-  </div>
-
-  <div class="footer">
-    <footer-content/>
   </div>
 </template>
 
@@ -239,10 +190,25 @@ const navigateToSearch = () => {
   color: #e53e4f;
 }
 
-/* Campanita (sin badge) */
+/* Campanita y badge */
 .notification-container {
+  position: relative; /* Importante para que el badge se posicione bien */
   display: flex;
   align-items: center;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: #e53e4f;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
 }
 
 /* Avatar */
