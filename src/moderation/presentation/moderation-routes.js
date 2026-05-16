@@ -1,5 +1,4 @@
-// Rutas del BC Moderation — se montan bajo /moderation en el router principal
-// Las vistas se renderizan dentro del layout existente del proyecto develop
+
 const reportList   = () => import('./views/report-list.vue');
 const reportForm   = () => import('./views/report-form.vue');
 const reportChat   = () => import('./views/report-chat.vue');

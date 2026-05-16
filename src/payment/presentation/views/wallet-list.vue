@@ -46,7 +46,7 @@ const confirmDelete = (wallet) => {
       <i class="pi pi-spin pi-spinner text-4xl" style="color: #1a2a40;"></i>
     </div>
 
-    <!-- Grid de Tarjetas (Cards) -->
+
     <div v-else class="grid">
       <div
           v-for="wallet in wallets"
@@ -54,7 +54,7 @@ const confirmDelete = (wallet) => {
           class="col-12 md:col-6 lg:col-4 xl:col-3 p-2">
 
         <div class="wallet-card">
-          <!-- Encabezado de la tarjeta -->
+
           <div class="flex justify-content-between align-items-start mb-3">
             <div>
               <span class="text-id block mb-1">#{{ wallet.id }}</span>
@@ -66,7 +66,7 @@ const confirmDelete = (wallet) => {
             <span class="currency-badge">{{ wallet.currency }}</span>
           </div>
 
-          <!-- Cuerpo de la tarjeta (Balance) -->
+
           <div class="card-body py-3">
             <p class="text-neutral text-sm m-0 mb-1">{{ t('wallets.balance') }}</p>
             <div class="flex align-items-center">
@@ -76,7 +76,7 @@ const confirmDelete = (wallet) => {
             </div>
           </div>
 
-          <!-- Pie de la tarjeta (Acciones) -->
+
           <div class="card-footer mt-3 pt-3 flex justify-content-end gap-2">
             <pv-button
                 icon="pi pi-eye"
@@ -100,7 +100,7 @@ const confirmDelete = (wallet) => {
       </div>
     </div>
 
-    <!-- Estado vacío si no hay data -->
+
     <div v-if="walletsLoaded && wallets.length === 0" class="text-center p-5 table-card mt-3">
       <i class="pi pi-wallet text-5xl mb-3" style="color: #a0aec0;"></i>
       <h3 class="text-neutral m-0">No hay billeteras registradas</h3>
@@ -126,7 +126,7 @@ const confirmDelete = (wallet) => {
   font-size: 2rem;
 }
 
-/* --- ESTILO DE LA TARJETA PRINCIPAL --- */
+
 .wallet-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -146,10 +146,10 @@ const confirmDelete = (wallet) => {
 
 .card-footer {
   border-top: 1px solid #f0f2f5;
-  margin-top: auto; /* Empuja las acciones hacia abajo para tarjetas simétricas */
+  margin-top: auto;
 }
 
-/* Tarjeta genérica (usada para el empty state) */
+
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -157,7 +157,7 @@ const confirmDelete = (wallet) => {
   border: 1px solid #f0f2f5;
 }
 
-/* --- ESTILOS DE TEXTO INTERNO --- */
+
 .text-id {
   color: #a0aec0;
   font-weight: 700;
@@ -174,7 +174,7 @@ const confirmDelete = (wallet) => {
   font-weight: 800;
 }
 
-/* --- PÍLDORAS DE ESTADO --- */
+
 .currency-badge {
   background-color: #e0f2fe;
   color: #0284c7;
@@ -185,7 +185,7 @@ const confirmDelete = (wallet) => {
   display: inline-block;
 }
 
-/* --- BOTONES DE ACCIÓN --- */
+
 .action-btn-view {
   color: #1a2a40 !important;
   background-color: #f8fafc !important;

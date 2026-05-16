@@ -1,9 +1,18 @@
-<script setup>
+<script lang="js" setup>
 import {useI18n}           from "vue-i18n";
 import {useRoute, useRouter}         from "vue-router";
 import {useConfirm}        from "primevue";
 import useReputationStore  from "@/reputation/application/reputation.store.js";
 import {computed, onMounted, toRefs} from "vue";
+
+/**
+ * Reputation reviews dashboard and collection management component.
+ *
+ * @remarks
+ * Coordinates the visualization, filtration, and operational processing lifecycle
+ * of tutor assessment metrics. It handles context-dependent filtering based on
+ * route query parameters and couples user actions to global confirmation workflow modals.
+ */
 
 const {t}     = useI18n();
 const route   = useRoute();
@@ -13,14 +22,16 @@ const store   = useReputationStore();
 const { reviews, errors, reviewsLoaded } = toRefs(store);
 const { fetchReviews, deleteReview }     = store;
 
-// Si viene desde perfil del tutor con ?tutorId=X, filtra
+/** @type {import('vue').ComputedRef<string | null>} Targeted tutor identifier resolved from URL queries */
 const filterTutorId = computed(() => route.query.tutorId || null);
 
+/** @type {import('vue').ComputedRef<import('@/reputation/domain/model/review.entity.js').Review[]>} Projections mapped by active filtrations */
 const displayedReviews = computed(() => {
   if (!filterTutorId.value) return reviews.value;
   return store.getReviewsByTutorId(filterTutorId.value);
 });
 
+/** @type {import('vue').ComputedRef<string>} Contextual page header text value */
 const pageTitle = computed(() =>
     filterTutorId.value
         ? t('reviews.title-filtered', { tutorId: filterTutorId.value })
@@ -35,9 +46,26 @@ onMounted(() => {
   }
 });
 
+/**
+ * Routes runtime view context towards creation steps passing parameters.
+ *
+ * @returns {void}
+ */
 const navigateToNew  = ()   => router.push({ name: 'reputation-reviews-new', query: filterTutorId.value ? { tutorId: filterTutorId.value } : {} });
+
+/**
+ * Routes view context to resource editor states matching the selected item key.
+ *
+ * @param {number|string} id - Selected evaluation item row primary key.
+ * @returns {void}
+ */
 const navigateToEdit = (id) => router.push({ name: 'reputation-reviews-edit', params: { id } });
 
+/**
+ * Redirects UI flow back into matching background layout history pathways.
+ *
+ * @returns {void}
+ */
 const navigateBack = () => {
   if (filterTutorId.value) {
     router.push({ name: 'discovery-search' });
@@ -46,6 +74,12 @@ const navigateBack = () => {
   }
 };
 
+/**
+ * Pauses interactive threads to invoke safe destructive validation dialog confirmation flows.
+ *
+ * @param {import('@/reputation/domain/model/review.entity.js').Review} review - Target model to be permanently removed.
+ * @returns {void}
+ */
 const confirmDelete = (review) => {
   confirm.require({
     message: t('reviews.confirm-delete', { id: review.id }),
@@ -55,6 +89,12 @@ const confirmDelete = (review) => {
   });
 };
 
+/**
+ * Resolves appropriate visual HTML class designations according to element review status values.
+ *
+ * @param {string} status - Evaluation status text key flag.
+ * @returns {string} Calculated class styling values string.
+ */
 const statusClass = (status) => {
   const map = {
     PUBLISHED: 'status-badge status-published',
@@ -64,6 +104,12 @@ const statusClass = (status) => {
   return map[status] || 'status-badge';
 };
 
+/**
+ * Formats string or date references into localized presentation-friendly strings.
+ *
+ * @param {string|Date} d - Raw ISO timeline string or standard object field reference.
+ * @returns {string} Human-readable localized target rendering layout output.
+ */
 const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 </script>
 
@@ -188,7 +234,7 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 }
 .btn-new:hover { background-color: #d03544 !important; }
 
-/* Contenedor de la tabla */
+
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -198,7 +244,7 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
   overflow: hidden;
 }
 
-/* FORZAR BLANCO EN LA TABLA (Anti-Tema Oscuro) */
+
 :deep(.clean-table .p-datatable-thead > tr > th) {
   background-color: #f8fafc !important;
   color: #64748b;
@@ -225,7 +271,7 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
   border-top: 1px solid #f1f5f9;
 }
 
-/* Tipografías */
+
 .text-id      { color: #3b82f6; font-weight: 700; font-size: 0.9rem; }
 .text-neutral { color: #475569; font-size: 0.95rem; }
 .text-score   { color: #0f172a; font-weight: 800; font-size: 1.05rem; }
@@ -234,13 +280,13 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 .text-date    { color: #64748b; display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 500; }
 .icon-cal     { color: #94a3b8; }
 
-/* Badges de estado */
+
 .status-badge     { padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.3px; }
 .status-published { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .status-pending   { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
 .status-removed   { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-/* Botones de acción */
+
 .actions-cell { display: flex; align-items: center; gap: 0.2rem; }
 .action-btn-edit   { color: #94a3b8 !important; }
 .action-btn-edit:hover { color: #3b82f6 !important; background-color: #eff6ff !important; }

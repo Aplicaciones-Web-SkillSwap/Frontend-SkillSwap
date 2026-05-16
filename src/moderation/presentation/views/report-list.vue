@@ -44,7 +44,7 @@ function resolveReport(report) {
 <template>
   <div class="page-layout">
 
-    <!-- ═══════ IZQUIERDA ═══════ -->
+
     <div class="col-left">
       <div class="page-header">
         <h1 class="page-title">{{ t('moderation.reports-title') }}</h1>
@@ -141,7 +141,7 @@ function resolveReport(report) {
       </div>
     </div>
 
-    <!-- ═══════ DERECHA ═══════ -->
+
     <div class="col-right">
       <div class="resolved-box">
         <div class="resolved-header">
@@ -207,7 +207,7 @@ function resolveReport(report) {
 .user-link.clickable:hover { color: #1a2a40; }
 .empty-msg { text-align: center; color: #9ca3af; font-size: 13px; padding: 32px; }
 
-/* ── Override PrimeVue dark/striped DataTable background ── */
+
 :deep(.p-datatable)                      { background: #ffffff !important; }
 :deep(.p-datatable-table-container)      { background: #ffffff !important; }
 :deep(.p-datatable-thead > tr > th)      { background: #f8f9fa !important; color: #374151 !important; border-color: #e5e7eb !important; }

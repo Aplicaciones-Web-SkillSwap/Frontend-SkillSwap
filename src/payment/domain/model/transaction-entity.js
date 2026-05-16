@@ -16,9 +16,9 @@ export class Transaction {
         this.walletId       = walletId;
         this.senderId       = senderId;
         this.receiverId     = receiverId;
-        this.originalAmount = originalAmount;   // Monto que dona el aprendiz
-        this.commissionFee  = commissionFee;    // 5% que retiene SkillSwap
-        this.netAmount      = netAmount;        // 95% que recibe el tutor
+        this.originalAmount = originalAmount;
+        this.commissionFee  = commissionFee;
+        this.netAmount      = netAmount;
         this.type           = type;
         this.status         = status;
         this.description    = description;

@@ -5,12 +5,23 @@ import useWorkspaceStore from "@/workspace/application/workspace.store.js";
 import {computed, onMounted, ref} from "vue";
 import {Session} from "@/workspace/domain/model/session-entity.js";
 
+/**
+ * Session mutation and management form component.
+ *
+ * @remarks
+ * Orchestrates form lifecycle data operations for single student-tutor sessions.
+ * Resolves context conditionally via route states to pre-populate workspace models
+ * or facilitate discovery redirection pathways.
+ */
 const {t}    = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useWorkspaceStore();
 const { addSession, errors, updateSession } = store;
 
+/**
+ * Local form field mappings bound to session properties.
+ */
 const form = ref({
   learnerId:   null,
   // Pre-llena tutorId si viene desde perfil del tutor (US08)
@@ -21,11 +32,19 @@ const form = ref({
   courseId:    null,
 });
 
+/**
+ * Evaluates context state to verify if an active identifier parameters exists.
+ */
 const isEdit = computed(() => !!route.params.id);
 
-// Si viene desde Discovery, mostramos el banner del tutor
+/**
+ * Flags if workflow context has originated directly out of discovery funnels.
+ */
 const comesFromDiscovery = computed(() => !!route.query.tutorId && !isEdit.value);
 
+/**
+ * Direct selection static items list used within dropdown models.
+ */
 const statusOptions = [
   { label: 'Pending',   value: 'pending'   },
   { label: 'Scheduled', value: 'scheduled' },
@@ -54,10 +73,16 @@ onMounted(() => {
   }
 });
 
+/**
+ * Queries target instance matches relative to stored cache sets.
+ */
 function getSessionById(id) {
   return store.getSessionById(id);
 }
 
+/**
+ * Packs transaction records into explicit session domains and pushes save streams.
+ */
 const saveSession = () => {
   const session = new Session({
     id:          isEdit.value ? parseInt(route.params.id) : null,
@@ -72,8 +97,11 @@ const saveSession = () => {
   navigateBack();
 };
 
+/**
+ * Controls redirection steps back to historical workspace views or original workflows.
+ */
 const navigateBack = () => {
-  // Si venía del perfil del tutor, vuelve ahí
+
   if (route.query.tutorId && !isEdit.value) {
     router.push({ name: 'discovery-search' });
   } else {
@@ -85,13 +113,13 @@ const navigateBack = () => {
 <template>
   <div class="p-4 session-container">
 
-    <!-- Header -->
+
     <div class="header-actions flex align-items-center gap-3 mb-4">
       <pv-button icon="pi pi-arrow-left" text class="action-btn-view" @click="navigateBack"/>
       <h1 class="page-title m-0">{{ isEdit ? t('session.edit-title') : t('session.new-title') }}</h1>
     </div>
 
-    <!-- Banner informativo cuando viene desde Discovery (US08) -->
+
     <div v-if="comesFromDiscovery" class="discovery-banner mb-4">
       <div class="icon-wrapper">
         <i class="pi pi-send banner-icon"/>
@@ -102,7 +130,7 @@ const navigateBack = () => {
       </div>
     </div>
 
-    <!-- Formulario en tarjeta -->
+
     <div class="table-card form-wrapper">
       <form @submit.prevent="saveSession" class="p-fluid">
 
@@ -155,7 +183,7 @@ const navigateBack = () => {
 
         </div>
 
-        <!-- Acciones del formulario -->
+
         <div class="flex justify-content-end gap-3 mt-4 pt-4 border-top-1 border-300">
           <pv-button :label="t('session.cancel')" text class="btn-cancel" @click="navigateBack"/>
           <pv-button :label="t('session.save')"   type="submit" class="btn-save"/>
@@ -164,7 +192,7 @@ const navigateBack = () => {
       </form>
     </div>
 
-    <!-- Errores -->
+
     <div v-if="errors.length" class="text-red-500 mt-4 error-msg">
       <i class="pi pi-exclamation-circle mr-2"></i>
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
@@ -174,7 +202,7 @@ const navigateBack = () => {
 </template>
 
 <style scoped>
-/* Contenedor principal */
+
 .session-container {
   width: 100%;
   padding: 0 2rem;
@@ -182,14 +210,14 @@ const navigateBack = () => {
   margin: 0 auto;
 }
 
-/* Título */
+
 .page-title {
   color: #1a2a40;
   font-weight: 800;
   font-size: 2rem;
 }
 
-/* Efecto tarjeta unificado */
+
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -198,7 +226,7 @@ const navigateBack = () => {
   border: 1px solid #f0f2f5;
 }
 
-/* Banner de Discovery (US08) */
+
 .discovery-banner {
   background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%);
   border-radius: 12px;
@@ -220,7 +248,7 @@ const navigateBack = () => {
 
 .banner-icon {
   font-size: 1.6rem;
-  color: #60a5fa; /* Azul claro para contrastar */
+  color: #60a5fa;
 }
 
 .banner-title {
@@ -236,7 +264,7 @@ const navigateBack = () => {
   margin: 0;
 }
 
-/* Etiquetas del formulario */
+
 .custom-label {
   display: block;
   font-weight: 700;
@@ -253,7 +281,7 @@ const navigateBack = () => {
   align-items: center;
 }
 
-/* --- BOTONES --- */
+
 .action-btn-view {
   color: #1a2a40 !important;
 }
@@ -286,7 +314,7 @@ const navigateBack = () => {
   background-color: #f8f9fa !important;
 }
 
-/* Mensaje de error */
+
 .error-msg {
   font-weight: bold;
   background-color: #fee2e2;
