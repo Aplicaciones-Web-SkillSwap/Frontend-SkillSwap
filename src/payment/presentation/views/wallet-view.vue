@@ -18,12 +18,12 @@ const recentTransactions = computed(() => walletTransactions.value.slice(0, 3));
 
 const totalTransactions = computed(() => walletTransactions.value.length);
 
-// Saldo real de la wallet (campo balance del db.json)
+
 const netBalance = computed(() => {
   return Number(wallet.value?.balance || 0).toFixed(2);
 });
 
-// Total de comisiones retenidas
+
 const totalCommission = computed(() => {
   return walletTransactions.value
       .filter(t => t.status === 'completed')
@@ -57,7 +57,7 @@ const statusClass = (status) => {
 <template>
   <div class="p-4 wallet-view-container">
 
-    <!-- Header -->
+
     <div class="flex align-items-center gap-3 mb-4">
       <pv-button icon="pi pi-arrow-left" text class="btn-back" @click="navigateBack"/>
       <div>
@@ -70,10 +70,10 @@ const statusClass = (status) => {
 
     <div v-if="wallet">
 
-      <!-- Métricas de balance -->
+
       <div class="metrics-grid mb-4">
 
-        <!-- Saldo neto disponible -->
+
         <div class="metric-card balance-card">
           <div class="metric-icon-wrap">
             <i class="pi pi-wallet metric-icon"/>
@@ -85,7 +85,7 @@ const statusClass = (status) => {
           </div>
         </div>
 
-        <!-- Comisión retenida por SkillSwap -->
+
         <div class="metric-card commission-card">
           <div class="metric-icon-wrap com-icon-wrap">
             <i class="pi pi-percentage metric-icon com-icon"/>
@@ -97,7 +97,7 @@ const statusClass = (status) => {
           </div>
         </div>
 
-        <!-- Número de transacciones -->
+
         <div class="metric-card transactions-card">
           <div class="metric-icon-wrap tx-icon-wrap">
             <i class="pi pi-arrows-h metric-icon tx-icon"/>
@@ -111,7 +111,7 @@ const statusClass = (status) => {
 
       </div>
 
-      <!-- CTA → Ver transacciones -->
+
       <div class="transactions-cta mb-4">
         <div class="cta-info">
           <i class="pi pi-list cta-icon"/>
@@ -135,18 +135,18 @@ const statusClass = (status) => {
         </div>
       </div>
 
-      <!-- Preview últimas donaciones con desglose de comisión (US19) -->
+
       <div class="recent-section">
         <p class="recent-label">{{ t('wallet.recent-transactions') }}</p>
 
-        <!-- Estado vacío (US19 Scenario 2) -->
+
         <div v-if="walletTransactions.length === 0" class="empty-state">
           <i class="pi pi-inbox empty-icon"/>
           <p class="empty-title">{{ t('wallet.no-donations-title') }}</p>
           <p class="empty-sub">{{ t('wallet.no-donations-sub') }}</p>
         </div>
 
-        <!-- Tabla con desglose (US19 Scenario 1) -->
+
         <div v-else class="table-card">
           <pv-data-table
               :value="recentTransactions"
@@ -159,7 +159,7 @@ const statusClass = (status) => {
               </template>
             </pv-column>
 
-            <!-- Monto original (lo que donó el aprendiz) -->
+
             <pv-column :header="t('transactions.original-amount')" field="originalAmount" sortable>
               <template #body="slotProps">
                 <span class="text-balance">
@@ -168,7 +168,7 @@ const statusClass = (status) => {
               </template>
             </pv-column>
 
-            <!-- -5% comisión SkillSwap -->
+
             <pv-column :header="t('transactions.commission-fee')">
               <template #body="slotProps">
                 <span class="text-commission">
@@ -178,7 +178,7 @@ const statusClass = (status) => {
               </template>
             </pv-column>
 
-            <!-- Monto neto que recibe el tutor -->
+
             <pv-column :header="t('transactions.net-amount')">
               <template #body="slotProps">
                 <span class="text-net">
@@ -187,7 +187,7 @@ const statusClass = (status) => {
               </template>
             </pv-column>
 
-            <!-- Estado -->
+
             <pv-column :header="t('transactions.status')" field="status">
               <template #body="slotProps">
                 <span :class="statusClass(slotProps.data.status)">{{ slotProps.data.status }}</span>
@@ -219,7 +219,7 @@ const statusClass = (status) => {
 .subtitle { color: #718096; font-size: 0.9rem; }
 .btn-back { color: #1a2a40 !important; }
 
-/* Métricas */
+
 .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .metric-card { background: #ffffff; border-radius: 12px; padding: 1.5rem; border: 1px solid #f0f2f5; box-shadow: 0 2px 10px rgba(0,0,0,0.04); display: flex; align-items: flex-start; gap: 1.2rem; }
 .metric-icon-wrap { width: 52px; height: 52px; border-radius: 12px; background-color: #e0f2fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -232,7 +232,7 @@ const statusClass = (status) => {
 .metric-value  { color: #1a2a40; font-weight: 800; font-size: 1.4rem; margin: 0 0 0.2rem 0; }
 .metric-sub    { color: #a0aec0; font-size: 0.75rem; margin: 0; }
 
-/* CTA */
+
 .transactions-cta { background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%); border-radius: 12px; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .cta-info { display: flex; align-items: center; gap: 1rem; }
 .cta-icon { font-size: 1.8rem; color: #ffffff; opacity: 0.8; }
@@ -244,23 +244,23 @@ const statusClass = (status) => {
 .btn-view-tx { background-color: #e53e4f !important; border: none !important; color: #ffffff !important; font-weight: 700; border-radius: 8px; padding: 0.6rem 1.4rem; }
 .btn-view-tx:hover { background-color: #d03544 !important; }
 
-/* Recent section */
+
 .recent-section { margin-top: 0.5rem; }
 .recent-label { color: #8c98a4; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; font-weight: 700; }
 
-/* Empty state (US19 Scenario 2) */
+
 .empty-state { background: #ffffff; border-radius: 12px; border: 1px dashed #e2e8f0; padding: 3rem 2rem; text-align: center; }
 .empty-icon  { font-size: 3rem; color: #cbd5e0; display: block; margin-bottom: 1rem; }
 .empty-title { color: #4a5568; font-weight: 700; font-size: 1rem; margin: 0 0 0.5rem 0; }
 .empty-sub   { color: #a0aec0; font-size: 0.85rem; margin: 0; }
 
-/* Table */
+
 .table-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); padding: 1rem; border: 1px solid #f0f2f5; }
 :deep(.clean-table .p-datatable-thead > tr > th) { background-color: #ffffff; color: #8c98a4; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f0f2f5; padding: 1rem; }
 :deep(.clean-table .p-datatable-tbody > tr > td) { padding: 1rem; border-bottom: 1px solid #f0f2f5; }
 :deep(.clean-table .p-datatable-tbody > tr:hover) { background-color: #fcfcfc; }
 
-/* Textos de montos */
+
 .text-id         { color: #a0aec0; font-weight: 700; }
 .text-balance    { color: #1a2a40; font-weight: 700; }
 .text-commission { color: #dc2626; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
@@ -268,7 +268,7 @@ const statusClass = (status) => {
 
 .commission-rate-tag { background-color: #fee2e2; color: #dc2626; padding: 0.1rem 0.4rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; }
 
-/* Status */
+
 .status-badge     { padding: 0.3rem 0.8rem; border-radius: 20px; font-weight: 700; font-size: 0.75rem; text-transform: capitalize; }
 .status-completed { background-color: #dcfce7; color: #16a34a; }
 .status-pending   { background-color: #fef3c7; color: #d97706; }

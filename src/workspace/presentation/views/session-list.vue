@@ -5,6 +5,14 @@ import {useConfirm} from "primevue";
 import useWorkspaceStore from "@/workspace/application/workspace.store.js";
 import {onMounted, toRefs} from "vue";
 
+/**
+ * Sessions record dashboard management component.
+ *
+ * @remarks
+ * Coordinates collection processing arrays bound to workspace entities. Supports
+ * data table listing models, structural workflow redirections, and multi-state
+ * state transitions backed by transaction confirmation modals.
+ */
 const {t}     = useI18n();
 const router  = useRouter();
 const confirm = useConfirm();
@@ -20,18 +28,30 @@ onMounted(() => {
   }
 });
 
+/**
+ *  structural route updates targeting selected record identification keys.
+ */
 const navigateToEdit = (id) => {
   router.push({name: 'workspace-sessions-edit', params: {id}});
 };
 
+/**
+ * Diverts layout context towards new entity initialization views.
+ */
 const navigateToNew = () => {
   router.push({name: 'workspace-sessions-new'});
 };
 
+/**
+ * Directs navigation flow into dedicated single interactive sub-view states.
+ */
 const navigateToWorkspace = (id) => {
   router.push({name: 'workspace-sessions-view', params: {id}});
 };
 
+/**
+ *  runtime context via confirm sub-routines prior to purging elements.
+ */
 const confirmDelete = (session) => {
   confirm.require({
     message: t('sessions.confirm-delete', {topic: session.topic}),
@@ -41,6 +61,9 @@ const confirmDelete = (session) => {
   });
 };
 
+/**
+ * Approves an existing session record through UI confirmation wrappers.
+ */
 const confirmAccept = (session) => {
   confirm.require({
     message: t('sessions.confirm-accept', {topic: session.topic}),
@@ -50,6 +73,9 @@ const confirmAccept = (session) => {
   });
 };
 
+/**
+ * Rejects an upcoming request entry via functional fallback accept channels.
+ */
 const confirmReject = (session) => {
   confirm.require({
     message: t('sessions.confirm-reject', {topic: session.topic}),
@@ -59,6 +85,9 @@ const confirmReject = (session) => {
   });
 };
 
+/**
+ * active processing streams and switches parameters to cancelled labels.
+ */
 const confirmCancel = (session) => {
   confirm.require({
     message: t('sessions.confirm-cancel', {topic: session.topic}),
@@ -137,7 +166,7 @@ const confirmCancel = (session) => {
           <template #body="slotProps">
             <div class="actions-cell">
 
-              <!-- Ver workspace (siempre visible) -->
+
               <pv-button
                   icon="pi pi-comments"
                   rounded text
@@ -145,7 +174,7 @@ const confirmCancel = (session) => {
                   :title="t('sessions.action-view')"
                   @click="navigateToWorkspace(slotProps.data.id)" />
 
-              <!-- Aceptar (solo pending) -->
+
               <pv-button
                   v-if="slotProps.data.status === 'pending'"
                   icon="pi pi-check"
@@ -154,7 +183,7 @@ const confirmCancel = (session) => {
                   :title="t('sessions.action-accept')"
                   @click="confirmAccept(slotProps.data)" />
 
-              <!-- Rechazar (solo pending) -->
+
               <pv-button
                   v-if="slotProps.data.status === 'pending'"
                   icon="pi pi-times"
@@ -163,7 +192,7 @@ const confirmCancel = (session) => {
                   :title="t('sessions.action-reject')"
                   @click="confirmReject(slotProps.data)" />
 
-              <!-- Cancelar (solo pending o scheduled) -->
+
               <pv-button
                   v-if="slotProps.data.status === 'pending' || slotProps.data.status === 'scheduled'"
                   icon="pi pi-ban"
@@ -172,7 +201,7 @@ const confirmCancel = (session) => {
                   :title="t('sessions.action-cancel')"
                   @click="confirmCancel(slotProps.data)" />
 
-              <!-- Editar (siempre visible) -->
+
               <pv-button
                   icon="pi pi-pencil"
                   rounded text
@@ -180,7 +209,7 @@ const confirmCancel = (session) => {
                   :title="t('sessions.action-edit')"
                   @click="navigateToEdit(slotProps.data.id)" />
 
-              <!-- Eliminar (siempre visible) -->
+
               <pv-button
                   icon="pi pi-trash"
                   rounded text
@@ -204,13 +233,13 @@ const confirmCancel = (session) => {
 </template>
 
 <style scoped>
-/* Contenedor principal */
+
 .sessions-container {
   width: 100%;
   padding: 0 2rem;
 }
 
-/* Título y botón */
+
 .page-title {
   color: #1a2a40;
   font-weight: 800;
@@ -229,7 +258,7 @@ const confirmCancel = (session) => {
   background-color: #d03544 !important;
 }
 
-/* Tarjeta de tabla */
+
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -238,7 +267,7 @@ const confirmCancel = (session) => {
   border: 1px solid #f0f2f5;
 }
 
-/* Cabeceras */
+
 :deep(.clean-table .p-datatable-thead > tr > th) {
   background-color: #ffffff;
   color: #8c98a4;
@@ -249,7 +278,7 @@ const confirmCancel = (session) => {
   padding: 1.5rem 1rem;
 }
 
-/* Filas */
+
 :deep(.clean-table .p-datatable-tbody > tr) {
   background-color: #ffffff;
   color: #333333;
@@ -264,14 +293,14 @@ const confirmCancel = (session) => {
   background-color: #fcfcfc;
 }
 
-/* Textos */
+
 .text-id      { color: #a0aec0; font-weight: 700; }
 .text-topic   { color: #1a2a40; font-weight: 800; font-size: 0.95rem; }
 .text-neutral { color: #4a5568; }
 .text-date    { color: #718096; display: flex; align-items: center; }
 .icon-clock   { margin-right: 0.5rem; color: #a0aec0; }
 
-/* Píldoras de estado */
+
 .status-badge {
   padding: 0.4rem 1rem;
   border-radius: 20px;
@@ -286,14 +315,14 @@ const confirmCancel = (session) => {
 .status-cancelled,
 .status-rejected  { background-color: #fee2e2; color: #dc2626; }
 
-/* Celda de acciones */
+
 .actions-cell {
   display: flex;
   align-items: center;
   gap: 0.1rem;
 }
 
-/* Botones de acción */
+
 .action-btn-view   { color: #1a2a40 !important; }
 .action-btn-accept { color: #16a34a !important; }
 .action-btn-reject { color: #dc2626 !important; }

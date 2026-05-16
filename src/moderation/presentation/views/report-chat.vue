@@ -26,43 +26,41 @@ const caseDate  = computed(() => report.value?.getFormattedCreatedAt() ?? '—')
 const status    = computed(() => report.value?.status ?? '—');
 
 onMounted(async () => {
-    if (store.reports.length === 0) await store.fetchReports();
-    loading.value = true;
-    try {
-        messages.value = await api.getMessagesByUser(userId.value);
-    } catch (e) {
-        console.error('Error loading messages', e);
-    } finally {
-        loading.value = false;
-    }
+  if (store.reports.length === 0) await store.fetchReports();
+  loading.value = true;
+  try {
+    messages.value = await api.getMessagesByUser(userId.value);
+  } catch (e) {
+    console.error('Error loading messages', e);
+  } finally {
+    loading.value = false;
+  }
 });
 
 function formatTime(sentAt) {
-    if (!sentAt) return '';
-    return new Date(sentAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+  if (!sentAt) return '';
+  return new Date(sentAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
 }
 
 function statusLabel(s) {
-    const map = {
-        pending:   t('moderation.status-pending'),
-        warning:   t('moderation.status-warning'),
-        dismissed: t('moderation.status-dismissed'),
-        resolved:  t('moderation.status-resolved')
-    };
-    return map[s] ?? s;
+  const map = {
+    pending:   t('moderation.status-pending'),
+    warning:   t('moderation.status-warning'),
+    dismissed: t('moderation.status-dismissed'),
+    resolved:  t('moderation.status-resolved')
+  };
+  return map[s] ?? s;
 }
 </script>
 
 <template>
   <div class="chat-page">
 
-    <!-- Back button -->
     <button class="back-btn" @click="router.push({ name: 'moderation-reports' })">
       <i class="pi pi-arrow-left"></i>
       {{ t('moderation.btn-back') }}
     </button>
 
-    <!-- ── Session Card ── -->
     <div class="session-card">
       <div class="session-header">
         <div>
@@ -93,7 +91,6 @@ function statusLabel(s) {
       </div>
     </div>
 
-    <!-- ── Messages Card ── -->
     <div class="messages-card">
       <div class="messages-header">
         <h3 class="messages-title">{{ t('moderation.chat-messages') }}</h3>
@@ -135,7 +132,6 @@ function statusLabel(s) {
   gap: 20px;
 }
 
-/* ── Back button ── */
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -154,7 +150,6 @@ function statusLabel(s) {
 }
 .back-btn:hover { background: #f3f4f6; border-color: #d1d5db; }
 
-/* ── Session card ── */
 .session-card {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -175,7 +170,6 @@ function statusLabel(s) {
 .meta-label   { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; }
 .meta-value   { font-size: 14px; font-weight: 600; color: #1a2a40; }
 
-/* ── Messages card ── */
 .messages-card {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -232,7 +226,6 @@ function statusLabel(s) {
   line-height: 1.5;
 }
 
-/* ── Status chips ── */
 .chip           { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .chip-pending   { background: #fef9ee; color: #d97706; border: 1px solid #fde68a; }
 .chip-warning   { background: #fff1f0; color: #ef4444; border: 1px solid #fecaca; }

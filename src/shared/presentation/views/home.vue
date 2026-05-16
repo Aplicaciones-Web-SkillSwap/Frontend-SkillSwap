@@ -13,17 +13,17 @@ onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
 });
 
-// Sesiones programadas (scheduled o completed)
+
 const scheduledSessions = computed(() =>
     store.sessions.filter(s => s.status === 'scheduled' || s.status === 'completed').slice(0, 3)
 );
 
-// Solicitudes pendientes
+
 const pendingSessions = computed(() =>
     store.sessions.filter(s => s.status === 'pending')
 );
 
-// Mock de tutores en línea (BC Discovery no implementado aún)
+
 const onlineTutors = [
   { id: 1, name: 'Miguel Santos Medina', career: 'Ing. Software', university: 'PUCP', verified: true, online: true, favorite: true },
   { id: 2, name: 'Adrian Guevara Romero', career: 'Ing. Sistemas', university: 'Ulima', verified: true, online: true, favorite: true },
@@ -65,10 +65,10 @@ const navigateToSessions = () => {
 
     <div class="dashboard-grid">
 
-      <!-- ── COLUMNA IZQUIERDA ── -->
+
       <div class="left-col">
 
-        <!-- Header de bienvenida -->
+
         <div class="welcome-row">
           <h1 class="welcome-title">¡Bienvenida de nuevo, <span class="highlight">Alexandra</span>!</h1>
           <pv-button label="Aprender un nuevo tema" class="btn-learn" @click="navigateToSessions"/>
@@ -120,10 +120,10 @@ const navigateToSessions = () => {
 
       </div>
 
-      <!-- ── COLUMNA DERECHA ── -->
+
       <div class="right-col">
 
-        <!-- Solicitudes pendientes -->
+
         <div class="section">
           <div class="section-header-row">
             <h2 class="section-title">Solicitudes</h2>
@@ -202,7 +202,7 @@ const navigateToSessions = () => {
 </template>
 
 <style scoped>
-/* Layout general */
+
 .dashboard-container {
   background-color: #f3f4f6;
   min-height: 100vh;
@@ -217,14 +217,14 @@ const navigateToSessions = () => {
   margin: 0 auto;
 }
 
-/* Columnas */
+
 .left-col, .right-col {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/* Secciones */
+
 .section {
   background-color: #ffffff;
   border-radius: 16px;

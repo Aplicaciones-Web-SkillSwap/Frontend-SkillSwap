@@ -1,5 +1,13 @@
-<script setup>
+<script lang="js" setup>
 import {useI18n} from "vue-i18n";
+
+/**
+ * Shared presentation footer layout component.
+ *
+ * @remarks
+ * Renders copyright info and internationalized authoring credits globally across
+ * app layouts, embedding localized structural strings alongside external styling dependencies.
+ */
 
 const { t } = useI18n();
 </script>
@@ -20,39 +28,39 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
-/* Contenedor principal con tu color azul oscuro */
+
 .footer-container {
   background-color: #1a2a40;
   padding: 1.5rem 0;
   width: 100%;
 }
 
-/* Centrado de texto simple */
+
 .footer-content {
   text-align: center;
-  color: #ffffff; /* Letras blancas para contrastar el fondo oscuro */
+  color: #ffffff;
 }
 
-/* Espaciado de los párrafos */
+
 .footer-text {
   margin: 0.5rem 0;
   font-size: 0.95rem;
 }
 
-/* Estilo para el corazón */
+
 .heart-icon {
-  color: #e53e4f; /* Tu color rojo */
-  margin: 0 0.3rem; /* Separación a los lados */
+  color: #e53e4f;
+  margin: 0 0.3rem;
 }
 
 /* Estilo para el enlace de PrimeVue */
 .footer-link {
   color: #e53e4f;
-  text-decoration: none; /* Quitamos la línea de abajo */
+  text-decoration: none;
   font-weight: bold;
 }
 
 .footer-link:hover {
-  text-decoration: underline; /* Aparece la línea al pasar el cursor */
+  text-decoration: underline;
 }
 </style>

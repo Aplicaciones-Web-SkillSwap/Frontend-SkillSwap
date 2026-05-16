@@ -5,26 +5,53 @@ import useWorkspaceStore from "@/workspace/application/workspace.store.js";
 import {computed, onMounted, ref} from "vue";
 import {Message} from "@/workspace/domain/model/message-entity.js";
 
+/**
+ * Interactive workspace panel and messaging channel component.
+ *
+ * @remarks
+ * Orchestrates multi-feature interaction stages across active sessions. Manages state
+ * constraints governing conditional visibility rules for chat pathways (US10),
+ * multimedia call streams (US12), processing reviews, and transaction metrics (US18).
+ */
 const {t}    = useI18n();
 const route  = useRoute();
 const router = useRouter();
 const store  = useWorkspaceStore();
 const { fetchSessions, fetchMessages, addMessage, errors } = store;
 
+/**
+ * Buffer element capturing immediate user text inputs before staging payload saves.
+ */
 const newMessageContent = ref('');
+
+/**
+ * Static mock identifier representing the active session runtime context user.
+ */
 const CURRENT_USER_ID   = 1;
 
+/**
+ * Filters and resolves local session entity information matching active query parameter frames.
+ */
 const session = computed(() => store.getSessionById(route.params.id));
 
+/**
+ * Gathers relevant processing message arrays associated with the ongoing layout identity context.
+ */
 const sessionMessages = computed(() => store.getMessagesBySessionId(route.params.id));
 
-// US10 - Chat solo habilitado para sesiones 'scheduled'
+/**
+ * Enforces security states evaluating if chat capabilities can be interactively modified.
+ */
 const isChatEnabled = computed(() => session.value?.status === 'scheduled');
 
-// US12 - Videollamada solo disponible si está 'scheduled'
+/**
+ * Validates baseline parameters confirming video call activation logic compliance.
+ */
 const isVideoEnabled = computed(() => session.value?.status === 'scheduled');
 
-// US18 - Botón de donación aparece solo cuando la sesión está 'completed'
+/**
+ * Evaluation flag identifying successfully concluded session processing flows.
+ */
 const isCompleted = computed(() => session.value?.status === 'completed');
 
 onMounted(() => {
@@ -32,6 +59,9 @@ onMounted(() => {
   if (!store.messagesLoaded) fetchMessages();
 });
 
+/**
+ * Assembles and dispatches standard text message models through store transaction routines.
+ */
 const sendMessage = () => {
   if (!newMessageContent.value.trim()) return;
   const message = new Message({
@@ -46,12 +76,17 @@ const sendMessage = () => {
   newMessageContent.value = '';
 };
 
+/**
+ * Signals runtime alert overlays to boot contextual video call interfaces.
+ */
 const startVideoCall = () => {
   if (!isVideoEnabled.value) return;
   alert(t('workspace.video-call-message'));
 };
 
-// US18 - Navega a nueva transacción con el receiverId del tutor ya prellenado
+/**
+ * Transitions layout contexts towards transaction creation views passing destination criteria.
+ */
 const navigateToDonation = () => {
   router.push({
     name:  'payment-transactions-new',
@@ -62,7 +97,9 @@ const navigateToDonation = () => {
   });
 };
 
-// FUSIÓN: US17 - Aporte del compañero. Navega al form de reseña.
+/**
+ * Transfers view scope context over onto external user reputation assessment pathways.
+ */
 const navigateToReview = () => {
   router.push({
     name:  'reputation-reviews-new',
@@ -73,6 +110,9 @@ const navigateToReview = () => {
   });
 };
 
+/**
+ * Recovers default dashboard state views via clean layout routing history updates.
+ */
 const navigateBack = () => {
   router.push({name: 'workspace-sessions'});
 };
@@ -228,7 +268,7 @@ const navigateBack = () => {
   margin: 0 auto;
 }
 
-/* Títulos y Header */
+/* Título y subtítulo */
 .page-title {
   color: #1a2a40;
   font-weight: 800;
@@ -247,7 +287,7 @@ const navigateBack = () => {
 .action-btn-view { color: #1a2a40 !important; }
 .action-btn-view:hover { background-color: #f8fafc !important; }
 
-/* --- PÍLDORAS DE ESTADO --- */
+/* Estados en cabecera */
 .status-badge {
   padding: 0.35rem 0.9rem;
   border-radius: 20px;
@@ -258,13 +298,13 @@ const navigateBack = () => {
   margin-left: 0.5rem;
 }
 
-.status-scheduled { background-color: #e0f2fe; color: #0284c7; } /* Azul claro */
-.status-pending   { background-color: #fef3c7; color: #d97706; } /* Amarillo */
-.status-completed { background-color: #dcfce7; color: #16a34a; } /* Verde claro */
+.status-scheduled { background-color: #e0f2fe; color: #0284c7; }
+.status-pending   { background-color: #fef3c7; color: #d97706; }
+.status-completed { background-color: #dcfce7; color: #16a34a; }
 .status-cancelled,
-.status-rejected  { background-color: #fee2e2; color: #dc2626; } /* Rojo */
+.status-rejected  { background-color: #fee2e2; color: #dc2626; }
 
-/* --- TARJETA PRINCIPAL --- */
+/* Tarjeta base */
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -272,7 +312,7 @@ const navigateBack = () => {
   border: 1px solid #f0f2f5;
 }
 
-/* Botón videollamada */
+/* Botón de llamada */
 .btn-call {
   background-color: #e53e4f !important;
   border: none !important;
@@ -328,7 +368,7 @@ const navigateBack = () => {
   margin: 0 0 2rem 0;
 }
 
-/* Flujo de estados visual */
+/* Flujo del estado */
 .status-flow {
   display: flex;
   align-items: center;
@@ -355,7 +395,7 @@ const navigateBack = () => {
 
 .flow-arrow { color: #cbd5e1; font-size: 0.9rem; }
 
-/* FUSIÓN: Acciones Completadas (Donación + Reseña) */
+/* Banners del estado completado */
 .completed-actions {
   display: flex;
   flex-direction: column;
@@ -427,7 +467,7 @@ const navigateBack = () => {
 }
 .btn-review:hover { background-color: #f59e0b !important; }
 
-/* Chat */
+/* Entorno de chat */
 .chat-box {
   height: 400px;
   overflow-y: auto;
@@ -499,7 +539,7 @@ const navigateBack = () => {
 
 .btn-send:hover { background-color: #2d4a6e !important; }
 
-/* Mensaje de error */
+/* Alertas de error */
 .error-msg {
   font-weight: bold;
   background-color: #fee2e2;

@@ -65,7 +65,7 @@ const statusClass = (status) => {
 <template>
   <div class="p-4 transactions-container">
 
-    <!-- Header -->
+
     <div class="header-actions flex justify-content-between align-items-center mb-4">
       <div class="flex align-items-center gap-3">
         <pv-button icon="pi pi-arrow-left" text class="action-btn-view" @click="navigateBack"/>
@@ -80,7 +80,7 @@ const statusClass = (status) => {
       <pv-button :label="t('transactions.new')" icon="pi pi-plus" class="btn-new" @click="navigateToNew"/>
     </div>
 
-    <!-- Tabla -->
+
     <div class="table-card">
       <pv-data-table
           :loading="!transactionsLoaded"
@@ -109,14 +109,14 @@ const statusClass = (status) => {
           </template>
         </pv-column>
 
-        <!-- Monto original -->
+
         <pv-column :header="t('transactions.original-amount')" field="originalAmount" sortable>
           <template #body="slotProps">
             <span class="text-amount">USD {{ Number(slotProps.data.originalAmount).toFixed(2) }}</span>
           </template>
         </pv-column>
 
-        <!-- Comisión 5% SkillSwap -->
+
         <pv-column :header="t('transactions.commission-fee')">
           <template #body="slotProps">
             <span class="text-commission">
@@ -126,7 +126,7 @@ const statusClass = (status) => {
           </template>
         </pv-column>
 
-        <!-- Monto neto tutor -->
+
         <pv-column :header="t('transactions.net-amount')">
           <template #body="slotProps">
             <span class="text-net">USD {{ Number(slotProps.data.netAmount).toFixed(2) }}</span>
@@ -157,7 +157,7 @@ const statusClass = (status) => {
       </pv-data-table>
     </div>
 
-    <!-- Errores -->
+
     <div v-if="errors.length" class="text-red-500 mt-3 error-msg">
       <i class="pi pi-exclamation-circle mr-2"></i>
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
@@ -168,13 +168,13 @@ const statusClass = (status) => {
 </template>
 
 <style scoped>
-/* Contenedor principal */
+
 .transactions-container {
   width: 100%;
   padding: 0 2rem;
 }
 
-/* Títulos y Header */
+
 .page-title {
   color: #1a2a40;
   font-weight: 800;
@@ -199,7 +199,7 @@ const statusClass = (status) => {
   font-size: 0.8rem;
 }
 
-/* Efecto tarjeta para envolver la tabla */
+
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -208,7 +208,7 @@ const statusClass = (status) => {
   border: 1px solid #f0f2f5;
 }
 
-/* --- ESTILOS DE LA TABLA LIMPIA (AQUÍ ESTÁ LA CORRECCIÓN) --- */
+
 :deep(.clean-table .p-datatable-thead > tr > th) {
   background-color: #ffffff !important;
   color: #8c98a4 !important;
@@ -230,7 +230,7 @@ const statusClass = (status) => {
   background-color: #f8fafc !important;
 }
 
-/* --- ESTILOS DE TEXTO INTERNO --- */
+
 .text-id      { color: #a0aec0; font-weight: 700; }
 .text-neutral { color: #4a5568; }
 .text-amount  { color: #1a2a40; font-weight: 700; }
@@ -257,7 +257,7 @@ const statusClass = (status) => {
   font-weight: 700;
 }
 
-/* --- PÍLDORAS DE ESTADO --- */
+
 .status-badge {
   padding: 0.35rem 0.9rem;
   border-radius: 20px;
@@ -271,7 +271,7 @@ const statusClass = (status) => {
 .status-failed,
 .status-cancelled { background-color: #fee2e2; color: #dc2626; }
 
-/* --- BOTONES DE ACCIÓN --- */
+
 .btn-new {
   background-color: #e53e4f !important;
   border: none !important;

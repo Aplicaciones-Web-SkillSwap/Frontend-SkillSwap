@@ -94,7 +94,6 @@ const useWorkspaceStore = defineStore('workspace', () => {
         });
     }
 
-    // ── Nuevas acciones de estado ────────────────────────────────────────────
 
     function acceptSession(session) {
         const updated = { ...session, status: 'scheduled' };
@@ -132,7 +131,6 @@ const useWorkspaceStore = defineStore('workspace', () => {
         });
     }
 
-    // ── Acciones de borrado ──────────────────────────────────────────────────
 
     function deleteSession(session) {
         workspaceApi.deleteSession(session.id).then(() => {

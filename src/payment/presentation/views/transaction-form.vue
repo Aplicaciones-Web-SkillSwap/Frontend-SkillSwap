@@ -23,7 +23,7 @@ const form = ref({
   description:    '',
 });
 
-// Calculados automáticamente al cambiar el monto
+
 const commissionFee = computed(() =>
     parseFloat((form.value.originalAmount * COMMISSION_RATE).toFixed(2))
 );
@@ -102,7 +102,7 @@ const navigateBack = () => {
       </h1>
     </div>
 
-    <!-- Formulario en tarjeta -->
+
     <div class="table-card form-wrapper">
       <form @submit.prevent="saveTransaction" class="p-fluid">
 
@@ -139,7 +139,7 @@ const navigateBack = () => {
             <pv-select id="status" v-model="form.status" :options="statusOptions" option-label="label" option-value="value" class="w-full"/>
           </div>
 
-          <!-- Monto original -->
+
           <div class="col-12 md:col-6 field mb-4">
             <label for="originalAmount" class="custom-label">{{ t('transaction.original-amount') }}</label>
             <pv-input-number
@@ -159,7 +159,7 @@ const navigateBack = () => {
 
         </div>
 
-        <!-- Desglose automático de comisión -->
+
         <div v-if="form.originalAmount > 0" class="commission-breakdown">
           <p class="breakdown-title">{{ t('transaction.breakdown-title') }}</p>
           <div class="breakdown-rows">
@@ -182,7 +182,7 @@ const navigateBack = () => {
           </div>
         </div>
 
-        <!-- Acciones del formulario -->
+
         <div class="flex justify-content-end gap-3 mt-4 pt-4 border-top-1 border-300">
           <pv-button :label="t('transaction.cancel')" text class="btn-cancel" @click="navigateBack"/>
           <pv-button :label="t('transaction.save')"   type="submit" class="btn-save"/>
@@ -191,7 +191,7 @@ const navigateBack = () => {
       </form>
     </div>
 
-    <!-- Errores -->
+
     <div v-if="errors.length" class="text-red-500 mt-4 error-msg">
       <i class="pi pi-exclamation-circle mr-2"></i>
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
@@ -201,7 +201,7 @@ const navigateBack = () => {
 </template>
 
 <style scoped>
-/* Contenedor principal */
+
 .transaction-container {
   width: 100%;
   padding: 0 2rem;
@@ -209,14 +209,14 @@ const navigateBack = () => {
   margin: 0 auto;
 }
 
-/* Título */
+
 .page-title {
   color: #1a2a40;
   font-weight: 800;
   font-size: 2rem;
 }
 
-/* Efecto tarjeta unificado */
+
 .table-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -225,7 +225,7 @@ const navigateBack = () => {
   border: 1px solid #f0f2f5;
 }
 
-/* Etiquetas del formulario */
+
 .custom-label {
   display: block;
   font-weight: 700;
@@ -234,7 +234,7 @@ const navigateBack = () => {
   font-size: 0.95rem;
 }
 
-/* --- DESGLOSE DE COMISIÓN --- */
+
 .commission-breakdown {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -275,7 +275,7 @@ const navigateBack = () => {
 
 .breakdown-divider { height: 1px; background-color: #cbd5e1; margin: 0.4rem 0; }
 
-/* --- BOTONES --- */
+
 .action-btn-view {
   color: #1a2a40 !important;
 }
@@ -304,7 +304,7 @@ const navigateBack = () => {
   background-color: #f8f9fa !important;
 }
 
-/* Mensaje de error */
+
 .error-msg {
   font-weight: bold;
   background-color: #fee2e2;

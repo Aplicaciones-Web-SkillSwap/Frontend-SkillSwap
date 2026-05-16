@@ -74,7 +74,7 @@ const usePaymentStore = defineStore('payment', () => {
             const newTransaction = TransactionAssembler.toEntityFromResource(resource);
             transactions.value.push(newTransaction);
 
-            // Si la transacción es "completed", sumamos el netAmount al balance de la wallet
+
             if (newTransaction.status === 'completed') {
                 _applyTransactionToWallet(newTransaction.walletId, newTransaction.netAmount);
             }
@@ -84,7 +84,7 @@ const usePaymentStore = defineStore('payment', () => {
         });
     }
 
-    //  updateTransaction
+
     function updateTransaction(transaction) {
 
         const previousTransaction = getTransactionById(transaction.id);
