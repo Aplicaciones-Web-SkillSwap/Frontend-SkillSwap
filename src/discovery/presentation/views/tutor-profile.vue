@@ -4,6 +4,7 @@ import {useRoute, useRouter}  from "vue-router";
 import useDiscoveryStore      from "@/discovery/application/discovery.store.js";
 import useReputationStore     from "@/reputation/application/reputation.store.js";
 import {computed, onMounted}  from "vue";
+import {formatDate}           from "@/shared/utils/format-date.js";
 
 const {t}    = useI18n();
 const route  = useRoute();
@@ -54,7 +55,6 @@ const renderStars = (rating) => {
   return { full, half, empty };
 };
 
-const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 
 // US08 — Enviar solicitud de tutoría
 const sendRequest = () => {
@@ -128,6 +128,24 @@ const navigateBack = () => {
             <p class="skills-label">{{ t('discovery.skills') }}</p>
             <div class="skills-row">
               <span v-for="skill in tutor.skills" :key="skill" class="skill-tag">{{ skill }}</span>
+            </div>
+          </div>
+
+          <!-- Experiencia y materia principal (Claudio Alberca feedback) -->
+          <div class="extra-info-section">
+            <div class="extra-info-item">
+              <i class="pi pi-clock extra-info-icon"/>
+              <div>
+                <p class="extra-info-label">{{ t('discovery.experience') }}</p>
+                <p class="extra-info-value">{{ tutor.experienceYears }} {{ t('discovery.years') }}</p>
+              </div>
+            </div>
+            <div class="extra-info-item">
+              <i class="pi pi-star extra-info-icon"/>
+              <div>
+                <p class="extra-info-label">{{ t('discovery.main-subject') }}</p>
+                <p class="extra-info-value">{{ tutor.mainSubject || '—' }}</p>
+              </div>
             </div>
           </div>
 
@@ -322,7 +340,7 @@ const navigateBack = () => {
 
 /* Botón solicitud (US08) */
 .btn-send-request {
-  background-color: #e53e4f !important;
+  background-color: #1e4d8c !important;
   border: none !important;
   color: #ffffff !important;
   font-weight: 700 !important;
@@ -330,7 +348,7 @@ const navigateBack = () => {
   padding: 0.8rem !important;
   font-size: 0.95rem !important;
 }
-.btn-send-request:hover { background-color: #d03544 !important; }
+.btn-send-request:hover { background-color: #163d72 !important; }
 .request-note { color: #a0aec0; font-size: 0.75rem; margin: 0.5rem 0 0 0; }
 .w-full { width: 100%; }
 
@@ -423,4 +441,26 @@ const navigateBack = () => {
 /* No encontrado */
 .empty-state     { text-align: center; padding: 4rem; }
 .btn-back-search { background-color: #1a2a40 !important; border: none !important; border-radius: 8px !important; margin-top: 1rem; }
+/* Experiencia y materia principal */
+.extra-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #f0f2f5;
+}
+
+.extra-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.extra-info-icon  { color: #1e4d8c; font-size: 1rem; }
+.extra-info-label { color: #8c98a4; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin: 0; }
+.extra-info-value { color: #1a2a40; font-size: 0.92rem; font-weight: 700; margin: 0; }
 </style>

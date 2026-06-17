@@ -2,12 +2,13 @@
 import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
 import useDiscoveryStore from "@/discovery/application/discovery.store.js";
-import {onMounted, toRefs} from "vue";
+import { onMounted, toRefs, computed } from "vue";
+
 
 const {t}    = useI18n();
 const router = useRouter();
 const store  = useDiscoveryStore();
-const { filteredTutors, tutorsLoaded, errors, searchQuery, filterMinRating, filterUniversity, universities } = toRefs(store);
+const { filteredTutors, tutorsLoaded, errors, searchQuery, filterMinRating, filterUniversity, filterSkill, universities } = toRefs(store);
 const { fetchTutors, clearFilters } = store;
 
 onMounted(() => {
@@ -23,6 +24,12 @@ const ratingOptions = [
   { label: '4.5+ ★',                          value: 4.5 },
   { label: '5 ★',                             value: 5   },
 ];
+
+const allSkills = computed(() => {
+  const set = new Set();
+  store.tutors.forEach(t => t.skills.forEach(s => set.add(s)));
+  return [...set].sort();
+});
 
 const navigateToProfile = (id) => {
   router.push({ name: 'discovery-profile', params: { id } });
@@ -92,6 +99,21 @@ const renderStars = (rating) => {
               option-label="label"
               option-value="value"
               class="w-full filter-select"/>
+        </div>
+
+        <!-- Filtro por skill -->
+        <div class="filter-group">
+          <label class="filter-label">{{ t('discovery.filter-skill') }}</label>
+          <div class="skills-filter-list">
+    <span
+        v-for="skill in allSkills"
+        :key="skill"
+        class="skill-filter-tag"
+        :class="{ 'skill-filter-active': filterSkill === skill }"
+        @click="filterSkill = (filterSkill === skill ? '' : skill)">
+      {{ skill }}
+    </span>
+          </div>
         </div>
       </aside>
 
@@ -451,4 +473,29 @@ const renderStars = (rating) => {
 .btn-profile:hover { background-color: #2d4a6e !important; }
 
 .error-msg { font-weight: bold; padding: 0 2rem; }
+.skills-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.skill-filter-tag {
+  background: #f0f2f5;
+  color: #4a5568;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+
+.skill-filter-tag:hover { background: #e0f2fe; color: #0284c7; }
+
+.skill-filter-active {
+  background: #1a2a40 !important;
+  color: #ffffff !important;
+  border-color: #1a2a40 !important;
+}
 </style>

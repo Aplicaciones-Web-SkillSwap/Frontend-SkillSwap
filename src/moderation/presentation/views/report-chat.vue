@@ -1,46 +1,53 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter }      from 'vue-router';
-import { useI18n }                  from 'vue-i18n';
-import useModerationStore           from '@/moderation/application/moderation.store.js';
-import { ModerationApi }            from '@/moderation/infrastructure/moderation-api.js';
+import { computed, onMounted }  from 'vue';
+import { useRoute, useRouter }  from 'vue-router';
+import { useI18n }              from 'vue-i18n';
+import useModerationStore       from '@/moderation/application/moderation.store.js';
+import useWorkspaceStore        from '@/workspace/application/workspace.store.js';
+import useDiscoveryStore        from '@/discovery/application/discovery.store.js';
+import { formatDateTime }       from '@/shared/utils/format-date.js';
 
 const { t }  = useI18n();
 const route  = useRoute();
 const router = useRouter();
-const store  = useModerationStore();
-const api    = new ModerationApi();
-
-const messages = ref([]);
-const loading  = ref(false);
+const moderationStore = useModerationStore();
+const workspaceStore  = useWorkspaceStore();
+const discoveryStore  = useDiscoveryStore();
 
 const userId = computed(() => Number(route.params.userId));
 
 const report = computed(() =>
-    store.reports.find(r => r.reportedUserId === userId.value) ?? null
+    moderationStore.reports.find(r => r.reportedUserId === userId.value) ?? null
 );
 
-const tutorId   = computed(() => report.value?.reporterUserId ?? '—');
-const studentId = computed(() => report.value?.reportedUserId ?? '—');
-const caseDate  = computed(() => report.value?.getFormattedCreatedAt() ?? '—');
-const status    = computed(() => report.value?.status ?? '—');
+const session = computed(() =>
+    workspaceStore.sessions.find(s =>
+        s.tutorId   === report.value?.reporterUserId ||
+        s.learnerId === report.value?.reportedUserId
+    ) ?? null
+);
 
-onMounted(async () => {
-  if (store.reports.length === 0) await store.fetchReports();
-  loading.value = true;
-  try {
-    messages.value = await api.getMessagesByUser(userId.value);
-  } catch (e) {
-    console.error('Error loading messages', e);
-  } finally {
-    loading.value = false;
-  }
+const sessionMessages = computed(() =>
+    session.value ? workspaceStore.getMessagesBySessionId(session.value.id) : []
+);
+
+const userName = (id) => {
+  const tutor = discoveryStore.tutors.find(t => t.userId === id);
+  return tutor ? tutor.name : `Usuario #${id}`;
+};
+
+const caseDate = computed(() => report.value
+    ? formatDateTime(report.value.createdAt)
+    : '—'
+);
+const status = computed(() => report.value?.status ?? '—');
+
+onMounted(() => {
+  if (moderationStore.reports.length === 0) moderationStore.fetchReports();
+  if (!workspaceStore.sessionsLoaded)        workspaceStore.fetchSessions();
+  if (!workspaceStore.messagesLoaded)        workspaceStore.fetchMessages();
+  if (!discoveryStore.tutorsLoaded)          discoveryStore.fetchTutors();
 });
-
-function formatTime(sentAt) {
-  if (!sentAt) return '';
-  return new Date(sentAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-}
 
 function statusLabel(s) {
   const map = {
@@ -51,6 +58,16 @@ function statusLabel(s) {
   };
   return map[s] ?? s;
 }
+
+const navigateToSanction = () => {
+  router.push({
+    name:  'moderation-sanctions-new',
+    query: {
+      reportId:         report.value?.id,
+      sanctionedUserId: userId.value,
+    }
+  });
+};
 </script>
 
 <template>
@@ -61,6 +78,7 @@ function statusLabel(s) {
       {{ t('moderation.btn-back') }}
     </button>
 
+    <!-- Info del reporte -->
     <div class="session-card">
       <div class="session-header">
         <div>
@@ -82,38 +100,64 @@ function statusLabel(s) {
         </div>
         <div class="meta-item">
           <span class="meta-label">{{ t('moderation.chat-tutor') }}</span>
-          <span class="meta-value">User #{{ tutorId }}</span>
+          <span class="meta-value">{{ userName(report?.reporterUserId) }}</span>
         </div>
         <div class="meta-item">
           <span class="meta-label">{{ t('moderation.chat-student') }}</span>
-          <span class="meta-value">User #{{ studentId }}</span>
+          <span class="meta-value">{{ userName(report?.reportedUserId) }}</span>
         </div>
+        <div class="meta-item">
+          <span class="meta-label">Motivo</span>
+          <span class="meta-value">{{ report?.reason ?? '—' }}</span>
+        </div>
+      </div>
+
+      <!-- Botón sancionar -->
+      <div class="sanction-row">
+        <button class="btn-sanction" @click="navigateToSanction">
+          <i class="pi pi-gavel" style="font-size:14px;"></i>
+          Aplicar sanción al infractor
+        </button>
       </div>
     </div>
 
+    <!-- Mensajes de la sesión -->
     <div class="messages-card">
       <div class="messages-header">
         <h3 class="messages-title">{{ t('moderation.chat-messages') }}</h3>
+        <span v-if="session" style="font-size:12px; color:#9ca3af;">
+          Sesión #{{ session.id }} — {{ session.topic }}
+        </span>
       </div>
 
-      <div v-if="loading" class="spinner-wrap">
+      <div v-if="!workspaceStore.messagesLoaded" class="spinner-wrap">
         <i class="pi pi-spin pi-spinner" style="font-size:28px; color:#1e4d8c;"></i>
       </div>
 
-      <div v-else-if="messages.length === 0" class="no-messages">
+      <div v-else-if="sessionMessages.length === 0" class="no-messages">
         <i class="pi pi-comments" style="font-size:36px; color:#d1d5db; display:block; margin-bottom:10px;"></i>
         {{ t('moderation.chat-no-messages') }}
       </div>
 
       <div v-else class="messages-list">
-        <div v-for="msg in messages" :key="msg.id" class="message-row">
-          <div class="avatar-circle">{{ msg.senderId }}</div>
+        <div v-for="msg in sessionMessages" :key="msg.id" class="message-row">
+          <div class="avatar-circle">
+            <i class="pi pi-user" style="font-size:12px;"/>
+          </div>
           <div class="message-body">
             <div class="message-meta">
-              <span class="sender-label">User #{{ msg.senderId }}</span>
-              <span class="sent-time">{{ formatTime(msg.sentAt) }}</span>
+              <span class="sender-label">{{ userName(msg.senderId) }}</span>
+              <span class="sent-time">{{ formatDateTime(msg.sentAt) }}</span>
             </div>
-            <div class="bubble">{{ msg.message }}</div>
+            <!-- Texto -->
+            <div v-if="msg.content" class="bubble">{{ msg.content }}</div>
+            <!-- Archivo adjunto -->
+            <div v-if="msg.fileUrl" class="bubble file-bubble">
+              <i class="pi pi-file mr-1"/>
+              <a :href="msg.fileUrl" target="_blank" class="file-link">
+                {{ msg.fileName || 'Archivo adjunto' }}
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -231,4 +275,32 @@ function statusLabel(s) {
 .chip-warning   { background: #fff1f0; color: #ef4444; border: 1px solid #fecaca; }
 .chip-dismissed { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
 .chip-resolved  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+.sanction-row {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f3f5;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-sanction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e53e4f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-sanction:hover { background: #d03544; }
+
+.file-bubble { display: flex; align-items: center; gap: 4px; }
+.file-link   { color: #1e4d8c; font-weight: 600; font-size: 13px; text-decoration: underline; }
 </style>

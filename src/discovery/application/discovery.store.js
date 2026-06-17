@@ -14,6 +14,7 @@ const useDiscoveryStore = defineStore('discovery', () => {
     const searchQuery     = ref('');
     const filterMinRating = ref(0);
     const filterUniversity = ref('');
+    const filterSkill = ref('');
 
     const tutorsCount = computed(() => tutorsLoaded.value ? tutors.value.length : 0);
 
@@ -21,7 +22,7 @@ const useDiscoveryStore = defineStore('discovery', () => {
     const filteredTutors = computed(() => {
         let result = tutors.value;
 
-        // US05 - Búsqueda por keyword (skills, nombre, universidad)
+        // US05 - Búsqueda por keyword
         if (searchQuery.value.trim()) {
             const q = searchQuery.value.toLowerCase().trim();
             result = result.filter(tutor =>
@@ -44,8 +45,17 @@ const useDiscoveryStore = defineStore('discovery', () => {
             );
         }
 
+        // Filtro por skill específico
+        if (filterSkill.value.trim()) {
+            result = result.filter(tutor =>
+                tutor.skills.some(s => s.toLowerCase().includes(filterSkill.value.toLowerCase()))
+            );
+        }
+
         return result;
     });
+
+
 
     // Lista de universidades únicas para el dropdown de filtro
     const universities = computed(() =>
@@ -73,12 +83,13 @@ const useDiscoveryStore = defineStore('discovery', () => {
         searchQuery.value      = '';
         filterMinRating.value  = 0;
         filterUniversity.value = '';
+        filterSkill.value = '';
     }
 
     return {
         tutors, errors,
         tutorsLoaded, tutorsCount,
-        searchQuery, filterMinRating, filterUniversity,
+        searchQuery, filterMinRating, filterUniversity, filterSkill,
         filteredTutors, universities,
         fetchTutors, getTutorById, clearFilters
     };

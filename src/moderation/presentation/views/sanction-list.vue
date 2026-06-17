@@ -3,22 +3,30 @@ import { onMounted }      from 'vue';
 import { useI18n }        from 'vue-i18n';
 import { useRouter }      from 'vue-router';
 import useModerationStore from '@/moderation/application/moderation.store.js';
+import useDiscoveryStore   from '@/discovery/application/discovery.store.js';
 
 const { t }  = useI18n();
 const router = useRouter();
 const store  = useModerationStore();
+const discoveryStore = useDiscoveryStore();
 
 onMounted(() => {
-    store.fetchSanctions();
+  store.fetchSanctions();
+  if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
 });
 
+const userName = (id) => {
+  const tutor = discoveryStore.tutors.find(t => t.userId === id);
+  return tutor ? tutor.name : `Usuario #${id}`;
+};
+
 function typeLabel(type) {
-    const map = { ban: t('moderation.type-ban'), warning: t('moderation.type-warning'), dismissed: t('moderation.type-dismissed') };
-    return map[type] ?? type;
+  const map = { ban: t('moderation.type-ban'), warning: t('moderation.type-warning'), dismissed: t('moderation.type-dismissed') };
+  return map[type] ?? type;
 }
 
 function durationLabel(days) {
-    return days === 0 ? t('moderation.duration-na') : `${days} ${t('moderation.duration-days')}`;
+  return days === 0 ? t('moderation.duration-na') : `${days} ${t('moderation.duration-days')}`;
 }
 </script>
 
@@ -56,7 +64,7 @@ function durationLabel(days) {
         </pv-column>
 
         <pv-column :header="t('moderation.col-user')" field="sanctionedUserId">
-          <template #body="{ data }"><span style="font-weight:500;">User #{{ data.sanctionedUserId }}</span></template>
+          <template #body="{ data }"><span style="font-weight:500;">{{ userName(data.sanctionedUserId) }}</span></template>
         </pv-column>
 
         <pv-column :header="t('moderation.col-type')" field="type">

@@ -3,55 +3,36 @@ import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
 import {useConfirm} from "primevue";
 import useWorkspaceStore from "@/workspace/application/workspace.store.js";
+import useDiscoveryStore from "@/discovery/application/discovery.store.js";
 import {onMounted, toRefs} from "vue";
+import {formatDateTime} from "@/shared/utils/format-date.js";
 
-/**
- * Sessions record dashboard management component.
- *
- * @remarks
- * Coordinates collection processing arrays bound to workspace entities. Supports
- * data table listing models, structural workflow redirections, and multi-state
- * state transitions backed by transaction confirmation modals.
- */
 const {t}     = useI18n();
 const router  = useRouter();
 const confirm = useConfirm();
 const store   = useWorkspaceStore();
+const discoveryStore = useDiscoveryStore();
 const { sessions, errors, sessionsLoaded } = toRefs(store);
 const { fetchSessions, deleteSession, acceptSession, rejectSession, cancelSession } = store;
 
 onMounted(() => {
   if (!store.sessionsLoaded) {
     fetchSessions();
-    console.log('fetching sessions:', sessions);
     sessionsLoaded.value = store.sessionsLoaded;
   }
+  if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
 });
 
-/**
- *  structural route updates targeting selected record identification keys.
- */
-const navigateToEdit = (id) => {
-  router.push({name: 'workspace-sessions-edit', params: {id}});
+/** Resuelve el nombre de un tutor/learner por su userId */
+const userName = (id) => {
+  const tutor = discoveryStore.tutors.find(t => t.userId === id);
+  return tutor ? tutor.name : `Usuario #${id}`;
 };
 
-/**
- * Diverts layout context towards new entity initialization views.
- */
-const navigateToNew = () => {
-  router.push({name: 'workspace-sessions-new'});
-};
+const navigateToEdit      = (id) => router.push({name: 'workspace-sessions-edit', params: {id}});
+const navigateToNew       = ()    => router.push({name: 'workspace-sessions-new'});
+const navigateToWorkspace = (id)  => router.push({name: 'workspace-sessions-view', params: {id}});
 
-/**
- * Directs navigation flow into dedicated single interactive sub-view states.
- */
-const navigateToWorkspace = (id) => {
-  router.push({name: 'workspace-sessions-view', params: {id}});
-};
-
-/**
- *  runtime context via confirm sub-routines prior to purging elements.
- */
 const confirmDelete = (session) => {
   confirm.require({
     message: t('sessions.confirm-delete', {topic: session.topic}),
@@ -61,9 +42,6 @@ const confirmDelete = (session) => {
   });
 };
 
-/**
- * Approves an existing session record through UI confirmation wrappers.
- */
 const confirmAccept = (session) => {
   confirm.require({
     message: t('sessions.confirm-accept', {topic: session.topic}),
@@ -73,9 +51,6 @@ const confirmAccept = (session) => {
   });
 };
 
-/**
- * Rejects an upcoming request entry via functional fallback accept channels.
- */
 const confirmReject = (session) => {
   confirm.require({
     message: t('sessions.confirm-reject', {topic: session.topic}),
@@ -85,9 +60,6 @@ const confirmReject = (session) => {
   });
 };
 
-/**
- * active processing streams and switches parameters to cancelled labels.
- */
 const confirmCancel = (session) => {
   confirm.require({
     message: t('sessions.confirm-cancel', {topic: session.topic}),
@@ -143,13 +115,13 @@ const confirmCancel = (session) => {
 
         <pv-column :header="t('sessions.learnerId')" field="learnerId" sortable>
           <template #body="slotProps">
-            <span class="text-neutral">{{ slotProps.data.learnerId }}</span>
+            <span class="text-neutral">{{ userName(slotProps.data.learnerId) }}</span>
           </template>
         </pv-column>
 
         <pv-column :header="t('sessions.tutorId')" field="tutorId" sortable>
           <template #body="slotProps">
-            <span class="text-neutral">{{ slotProps.data.tutorId }}</span>
+            <span class="text-neutral">{{ userName(slotProps.data.tutorId) }}</span>
           </template>
         </pv-column>
 
@@ -157,7 +129,7 @@ const confirmCancel = (session) => {
           <template #body="slotProps">
             <span class="text-date">
               <i class="pi pi-clock icon-clock"></i>
-              {{ slotProps.data.scheduledAt }}
+              {{ formatDateTime(slotProps.data.scheduledAt) }}
             </span>
           </template>
         </pv-column>

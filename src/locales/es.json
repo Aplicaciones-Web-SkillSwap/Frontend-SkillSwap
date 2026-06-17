@@ -54,7 +54,11 @@
     "tutor-not-found": "Tutor no encontrado.",
     "back-to-search": "Volver a la búsqueda",
     "see-all-reviews": "Ver todas las reseñas",
-    "student": "Estudiante"
+    "student": "Estudiante",
+    "experience":    "Experiencia",
+    "years":         "años",
+    "main-subject":  "Materia principal",
+    "filter-skill": "Habilidad / Curso"
   },
   "sessions": {
     "title": "Sesiones de Tutoria",
@@ -122,7 +126,8 @@
     "btn-donate": "Hacer Donacion",
     "review-title": "Sesion completada! Califica a tu tutor.",
     "review-sub": "Tu calificacion ayuda a construir la reputacion del tutor en SkillSwap.",
-    "btn-review": "Dejar Reseña"
+    "btn-review": "Dejar Reseña",
+    "attach-file": "Adjuntar archivo"
   },
   "wallets": {
     "title": "Billeteras",

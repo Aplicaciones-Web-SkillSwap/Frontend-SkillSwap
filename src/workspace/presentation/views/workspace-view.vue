@@ -1,67 +1,34 @@
 <script setup>
-import {useI18n} from "vue-i18n";
-import {useRoute, useRouter} from "vue-router";
-import useWorkspaceStore from "@/workspace/application/workspace.store.js";
+import {useI18n}                from "vue-i18n";
+import {useRoute, useRouter}    from "vue-router";
+import useWorkspaceStore        from "@/workspace/application/workspace.store.js";
+import {uploadFile, validateFile} from "@/workspace/infrastructure/cloudinary-service.js";
 import {computed, onMounted, ref} from "vue";
-import {Message} from "@/workspace/domain/model/message-entity.js";
+import {Message}                from "@/workspace/domain/model/message-entity.js";
+import {formatDateTime}         from "@/shared/utils/format-date.js";
 
-/**
- * Interactive workspace panel and messaging channel component.
- *
- * @remarks
- * Orchestrates multi-feature interaction stages across active sessions. Manages state
- * constraints governing conditional visibility rules for chat pathways (US10),
- * multimedia call streams (US12), processing reviews, and transaction metrics (US18).
- */
 const {t}    = useI18n();
 const route  = useRoute();
 const router = useRouter();
 const store  = useWorkspaceStore();
-const { fetchSessions, fetchMessages, addMessage, errors } = store;
+const { fetchSessions, fetchMessages, addMessage, addFileMessage, errors } = store;
 
-/**
- * Buffer element capturing immediate user text inputs before staging payload saves.
- */
 const newMessageContent = ref('');
-
-/**
- * Static mock identifier representing the active session runtime context user.
- */
+const isUploading       = ref(false);
+const uploadError       = ref('');
 const CURRENT_USER_ID   = 1;
 
-/**
- * Filters and resolves local session entity information matching active query parameter frames.
- */
-const session = computed(() => store.getSessionById(route.params.id));
-
-/**
- * Gathers relevant processing message arrays associated with the ongoing layout identity context.
- */
+const session        = computed(() => store.getSessionById(route.params.id));
 const sessionMessages = computed(() => store.getMessagesBySessionId(route.params.id));
-
-/**
- * Enforces security states evaluating if chat capabilities can be interactively modified.
- */
-const isChatEnabled = computed(() => session.value?.status === 'scheduled');
-
-/**
- * Validates baseline parameters confirming video call activation logic compliance.
- */
+const isChatEnabled  = computed(() => session.value?.status === 'scheduled');
 const isVideoEnabled = computed(() => session.value?.status === 'scheduled');
-
-/**
- * Evaluation flag identifying successfully concluded session processing flows.
- */
-const isCompleted = computed(() => session.value?.status === 'completed');
+const isCompleted    = computed(() => session.value?.status === 'completed');
 
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
   if (!store.messagesLoaded) fetchMessages();
 });
 
-/**
- * Assembles and dispatches standard text message models through store transaction routines.
- */
 const sendMessage = () => {
   if (!newMessageContent.value.trim()) return;
   const message = new Message({
@@ -76,46 +43,40 @@ const sendMessage = () => {
   newMessageContent.value = '';
 };
 
-/**
- * Signals runtime alert overlays to boot contextual video call interfaces.
- */
-const startVideoCall = () => {
-  if (!isVideoEnabled.value) return;
-  alert(t('workspace.video-call-message'));
+/** US11 — Subir archivo al chat via Cloudinary */
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const validation = validateFile(file);
+  if (!validation.valid) {
+    uploadError.value = validation.error;
+    event.target.value = '';
+    return;
+  }
+
+  uploadError.value = '';
+  isUploading.value = true;
+
+  try {
+    const { fileUrl, fileName } = await uploadFile(file);
+    addFileMessage(route.params.id, CURRENT_USER_ID, fileUrl, fileName);
+  } catch (err) {
+    uploadError.value = err.message;
+  } finally {
+    isUploading.value = false;
+    event.target.value = '';
+  }
 };
 
-/**
- * Transitions layout contexts towards transaction creation views passing destination criteria.
- */
-const navigateToDonation = () => {
-  router.push({
-    name:  'payment-transactions-new',
-    query: {
-      receiverId: session.value?.tutorId,
-      walletId:   session.value?.tutorId,
-    }
-  });
+const triggerFileInput = () => {
+  document.getElementById('chat-file-input').click();
 };
 
-/**
- * Transfers view scope context over onto external user reputation assessment pathways.
- */
-const navigateToReview = () => {
-  router.push({
-    name:  'reputation-reviews-new',
-    query: {
-      tutorId:   session.value?.tutorId,
-      sessionId: route.params.id,
-    }
-  });
-};
-
-/**
- * Recovers default dashboard state views via clean layout routing history updates.
- */
-const navigateBack = () => {
-  router.push({name: 'workspace-sessions'});
-};
+const startVideoCall    = () => { if (!isVideoEnabled.value) return; alert(t('workspace.video-call-message')); };
+const navigateToDonation = () => { router.push({ name: 'payment-transactions-new', query: { receiverId: session.value?.tutorId, walletId: session.value?.tutorId } }); };
+const navigateToReview   = () => { router.push({ name: 'reputation-reviews-new',   query: { tutorId: session.value?.tutorId, sessionId: route.params.id } }); };
+const navigateBack       = () => { router.push({ name: 'workspace-sessions' }); };
 </script>
 
 <template>
@@ -225,26 +186,64 @@ const navigateBack = () => {
               :class="msg.senderId === CURRENT_USER_ID ? 'own-message' : 'other-message'">
 
             <div class="bubble p-3">
-              <p class="m-0 msg-text">{{ msg.content }}</p>
-              <small class="msg-time">{{ msg.sentAt }}</small>
+              <!-- Mensaje de texto -->
+              <p v-if="msg.content" class="m-0 msg-text">{{ msg.content }}</p>
+              <!-- Archivo adjunto (US11) -->
+              <div v-if="msg.fileUrl" class="file-attachment">
+                <i class="pi pi-file attachment-icon"/>
+                <a :href="msg.fileUrl" target="_blank" class="attachment-link">
+                  {{ msg.fileName || 'Archivo adjunto' }}
+                </a>
+              </div>
+              <small class="msg-time">{{ formatDateTime(msg.sentAt) }}</small>
             </div>
 
           </div>
         </div>
 
-        <div class="flex gap-3 align-items-center pt-2">
+        <div class="chat-input-row">
+          <!-- Input oculto para archivos -->
+          <input
+              id="chat-file-input"
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              style="display:none"
+              @change="handleFileUpload"
+          />
+
+          <!-- Botón adjuntar -->
+          <pv-button
+              icon="pi pi-paperclip"
+              class="btn-attach"
+              :disabled="isCompleted || isUploading"
+              :title="t('workspace.attach-file')"
+              @click="triggerFileInput"/>
+
           <pv-input-text
               v-model="newMessageContent"
               :placeholder="isCompleted ? t('workspace.chat-completed') : t('workspace.message-placeholder')"
               class="flex-1 custom-input"
               :disabled="isCompleted"
               @keyup.enter="sendMessage"/>
+
           <pv-button
               icon="pi pi-send"
               :label="t('workspace.send')"
               class="btn-send"
               :disabled="isCompleted"
               @click="sendMessage"/>
+        </div>
+
+        <!-- Error de upload -->
+        <div v-if="uploadError" class="upload-error mt-2">
+          <i class="pi pi-exclamation-triangle mr-1"/>
+          {{ uploadError }}
+        </div>
+
+        <!-- Uploading indicator -->
+        <div v-if="isUploading" class="upload-loading mt-2">
+          <i class="pi pi-spin pi-spinner mr-1"/>
+          Subiendo archivo...
         </div>
 
       </div>
@@ -549,4 +548,44 @@ const navigateBack = () => {
   align-items: center;
   color: #dc2626;
 }
+/* Chat input row con botón adjuntar */
+.chat-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 0.5rem;
+}
+
+/* Botón adjuntar archivo */
+.btn-attach {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1a2a40 !important;
+  border-radius: 8px !important;
+  padding: 0.8rem !important;
+}
+.btn-attach:hover { background-color: #e2e8f0 !important; }
+
+/* Archivo adjunto en bubble */
+.file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.3rem;
+}
+.attachment-icon { font-size: 1rem; }
+.attachment-link {
+  color: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+/* Upload feedback */
+.upload-error   { color: #dc2626; font-size: 0.85rem; display: flex; align-items: center; }
+.upload-loading { color: #1e4d8c; font-size: 0.85rem; display: flex; align-items: center; }
 </style>

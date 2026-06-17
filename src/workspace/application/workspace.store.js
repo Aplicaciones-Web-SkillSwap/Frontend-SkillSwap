@@ -64,11 +64,27 @@ const useWorkspaceStore = defineStore('workspace', () => {
 
     function addMessage(message) {
         workspaceApi.createMessage(message).then(response => {
-            const resource   = response.data;
-            const newMessage = MessageAssembler.toEntityFromResource(resource);
-            messages.value.push(newMessage);
+            messages.value.push(MessageAssembler.toEntityFromResource(response.data));
         }).catch(error => {
             errors.value.push(error);
+            console.error('Error adding message:', error);
+        });
+    }
+
+    function addFileMessage(sessionId, senderId, fileUrl, fileName) {
+        const message = {
+            sessionId: parseInt(sessionId),
+            senderId:  senderId,
+            content:   '',
+            fileUrl:   fileUrl,
+            fileName:  fileName,
+            sentAt:    new Date().toISOString(),
+        };
+        workspaceApi.createMessage(message).then(response => {
+            messages.value.push(MessageAssembler.toEntityFromResource(response.data));
+        }).catch(error => {
+            errors.value.push(error);
+            console.error('Error adding file message:', error);
         });
     }
 
@@ -160,7 +176,8 @@ const useWorkspaceStore = defineStore('workspace', () => {
         addSession, addMessage,
         updateSession, updateMessage,
         acceptSession, rejectSession, cancelSession,
-        deleteSession, deleteMessage
+        deleteSession, deleteMessage,
+        addFileMessage
     };
 });
 

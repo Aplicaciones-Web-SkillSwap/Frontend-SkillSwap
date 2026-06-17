@@ -1,52 +1,35 @@
 <script lang="js" setup>
-import {useI18n} from "vue-i18n";
-import {useRouter} from "vue-router";
-import {ref} from "vue";
-import LanguageSwitcher from "@/shared/presentation/components/language-switcher.vue";
-import FooterContent from "@/shared/presentation/components/footer-content.vue";
+import { useI18n }           from "vue-i18n";
+import { useRouter }         from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import LanguageSwitcher      from "@/shared/presentation/components/language-switcher.vue";
+import FooterContent         from "@/shared/presentation/components/footer-content.vue";
+import useWorkspaceStore     from "@/workspace/application/workspace.store.js";
 
-/**
- * Main application shell and layout orchestration component.
- *
- * @remarks
- * Acts as the structural backbone of the user interface. It manages global layout concerns,
- * renders persistent navigation bars, triggers sidebar drawer visibility systems, and
- * provides a unified shell framework embedding target route components via views.
- */
-
-const { t } = useI18n();
+const { t }  = useI18n();
 const router = useRouter();
-
-/** @type {import('vue').Ref<boolean>} Flags sidebar drawer view visibility */
 const drawer = ref(false);
+const store  = useWorkspaceStore();
 
-/**
- * Toggles the sidebar navigation drawer visibility state.
- *
- * @returns {void}
- */
-const toggleDrawer = () => { drawer.value = !drawer.value; }
+onMounted(() => {
+  if (!store.sessionsLoaded) store.fetchSessions();
+});
 
-/**
- * Static configuration mappings representing collection elements for routing parameters.
- * @type {Array<{label: string, path: string}>}
- */
+const pendingCount = computed(() =>
+    store.sessions.filter(s => s.status === 'pending').length
+);
+
+const toggleDrawer   = () => { drawer.value = !drawer.value; };
+const navigateToSearch = () => { router.push({ name: 'discovery-search' }); };
+const navigateToPending = () => { router.push({ name: 'workspace-sessions' }); };
+
 const items = [
   { label: 'option.home',     path: '/home'               },
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
   { label: 'option.reviews',  path: '/reputation/reviews' },
   { label: 'option.quizzes',  path: '/learning/quizzes'   },
-]
-
-/**
- * Shifts core router contexts towards centralized multi-state discovery views.
- *
- * @returns {void}
- */
-const navigateToSearch = () => {
-  router.push({ name: 'discovery-search' });
-}
+];
 </script>
 
 <template>
@@ -85,9 +68,12 @@ const navigateToSearch = () => {
                 @click="navigateToSearch">
             </i>
 
-            <div class="notification-container action-icon">
+            <div
+                class="notification-container action-icon"
+                :title="pendingCount > 0 ? `${pendingCount} solicitudes pendientes` : 'Sin notificaciones'"
+                @click="navigateToPending">
               <i class="pi pi-bell"></i>
-              <span class="notification-badge">2</span>
+              <span v-if="pendingCount > 0" class="notification-badge">{{ pendingCount }}</span>
             </div>
 
             <pv-avatar
@@ -107,7 +93,24 @@ const navigateToSearch = () => {
         </template>
       </pv-toolbar>
 
-      <pv-drawer v-model:visible="drawer"/>
+      <pv-drawer v-model:visible="drawer" header="SkillSwap">
+        <div class="drawer-links">
+          <router-link
+              v-for="item in items"
+              :key="item.label"
+              :to="item.path"
+              class="drawer-link"
+              @click="drawer = false">
+            {{ t(item.label) }}
+          </router-link>
+          <router-link
+              to="/discovery/search"
+              class="drawer-link"
+              @click="drawer = false">
+            {{ t('option.search') }}
+          </router-link>
+        </div>
+      </pv-drawer>
     </div>
 
 
@@ -289,5 +292,28 @@ const navigateToSearch = () => {
   background: rgba(255,255,255,0.18);
   color: #ffffff;
   border-color: rgba(255,255,255,0.4);
+}
+.drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.drawer-link {
+  text-decoration: none;
+  color: #1a2a40;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.drawer-link:hover { background: #f1f5f9; }
+
+.drawer-link.router-link-active {
+  background: #f0f4ff;
+  color: #1e4d8c;
 }
 </style>

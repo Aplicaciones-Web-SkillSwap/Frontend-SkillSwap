@@ -1,33 +1,40 @@
 <script setup>
-import {useI18n} from "vue-i18n";
-import {useRouter} from "vue-router";
-import useWorkspaceStore from "@/workspace/application/workspace.store.js";
+import {useI18n}            from "vue-i18n";
+import {useRouter}          from "vue-router";
+import useWorkspaceStore    from "@/workspace/application/workspace.store.js";
+import useDiscoveryStore    from "@/discovery/application/discovery.store.js";
 import {computed, onMounted} from "vue";
+import {formatDateTime}     from "@/shared/utils/format-date.js";
 
-const {t}     = useI18n();
-const router  = useRouter();
-const store   = useWorkspaceStore();
+const {t}    = useI18n();
+const router = useRouter();
+const store  = useWorkspaceStore();
+const discoveryStore = useDiscoveryStore();
 const { fetchSessions, acceptSession, rejectSession } = store;
 
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
+  if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
 });
 
+/** Resuelve nombre por userId */
+const userName = (id) => {
+  const tutor = discoveryStore.tutors.find(t => t.userId === id);
+  return tutor ? tutor.name : `Usuario #${id}`;
+};
 
 const scheduledSessions = computed(() =>
     store.sessions.filter(s => s.status === 'scheduled' || s.status === 'completed').slice(0, 3)
 );
 
-
 const pendingSessions = computed(() =>
     store.sessions.filter(s => s.status === 'pending')
 );
 
-
-const onlineTutors = [
-  { id: 1, name: 'Miguel Santos Medina', career: 'Ing. Software', university: 'PUCP', verified: true, online: true, favorite: true },
-  { id: 2, name: 'Adrian Guevara Romero', career: 'Ing. Sistemas', university: 'Ulima', verified: true, online: true, favorite: true },
-];
+/** Tutores en línea desde el store (reemplaza el array hardcodeado) */
+const onlineTutors = computed(() =>
+    discoveryStore.tutors.filter(t => t.online).slice(0, 3)
+);
 
 const statusClass = (status) => {
   const map = {
@@ -51,13 +58,9 @@ const statusLabel = (status) => {
   return map[status] || status;
 };
 
-const navigateToSession = (id) => {
-  router.push({ name: 'workspace-sessions-view', params: { id } });
-};
-
-const navigateToSessions = () => {
-  router.push({ name: 'workspace-sessions' });
-};
+const navigateToSession  = (id) => router.push({ name: 'workspace-sessions-view', params: { id } });
+const navigateToSessions = ()   => router.push({ name: 'workspace-sessions' });
+const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
 </script>
 
 <template>
@@ -65,16 +68,13 @@ const navigateToSessions = () => {
 
     <div class="dashboard-grid">
 
-
       <div class="left-col">
-
 
         <div class="welcome-row">
           <h1 class="welcome-title">¡Bienvenida de nuevo, <span class="highlight">Alexandra</span>!</h1>
           <pv-button label="Aprender un nuevo tema" class="btn-learn" @click="navigateToSessions"/>
         </div>
 
-        <!-- Sesiones programadas -->
         <div class="section">
           <h2 class="section-title">Sesiones programadas</h2>
 
@@ -98,10 +98,9 @@ const navigateToSessions = () => {
               </div>
 
               <div class="session-card-body">
-                <p><strong>Tutor:</strong> Usuario #{{ session.tutorId }}</p>
-                <p><strong>Estudiante:</strong> Usuario #{{ session.learnerId }}</p>
-                <p v-if="session.scheduledAt"><strong>Fecha:</strong> {{ session.scheduledAt.split('T')[0] }}</p>
-                <p v-if="session.scheduledAt"><strong>Hora:</strong> {{ session.scheduledAt.split('T')[1] }}</p>
+                <p><strong>Tutor:</strong> {{ userName(session.tutorId) }}</p>
+                <p><strong>Estudiante:</strong> {{ userName(session.learnerId) }}</p>
+                <p v-if="session.scheduledAt"><strong>Fecha:</strong> {{ formatDateTime(session.scheduledAt) }}</p>
               </div>
 
               <pv-button
@@ -120,9 +119,7 @@ const navigateToSessions = () => {
 
       </div>
 
-
       <div class="right-col">
-
 
         <div class="section">
           <div class="section-header-row">
@@ -144,8 +141,15 @@ const navigateToSessions = () => {
                 <i class="pi pi-user avatar-icon"/>
               </div>
               <div class="solicitud-info">
-                <p class="solicitud-name">Usuario #{{ session.learnerId }}</p>
-                <p class="solicitud-msg">{{ session.topic }}</p>
+                <p class="solicitud-name">{{ userName(session.learnerId) }}</p>
+                <p class="solicitud-msg">
+                  <i class="pi pi-book" style="font-size:0.75rem; margin-right:3px;"/>
+                  {{ session.topic }}
+                </p>
+                <p class="solicitud-date" v-if="session.scheduledAt">
+                  <i class="pi pi-calendar" style="font-size:0.75rem; margin-right:3px;"/>
+                  {{ formatDateTime(session.scheduledAt) }}
+                </p>
               </div>
               <div class="solicitud-actions">
                 <pv-button
@@ -163,7 +167,6 @@ const navigateToSessions = () => {
           </div>
         </div>
 
-        <!-- Mis tutores en línea -->
         <div class="section mt-4">
           <h2 class="section-title">Mis tutores en línea</h2>
 
@@ -197,7 +200,6 @@ const navigateToSessions = () => {
 
       </div>
     </div>
-
   </div>
 </template>
 
@@ -519,4 +521,12 @@ const navigateToSessions = () => {
 .w-full  { width: 100%; }
 .mt-3    { margin-top: 0.75rem; }
 .mt-4    { margin-top: 1rem; }
+
+.solicitud-date {
+  color: #a0aec0;
+  font-size: 0.75rem;
+  margin: 0.1rem 0 0 0;
+  display: flex;
+  align-items: center;
+}
 </style>

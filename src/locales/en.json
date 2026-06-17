@@ -54,7 +54,11 @@
     "tutor-not-found": "Tutor not found.",
     "back-to-search": "Back to search",
     "see-all-reviews": "See all reviews",
-    "student": "Student"
+    "student": "Student",
+    "experience":    "Experience",
+    "years":         "years",
+    "main-subject":  "Main subject",
+    "filter-skill": "Skill / Course"
   },
   "sessions": {
     "title": "Tutoring Sessions",
@@ -122,7 +126,8 @@
     "btn-donate": "Make Donation",
     "review-title": "Session completed! Rate your tutor.",
     "review-sub": "Your rating helps build the tutor's reputation on SkillSwap.",
-    "btn-review": "Leave a Review"
+    "btn-review": "Leave a Review",
+    "attach-file": "Attach file"
   },
   "wallets": {
     "title": "Wallets",

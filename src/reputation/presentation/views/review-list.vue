@@ -1,37 +1,45 @@
 <script lang="js" setup>
-import {useI18n}           from "vue-i18n";
-import {useRoute, useRouter}         from "vue-router";
-import {useConfirm}        from "primevue";
-import useReputationStore  from "@/reputation/application/reputation.store.js";
-import {computed, onMounted, toRefs} from "vue";
-
-/**
- * Reputation reviews dashboard and collection management component.
- *
- * @remarks
- * Coordinates the visualization, filtration, and operational processing lifecycle
- * of tutor assessment metrics. It handles context-dependent filtering based on
- * route query parameters and couples user actions to global confirmation workflow modals.
- */
+import {useI18n}              from "vue-i18n";
+import {useRoute, useRouter}  from "vue-router";
+import {useConfirm}           from "primevue";
+import useReputationStore     from "@/reputation/application/reputation.store.js";
+import useDiscoveryStore      from "@/discovery/application/discovery.store.js";
+import {computed, onMounted, ref, toRefs} from "vue";
+import {formatDate}           from "@/shared/utils/format-date.js";
 
 const {t}     = useI18n();
 const route   = useRoute();
 const router  = useRouter();
 const confirm = useConfirm();
 const store   = useReputationStore();
+const discoveryStore = useDiscoveryStore();
 const { reviews, errors, reviewsLoaded } = toRefs(store);
 const { fetchReviews, deleteReview }     = store;
 
-/** @type {import('vue').ComputedRef<string | null>} Targeted tutor identifier resolved from URL queries */
+/** Búsqueda por nombre de tutor (pedido por el profesor) */
+const searchQuery = ref('');
+
 const filterTutorId = computed(() => route.query.tutorId || null);
 
-/** @type {import('vue').ComputedRef<import('@/reputation/domain/model/review.entity.js').Review[]>} Projections mapped by active filtrations */
+/** Resuelve nombre de tutor por tutorId */
+const tutorName = (tutorId) => {
+  const tutor = discoveryStore.tutors.find(t => t.id === tutorId);
+  return tutor ? tutor.name : `Tutor #${tutorId}`;
+};
+
 const displayedReviews = computed(() => {
-  if (!filterTutorId.value) return reviews.value;
-  return store.getReviewsByTutorId(filterTutorId.value);
+  let result = filterTutorId.value
+      ? store.getReviewsByTutorId(filterTutorId.value)
+      : reviews.value;
+
+  // Filtro por nombre de tutor
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim();
+    result = result.filter(r => tutorName(r.tutorId).toLowerCase().includes(q));
+  }
+  return result;
 });
 
-/** @type {import('vue').ComputedRef<string>} Contextual page header text value */
 const pageTitle = computed(() =>
     filterTutorId.value
         ? t('reviews.title-filtered', { tutorId: filterTutorId.value })
@@ -39,47 +47,17 @@ const pageTitle = computed(() =>
 );
 
 onMounted(() => {
-  if (!store.reviewsLoaded) {
-    fetchReviews();
-    console.log('fetching reviews');
-    reviewsLoaded.value = store.reviewsLoaded;
-  }
+  if (!store.reviewsLoaded) fetchReviews();
+  if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
 });
 
-/**
- * Routes runtime view context towards creation steps passing parameters.
- *
- * @returns {void}
- */
-const navigateToNew  = ()   => router.push({ name: 'reputation-reviews-new', query: filterTutorId.value ? { tutorId: filterTutorId.value } : {} });
-
-/**
- * Routes view context to resource editor states matching the selected item key.
- *
- * @param {number|string} id - Selected evaluation item row primary key.
- * @returns {void}
- */
+const navigateToNew  = ()   => router.push({ name: 'reputation-reviews-new',  query: filterTutorId.value ? { tutorId: filterTutorId.value } : {} });
 const navigateToEdit = (id) => router.push({ name: 'reputation-reviews-edit', params: { id } });
-
-/**
- * Redirects UI flow back into matching background layout history pathways.
- *
- * @returns {void}
- */
-const navigateBack = () => {
-  if (filterTutorId.value) {
-    router.push({ name: 'discovery-search' });
-  } else {
-    router.push({ name: 'reputation-reputations' });
-  }
+const navigateBack   = ()   => {
+  if (filterTutorId.value) router.push({ name: 'discovery-search' });
+  else router.push({ name: 'reputation-reputations' });
 };
 
-/**
- * Pauses interactive threads to invoke safe destructive validation dialog confirmation flows.
- *
- * @param {import('@/reputation/domain/model/review.entity.js').Review} review - Target model to be permanently removed.
- * @returns {void}
- */
 const confirmDelete = (review) => {
   confirm.require({
     message: t('reviews.confirm-delete', { id: review.id }),
@@ -89,12 +67,6 @@ const confirmDelete = (review) => {
   });
 };
 
-/**
- * Resolves appropriate visual HTML class designations according to element review status values.
- *
- * @param {string} status - Evaluation status text key flag.
- * @returns {string} Calculated class styling values string.
- */
 const statusClass = (status) => {
   const map = {
     PUBLISHED: 'status-badge status-published',
@@ -103,14 +75,6 @@ const statusClass = (status) => {
   };
   return map[status] || 'status-badge';
 };
-
-/**
- * Formats string or date references into localized presentation-friendly strings.
- *
- * @param {string|Date} d - Raw ISO timeline string or standard object field reference.
- * @returns {string} Human-readable localized target rendering layout output.
- */
-const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 </script>
 
 <template>
@@ -128,6 +92,18 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
         </div>
       </div>
       <pv-button :label="t('reviews.new')" icon="pi pi-plus" class="btn-new" @click="navigateToNew"/>
+    </div>
+
+    <!-- Búsqueda por nombre de tutor -->
+    <div class="search-bar mb-3">
+      <pv-icon-field>
+        <pv-input-icon class="pi pi-search"/>
+        <pv-input-text
+            v-model="searchQuery"
+            placeholder="Buscar por nombre de tutor..."
+            class="w-full"
+        />
+      </pv-icon-field>
     </div>
 
     <div class="table-card">
@@ -148,13 +124,13 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 
         <pv-column v-if="!filterTutorId" :header="t('reviews.tutorId')" field="tutorId" sortable>
           <template #body="slotProps">
-            <span class="text-neutral font-semibold">{{ slotProps.data.tutorId }}</span>
+            <span class="text-neutral font-semibold">{{ tutorName(slotProps.data.tutorId) }}</span>
           </template>
         </pv-column>
 
         <pv-column :header="t('reviews.studentId')" field="studentId" sortable>
           <template #body="slotProps">
-            <span class="text-neutral">{{ slotProps.data.studentId }}</span>
+            <span class="text-neutral">Usuario #{{ slotProps.data.studentId }}</span>
           </template>
         </pv-column>
 
@@ -295,4 +271,6 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString() : '—';
 .action-btn-delete:hover { color: #ef4444 !important; background-color: #fef2f2 !important; }
 
 .error-msg { font-weight: bold; }
+
+.search-bar { max-width: 380px; }
 </style>
