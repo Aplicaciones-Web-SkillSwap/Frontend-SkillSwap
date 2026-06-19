@@ -13,20 +13,13 @@ const usePaymentStore = defineStore('payment', () => {
     const walletsLoaded      = ref(false);
     const transactionsLoaded = ref(false);
 
-    const walletsCount = computed(() => {
-        return walletsLoaded.value ? wallets.value.length : 0;
-    });
-
-    const transactionsCount = computed(() => {
-        return transactionsLoaded.value ? transactions.value.length : 0;
-    });
+    const walletsCount = computed(() => walletsLoaded.value ? wallets.value.length : 0);
+    const transactionsCount = computed(() => transactionsLoaded.value ? transactions.value.length : 0);
 
     function fetchWallets() {
         paymentApi.getWallets().then(response => {
             wallets.value = WalletAssembler.toEntitiesFromResponse(response);
             walletsLoaded.value = true;
-            console.log(walletsLoaded.value);
-            console.log(wallets.value);
         }).catch(error => {
             errors.value.push(error);
             console.log('Error fetching wallets:', error);
@@ -43,120 +36,69 @@ const usePaymentStore = defineStore('payment', () => {
     }
 
     function getWalletById(id) {
-        let idNum = parseInt(id);
-        return wallets.value.find(wallet => wallet['id'] === idNum);
+        return wallets.value.find(w => w.id === parseInt(id));
+    }
+
+    function getWalletByUserId(userId) {
+        return wallets.value.find(w => w.userId === parseInt(userId));
     }
 
     function getTransactionById(id) {
-        let idNum = parseInt(id);
-        return transactions.value.find(transaction => transaction['id'] === idNum);
+        return transactions.value.find(t => t.id === parseInt(id));
     }
 
     function getTransactionsByWalletId(walletId) {
-        let idNum = parseInt(walletId);
-        return transactions.value.filter(transaction => transaction['walletId'] === idNum);
+        return transactions.value.filter(t => t.walletId === parseInt(walletId));
+    }
+
+    /**
+     * Verifica si un usuario tiene wallet creada, consultando al backend directamente
+     * (no depende de que `wallets` ya esté cargado en el store).
+     */
+    function checkWalletExists(userId) {
+        return paymentApi.getWalletByUserId(userId)
+            .then(() => true)
+            .catch(() => false);
+    }
+
+    /**
+     * Donación atómica estudiante → tutor.
+     * POST /Transactions/donate — el backend calcula la comisión (5%) y mueve
+     * el saldo en ambos wallets en una sola operación.
+     *
+     * @returns {Promise<{ok: boolean, data?: object, errorType?: 'not-found'|'invalid'|'unknown'}>}
+     */
+    async function donate({ fromUserId, toUserId, amount, description }) {
+        try {
+            const response = await paymentApi.donate({ fromUserId, toUserId, amount, description });
+            return { ok: true, data: response.data };
+        } catch (error) {
+            const status = error.response?.status;
+            if (status === 404) return { ok: false, errorType: 'not-found' };
+            if (status === 400) return { ok: false, errorType: 'invalid' };
+            errors.value.push(error);
+            return { ok: false, errorType: 'unknown' };
+        }
     }
 
     function addWallet(wallet) {
-        paymentApi.createWallet(wallet).then(response => {
-            const resource  = response.data;
-            const newWallet = WalletAssembler.toEntityFromResource(resource);
+        return paymentApi.createWallet(wallet).then(response => {
+            const newWallet = WalletAssembler.toEntityFromResource(response.data);
             wallets.value.push(newWallet);
+            return newWallet;
         }).catch(error => {
             errors.value.push(error);
-        });
-    }
-
-    // ── addTransaction ──────
-    function addTransaction(transaction) {
-        paymentApi.createTransaction(transaction).then(response => {
-            const resource       = response.data;
-            const newTransaction = TransactionAssembler.toEntityFromResource(resource);
-            transactions.value.push(newTransaction);
-
-
-            if (newTransaction.status === 'completed') {
-                _applyTransactionToWallet(newTransaction.walletId, newTransaction.netAmount);
-            }
-        }).catch(error => {
-            errors.value.push(error);
-            console.log('Error creating transaction:', error);
-        });
-    }
-
-
-    function updateTransaction(transaction) {
-
-        const previousTransaction = getTransactionById(transaction.id);
-        const wasAlreadyCompleted = previousTransaction?.status === 'completed';
-
-        paymentApi.updateTransaction(transaction).then(response => {
-            const resource           = response.data;
-            const updatedTransaction = TransactionAssembler.toEntityFromResource(resource);
-            const index = transactions.value.findIndex(t => t['id'] === updatedTransaction.id);
-            if (index !== -1) transactions.value[index] = updatedTransaction;
-
-            if (updatedTransaction.status === 'completed' && !wasAlreadyCompleted) {
-                _applyTransactionToWallet(updatedTransaction.walletId, updatedTransaction.netAmount);
-            }
-        }).catch(error => {
-            errors.value.push(error);
-        });
-    }
-
-    function _applyTransactionToWallet(walletId, netAmount) {
-        const wallet = getWalletById(walletId);
-        if (!wallet) {
-            console.warn(`Wallet ${walletId} no encontrada. No se actualizó el balance.`);
-            return;
-        }
-        const updatedWallet = {
-            ...wallet,
-            balance: parseFloat((Number(wallet.balance) + Number(netAmount)).toFixed(2))
-        };
-        updateWallet(updatedWallet);
-        console.log(`Wallet #${walletId} balance actualizado: +${netAmount} → ${updatedWallet.balance}`);
-    }
-
-    function updateWallet(wallet) {
-        paymentApi.updateWallet(wallet).then(response => {
-            const resource      = response.data;
-            const updatedWallet = WalletAssembler.toEntityFromResource(resource);
-            const index = wallets.value.findIndex(w => w['id'] === updatedWallet.id);
-            if (index !== -1) wallets.value[index] = updatedWallet;
-        }).catch(error => {
-            errors.value.push(error);
-        });
-    }
-
-    function deleteWallet(wallet) {
-        paymentApi.deleteWallet(wallet.id).then(() => {
-            const index = wallets.value.findIndex(w => w['id'] === wallet.id);
-            if (index !== -1) wallets.value.splice(index, 1);
-        }).catch(error => {
-            errors.value.push(error);
-        });
-    }
-
-    function deleteTransaction(transaction) {
-        paymentApi.deleteTransaction(transaction.id).then(() => {
-            const index = transactions.value.findIndex(t => t['id'] === transaction.id);
-            if (index !== -1) transactions.value.splice(index, 1);
-        }).catch(error => {
-            errors.value.push(error);
+            return null;
         });
     }
 
     return {
-        wallets, transactions,
-        errors,
+        wallets, transactions, errors,
         walletsLoaded, transactionsLoaded,
         walletsCount, transactionsCount,
         fetchWallets, fetchTransactions,
-        getWalletById, getTransactionById, getTransactionsByWalletId,
-        addWallet, addTransaction,
-        updateWallet, updateTransaction,
-        deleteWallet, deleteTransaction
+        getWalletById, getWalletByUserId, getTransactionById, getTransactionsByWalletId,
+        checkWalletExists, donate, addWallet,
     };
 });
 

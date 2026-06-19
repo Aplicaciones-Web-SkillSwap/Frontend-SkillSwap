@@ -10,15 +10,12 @@ const router = useRouter();
 const route  = useRoute();
 const store  = useModerationStore();
 
-const isEdit     = ref(false);
-const sanctionId = ref(null);
-
 const form = ref({
-    reportId:         0,
-    sanctionedUserId: 0,
-    type:             'warning',
-    description:      '',
-    durationDays:     0
+  reportId:         0,
+  sanctionedUserId: 0,
+  type:             'warning',
+  description:      '',
+  durationDays:     0
 });
 
 const errors = ref({ reportId: '', sanctionedUserId: '', description: '' });
@@ -30,45 +27,35 @@ const typeOptions = [
 ];
 
 onMounted(() => {
-    store.fetchSanctions();
-    const id = route.params.id;
   if (route.query.reportId)         form.value.reportId         = Number(route.query.reportId);
   if (route.query.sanctionedUserId) form.value.sanctionedUserId = Number(route.query.sanctionedUserId);
-    if (id) {
-        sanctionId.value = parseInt(id);
-        isEdit.value     = true;
-        const existing   = store.getSanctionById(id);
-        if (existing) {
-            form.value.reportId         = existing.reportId;
-            form.value.sanctionedUserId = existing.sanctionedUserId;
-            form.value.type             = existing.type;
-            form.value.description      = existing.description;
-            form.value.durationDays     = existing.durationDays;
-        }
-    }
 });
 
 function validate() {
-    errors.value.reportId         = form.value.reportId < 1         ? t('moderation.err-id')    : '';
-    errors.value.sanctionedUserId = form.value.sanctionedUserId < 1 ? t('moderation.err-id')    : '';
-    errors.value.description      = !form.value.description.trim()  ? t('moderation.err-notes') : '';
-    return !errors.value.reportId && !errors.value.sanctionedUserId && !errors.value.description;
+  errors.value.reportId         = form.value.reportId < 1         ? t('moderation.err-id')    : '';
+  errors.value.sanctionedUserId = form.value.sanctionedUserId < 1 ? t('moderation.err-id')    : '';
+  errors.value.description      = !form.value.description.trim()  ? t('moderation.err-notes') : '';
+  return !errors.value.reportId && !errors.value.sanctionedUserId && !errors.value.description;
 }
 
-function submit() {
-    if (!validate()) return;
-    const sanction = new Sanction({
-        id:               sanctionId.value ?? 0,
-        reportId:         Number(form.value.reportId),
-        sanctionedUserId: Number(form.value.sanctionedUserId),
-        type:             form.value.type,
-        description:      form.value.description,
-        durationDays:     Number(form.value.durationDays) ?? 0,
-        createdAt:        new Date().toISOString()
-    });
-    if (isEdit.value) { store.updateSanction(sanction); }
-    else              { store.addSanction(sanction);    }
-    router.push({ name: 'moderation-sanctions' });
+async function submit() {
+  if (!validate()) return;
+  const sanction = new Sanction({
+    reportId:         Number(form.value.reportId),
+    sanctionedUserId: Number(form.value.sanctionedUserId),
+    type:             form.value.type,
+    description:      form.value.description,
+    durationDays:     Number(form.value.durationDays) ?? 0,
+  });
+
+  await store.addSanction(sanction);
+
+  // Aplicar una sanción cierra automáticamente el reporte vinculado
+  if (form.value.reportId) {
+    await store.closeReport(form.value.reportId);
+  }
+
+  router.push({ name: 'moderation-sanctions' });
 }
 </script>
 
@@ -83,9 +70,9 @@ function submit() {
         <div>
           <h1 class="page-title">
             <i class="pi pi-gavel title-icon"/>
-            {{ isEdit ? t('moderation.sanction-edit-title') : t('moderation.sanction-new-title') }}
+            {{ t('moderation.sanction-new-title') }}
           </h1>
-          <p class="page-sub">{{ isEdit ? t('moderation.sanction-edit-sub') : t('moderation.sanction-new-sub') }}</p>
+          <p class="page-sub">{{ t('moderation.sanction-new-sub') }}</p>
         </div>
       </div>
     </div>
@@ -156,7 +143,7 @@ function submit() {
         <div class="btn-row">
           <button class="btn-primary" type="submit">
             <i class="pi pi-check" style="font-size:14px;"></i>
-            {{ isEdit ? t('moderation.btn-update') : t('moderation.btn-create-sanction') }}
+            {{ t('moderation.btn-create-sanction') }}
           </button>
           <button class="btn-secondary" type="button" @click="router.back()">
             {{ t('moderation.btn-cancel') }}

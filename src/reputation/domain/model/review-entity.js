@@ -1,25 +1,19 @@
 export class Review {
     constructor({
-        id        = null,
-        tutorId   = null,
-        studentId = null,
-        sessionId = null,
-        score     = 0,
-        comment   = '',
-        status    = 'PENDING',
-        date      = null,
-    }) {
-        this.id        = id;
-        this.tutorId   = tutorId;
-        this.studentId = studentId;
-        this.sessionId = sessionId;
-        this.score     = score;
-        this.comment   = comment;
-        this.status    = status;
-        this.date      = date;
+                    id         = null,
+                    tutorId    = null,
+                    reviewerId = null,
+                    sessionId  = null,
+                    rating     = 0,
+                    comment    = '',
+                    reviewedAt = null,
+                }) {
+        this.id         = id;
+        this.tutorId    = tutorId;
+        this.reviewerId = reviewerId;
+        this.sessionId  = sessionId;
+        this.rating     = rating;
+        this.comment    = comment;
+        this.reviewedAt = reviewedAt;
     }
-
-    isPublished() { return this.status === 'PUBLISHED'; }
-    isRemoved()   { return this.status === 'REMOVED';   }
-    isPending()   { return this.status === 'PENDING';   }
 }

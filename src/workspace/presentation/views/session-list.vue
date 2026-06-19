@@ -13,7 +13,7 @@ const confirm = useConfirm();
 const store   = useWorkspaceStore();
 const discoveryStore = useDiscoveryStore();
 const { sessions, errors, sessionsLoaded } = toRefs(store);
-const { fetchSessions, deleteSession, acceptSession, rejectSession, cancelSession } = store;
+const { fetchSessions, acceptSession, rejectSession, cancelSession } = store;
 
 onMounted(() => {
   if (!store.sessionsLoaded) {
@@ -33,14 +33,6 @@ const navigateToEdit      = (id) => router.push({name: 'workspace-sessions-edit'
 const navigateToNew       = ()    => router.push({name: 'workspace-sessions-new'});
 const navigateToWorkspace = (id)  => router.push({name: 'workspace-sessions-view', params: {id}});
 
-const confirmDelete = (session) => {
-  confirm.require({
-    message: t('sessions.confirm-delete', {topic: session.topic}),
-    header:  t('sessions.delete-header'),
-    icon:    'pi pi-exclamation-triangle',
-    accept:  () => { deleteSession(session); },
-  });
-};
 
 const confirmAccept = (session) => {
   confirm.require({
@@ -180,15 +172,6 @@ const confirmCancel = (session) => {
                   class="action-btn-edit"
                   :title="t('sessions.action-edit')"
                   @click="navigateToEdit(slotProps.data.id)" />
-
-
-              <pv-button
-                  icon="pi pi-trash"
-                  rounded text
-                  class="action-btn-delete"
-                  :title="t('sessions.action-delete')"
-                  @click="confirmDelete(slotProps.data)" />
-
             </div>
           </template>
         </pv-column>

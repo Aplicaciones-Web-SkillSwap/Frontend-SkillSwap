@@ -28,13 +28,20 @@ function typeLabel(type) {
 function durationLabel(days) {
   return days === 0 ? t('moderation.duration-na') : `${days} ${t('moderation.duration-days')}`;
 }
+
+const navigateBack = () => router.push({ name: 'moderation-reports' });
 </script>
 
 <template>
   <div>
     <div class="page-header">
-      <h1 class="page-title">{{ t('moderation.sanctions-title') }}</h1>
-      <p class="page-sub">{{ t('moderation.sanctions-sub') }}</p>
+      <button class="back-btn" @click="navigateBack">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+      <div>
+        <h1 class="page-title">{{ t('moderation.sanctions-title') }}</h1>
+        <p class="page-sub">{{ t('moderation.sanctions-sub') }}</p>
+      </div>
     </div>
 
     <div v-if="store.loading" class="spinner-wrap">
@@ -53,7 +60,7 @@ function durationLabel(days) {
         </button>
       </div>
 
-      <pv-data-table :value="store.sanctions" :rows="10" paginator row-hover striped-rows size="small">
+      <pv-data-table :value="store.sanctions" :rows="10" paginator row-hover striped-rows size="small" class="light-table">
 
         <pv-column header="#" style="width:52px;">
           <template #body="{ index }"><span style="color:#9ca3af; font-size:13px;">#{{ index + 1 }}</span></template>
@@ -83,19 +90,6 @@ function durationLabel(days) {
           <template #body="{ data }"><span style="color:#6b7280; font-size:13px;">{{ durationLabel(data.durationDays) }}</span></template>
         </pv-column>
 
-        <pv-column :header="t('moderation.col-actions')" style="width:100px;">
-          <template #body="{ data }">
-            <div class="actions-wrap">
-              <button class="action-icon" @click="router.push({ name: 'moderation-sanctions-edit', params: { id: data.id } })">
-                <i class="pi pi-pencil" style="font-size:15px;"></i>
-              </button>
-              <button class="action-icon delete" @click="store.deleteSanction(data.id)">
-                <i class="pi pi-trash" style="font-size:15px;"></i>
-              </button>
-            </div>
-          </template>
-        </pv-column>
-
         <template #empty><p class="empty-msg">{{ t('moderation.no-sanctions') }}</p></template>
       </pv-data-table>
     </div>
@@ -103,7 +97,24 @@ function durationLabel(days) {
 </template>
 
 <style scoped>
-.page-header { margin-bottom: 20px; }
+.page-header { margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.back-btn:hover { background: #f3f4f6; }
+
 .page-title  { font-size: 24px; font-weight: 700; color: #1a2a40; margin: 0 0 4px; }
 .page-sub    { font-size: 13px; color: #9ca3af; margin: 0; }
 .spinner-wrap{ padding: 32px; text-align: center; }
@@ -115,11 +126,29 @@ function durationLabel(days) {
 .chip-ban       { background: #fff1f0; color: #ef4444; border: 1px solid #fecaca; }
 .chip-warning   { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
 .chip-dismissed { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
-.actions-wrap{ display: flex; align-items: center; gap: 4px; }
-.action-icon { width: 32px; height: 32px; border: none; background: none; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #9ca3af; transition: all 0.15s; }
-.action-icon:hover        { background: #f3f4f6; color: #1a2a40; }
-.action-icon.delete:hover { background: #fff1f0; color: #ef4444; }
 .btn-apply   { display: inline-flex; align-items: center; gap: 6px; background: #e53e4f; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; font-family: inherit; }
 .btn-apply:hover { background: #d03544; }
 .empty-msg   { text-align: center; color: #9ca3af; font-size: 13px; padding: 32px; }
+
+/* Forzar tema claro en la tabla — PrimeVue usa dark theme por defecto */
+.light-table :deep(.p-datatable-table)  { background-color: #ffffff; }
+.light-table :deep(.p-datatable-thead > tr > th) {
+  background-color: #f9fafb !important;
+  color: #374151 !important;
+  border-color: #e5e7eb !important;
+}
+.light-table :deep(.p-datatable-tbody > tr) {
+  background-color: #ffffff !important;
+  color: #1a2a40 !important;
+}
+.light-table :deep(.p-datatable-tbody > tr.p-row-odd) {
+  background-color: #fafbfc !important;
+}
+.light-table :deep(.p-datatable-tbody > tr > td) {
+  border-color: #f1f3f5 !important;
+}
+.light-table :deep(.p-paginator) {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+}
 </style>

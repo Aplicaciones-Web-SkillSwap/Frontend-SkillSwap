@@ -9,58 +9,33 @@ const {t}    = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useReputationStore();
-const { addReview, errors, updateReview } = store;
+const { addReview, errors } = store;
 
 const isEdit = computed(() => !!route.params.id);
 
 const form = ref({
-  tutorId:   route.query.tutorId ? parseInt(route.query.tutorId) : null,
-  studentId: null,
-  sessionId: route.query.sessionId ? parseInt(route.query.sessionId) : null,
-  score:     0,
-  comment:   '',
-  status:    'PENDING',
-  date:      new Date().toISOString(),
+  tutorId:    route.query.tutorId ? parseInt(route.query.tutorId) : null,
+  reviewerId: null,
+  sessionId:  route.query.sessionId ? parseInt(route.query.sessionId) : null,
+  rating:     0,
+  comment:    '',
 });
 
-const statusOptions = [
-  { label: 'Pending',   value: 'PENDING'   },
-  { label: 'Published', value: 'PUBLISHED' },
-  { label: 'Removed',   value: 'REMOVED'   },
-];
-
 onMounted(() => {
-  console.log('route params:', route.params.id);
   if (isEdit.value) {
-    if (!store.reviewsLoaded) store.fetchReviews();
-    const existing = store.getReviewById(route.params.id);
-    console.log('review found:', existing);
-    if (existing) {
-      form.value.tutorId   = existing.tutorId;
-      form.value.studentId = existing.studentId;
-      form.value.sessionId = existing.sessionId;
-      form.value.score     = existing.score;
-      form.value.comment   = existing.comment;
-      form.value.status    = existing.status;
-      form.value.date      = existing.date;
-    } else {
-      navigateBack();
-    }
+    router.push({ name: 'reputation-reviews' });
   }
 });
 
 const saveReview = () => {
   const review = new Review({
-    id:        isEdit.value ? parseInt(route.params.id) : null,
-    tutorId:   form.value.tutorId,
-    studentId: form.value.studentId,
-    sessionId: form.value.sessionId,
-    score:     form.value.score,
-    comment:   form.value.comment,
-    status:    form.value.status,
-    date:      form.value.date || new Date().toISOString(),
+    tutorId:    form.value.tutorId,
+    reviewerId: form.value.reviewerId,
+    sessionId:  form.value.sessionId,
+    rating:     form.value.rating,
+    comment:    form.value.comment,
   });
-  if (isEdit.value) updateReview(review); else addReview(review);
+  addReview(review);
   navigateBack();
 };
 
@@ -79,14 +54,14 @@ const navigateBack = () => router.push({ name: 'reputation-reviews' });
       <form @submit.prevent="saveReview">
         <div class="form-grid">
 
-          <div class="field">
-            <label class="custom-label">{{ t('review.tutorId') }}</label>
-            <pv-input-number v-model="form.tutorId" class="w-full" :min="1" :use-grouping="false" required/>
+          <div v-if="isEdit" class="field">
+            <label class="custom-label">{{ t('review.status') }}</label>
+            <pv-select v-model="form.status" :options="statusOptions" option-label="label" option-value="value" class="w-full"/>
           </div>
 
           <div class="field">
-            <label class="custom-label">{{ t('review.studentId') }}</label>
-            <pv-input-number v-model="form.studentId" class="w-full" :min="1" :use-grouping="false" required/>
+            <label class="custom-label">{{ t('review.reviewerId') }}</label>
+            <pv-input-number v-model="form.reviewerId" class="w-full" :min="1" :use-grouping="false" required/>
           </div>
 
           <div class="field">
@@ -94,16 +69,11 @@ const navigateBack = () => router.push({ name: 'reputation-reviews' });
             <pv-input-number v-model="form.sessionId" class="w-full" :min="1" :use-grouping="false"/>
           </div>
 
-          <div class="field">
-            <label class="custom-label">{{ t('review.status') }}</label>
-            <pv-select v-model="form.status" :options="statusOptions" option-label="label" option-value="value" class="w-full"/>
-          </div>
-
           <div class="field field-full">
             <label class="custom-label">{{ t('review.score') }}</label>
             <div class="rating-wrap">
-              <pv-rating v-model="form.score" :stars="5" :cancel="false"/>
-              <span class="score-number">{{ form.score }} / 5</span>
+              <pv-rating v-model="form.rating" :stars="5" :cancel="false"/>
+              <span class="score-number">{{ form.rating }} / 5</span>
             </div>
           </div>
 

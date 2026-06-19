@@ -5,6 +5,7 @@ import useWorkspaceStore from "@/workspace/application/workspace.store.js";
 import {computed, onMounted, ref} from "vue";
 import {Session} from "@/workspace/domain/model/session-entity.js";
 
+
 /**
  * Session mutation and management form component.
  *
@@ -24,12 +25,20 @@ const { addSession, errors, updateSession } = store;
  */
 const form = ref({
   learnerId:   null,
-  // Pre-llena tutorId si viene desde perfil del tutor (US08)
   tutorId:     route.query.tutorId ? parseInt(route.query.tutorId) : null,
   topic:       '',
   status:      'pending',
   scheduledAt: '',
   courseId:    null,
+  initialMessage: '',
+});
+const scheduledAtDate = computed({
+  get() {
+    return form.value.scheduledAt ? new Date(form.value.scheduledAt) : null;
+  },
+  set(val) {
+    form.value.scheduledAt = val ? val.toISOString() : '';
+  }
 });
 
 /**
@@ -83,17 +92,32 @@ function getSessionById(id) {
 /**
  * Packs transaction records into explicit session domains and pushes save streams.
  */
-const saveSession = () => {
+const saveSession = async () => {
   const session = new Session({
     id:          isEdit.value ? parseInt(route.params.id) : null,
     learnerId:   form.value.learnerId,
     tutorId:     form.value.tutorId,
     topic:       form.value.topic,
-    status:      form.value.status,
+    status:      isEdit.value ? form.value.status : 'pending',
     scheduledAt: form.value.scheduledAt,
     courseId:    form.value.courseId,
   });
-  if (isEdit.value) updateSession(session); else addSession(session);
+
+  if (isEdit.value) {
+    updateSession(session);
+  } else {
+    const createdSession = await addSession(session);
+    // Si el estudiante escribió un mensaje inicial, lo enviamos vinculado a la sesión creada
+    if (createdSession && form.value.initialMessage.trim()) {
+      await store.addMessage({
+        sessionId: createdSession.id,
+        senderId:  form.value.learnerId,
+        content:   form.value.initialMessage.trim(),
+        fileUrl:   null,
+        fileName:  null,
+      });
+    }
+  }
   navigateBack();
 };
 
@@ -160,20 +184,50 @@ const navigateBack = () => {
             <pv-input-text id="topic" v-model="form.topic" class="w-full" required/>
           </div>
 
+          <div class="col-12 field mb-4">
+            <label for="initialMessage" class="custom-label">
+              {{ t('session.initial-message') }}
+              <span class="optional-tag">({{ t('session.optional') }})</span>
+            </label>
+            <pv-textarea
+                id="initialMessage"
+                v-model="form.initialMessage"
+                rows="3"
+                class="w-full"
+                :placeholder="t('session.initial-message-ph')"/>
+            <small class="field-hint">
+              <i class="pi pi-info-circle mr-1"/> {{ t('session.initial-message-hint') }}
+            </small>
+          </div>
+
           <div class="col-12 md:col-4 field mb-4">
-            <label for="status" class="custom-label">{{ t('session.status') }}</label>
-            <pv-select
-                id="status"
-                v-model="form.status"
-                :options="statusOptions"
-                option-label="label"
-                option-value="value"
-                class="w-full"/>
+            <label class="custom-label">{{ t('session.status') }}</label>
+            <div v-if="isEdit">
+              <pv-select
+                  id="status"
+                  v-model="form.status"
+                  :options="statusOptions"
+                  option-label="label"
+                  option-value="value"
+                  class="w-full"/>
+            </div>
+            <div v-else class="status-readonly">
+              <i class="pi pi-clock mr-2"/>
+              Pendiente — el tutor decidirá si acepta
+            </div>
           </div>
 
           <div class="col-12 md:col-4 field mb-4">
             <label for="scheduledAt" class="custom-label">{{ t('session.scheduledAt') }}</label>
-            <pv-input-text id="scheduledAt" v-model="form.scheduledAt" class="w-full" placeholder="2026-06-01T10:00"/>
+            <pv-date-picker
+                id="scheduledAt"
+                v-model="scheduledAtDate"
+                showTime
+                hourFormat="12"
+                dateFormat="dd/mm/yy"
+                class="w-full"
+                :minDate="new Date()"
+                placeholder="Seleccioná fecha y hora"/>
           </div>
 
           <div class="col-12 md:col-4 field mb-4">
@@ -324,4 +378,5 @@ const navigateBack = () => {
   align-items: center;
   color: #dc2626;
 }
+.optional-tag { color: #a0aec0; font-weight: 500; font-size: 0.8rem; }
 </style>

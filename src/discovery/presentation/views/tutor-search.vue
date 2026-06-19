@@ -1,22 +1,31 @@
 <script setup>
 import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
-import useDiscoveryStore from "@/discovery/application/discovery.store.js";
-import { onMounted, toRefs, computed } from "vue";
-
+import useDiscoveryStore  from "@/discovery/application/discovery.store.js";
+import useReputationStore from "@/reputation/application/reputation.store.js";
+import { onMounted, toRefs, computed, watch } from "vue";
 
 const {t}    = useI18n();
 const router = useRouter();
 const store  = useDiscoveryStore();
+const reputationStore = useReputationStore();
 const { filteredTutors, tutorsLoaded, errors, searchQuery, filterMinRating, filterUniversity, filterSkill, universities } = toRefs(store);
 const { fetchTutors, clearFilters } = store;
 
 onMounted(() => {
   if (!store.tutorsLoaded) {
     fetchTutors();
-    console.log('fetching tutors');
   }
 });
+
+// Apenas cargan los tutores, pedimos el summary real de cada uno (rating + reviewCount)
+watch(tutorsLoaded, (loaded) => {
+  if (loaded) {
+    store.tutors.forEach(tutor => {
+      reputationStore.fetchTutorSummary(tutor.userId);
+    });
+  }
+}, { immediate: true });
 
 const ratingOptions = [
   { label: t('discovery.filter-all-ratings'), value: 0   },
@@ -30,6 +39,18 @@ const allSkills = computed(() => {
   store.tutors.forEach(t => t.skills.forEach(s => set.add(s)));
   return [...set].sort();
 });
+
+/** Rating real desde el summary, con fallback al campo estático del tutor */
+const displayRating = (tutor) => {
+  const summary = reputationStore.getTutorSummary(tutor.userId);
+  return summary?.averageRating ?? tutor.rating;
+};
+
+/** Cantidad de reviews real desde el summary, con fallback */
+const displayReviewCount = (tutor) => {
+  const summary = reputationStore.getTutorSummary(tutor.userId);
+  return summary?.reviewCount ?? tutor.reviewCount;
+};
 
 const navigateToProfile = (id) => {
   router.push({ name: 'discovery-profile', params: { id } });
@@ -166,13 +187,13 @@ const renderStars = (rating) => {
               </div>
               <p class="tutor-career">{{ tutor.career }} · {{ tutor.university }}</p>
 
-              <!-- Rating (US07 preview) -->
+              <!-- Rating real (US07) -->
               <div class="rating-row">
-                <span v-for="n in renderStars(tutor.rating).full"  :key="'f'+n" class="star star-full">★</span>
-                <span v-for="n in renderStars(tutor.rating).half"  :key="'h'+n" class="star star-half">★</span>
-                <span v-for="n in renderStars(tutor.rating).empty" :key="'e'+n" class="star star-empty">★</span>
-                <span class="rating-number">{{ tutor.rating.toFixed(1) }}</span>
-                <span class="review-count">({{ tutor.reviewCount }} {{ t('discovery.reviews') }})</span>
+                <span v-for="n in renderStars(displayRating(tutor)).full"  :key="'f'+n" class="star star-full">★</span>
+                <span v-for="n in renderStars(displayRating(tutor)).half"  :key="'h'+n" class="star star-half">★</span>
+                <span v-for="n in renderStars(displayRating(tutor)).empty" :key="'e'+n" class="star star-empty">★</span>
+                <span class="rating-number">{{ Number(displayRating(tutor)).toFixed(1) }}</span>
+                <span class="review-count">({{ displayReviewCount(tutor) }} {{ t('discovery.reviews') }})</span>
               </div>
 
               <!-- Skills/Tags -->

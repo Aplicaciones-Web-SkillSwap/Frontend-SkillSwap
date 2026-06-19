@@ -6,6 +6,7 @@ import {uploadFile, validateFile} from "@/workspace/infrastructure/cloudinary-se
 import {computed, onMounted, ref} from "vue";
 import {Message}                from "@/workspace/domain/model/message-entity.js";
 import {formatDateTime}         from "@/shared/utils/format-date.js";
+import { Session } from "@/workspace/domain/model/session-entity.js";
 
 const {t}    = useI18n();
 const route  = useRoute();
@@ -73,10 +74,31 @@ const triggerFileInput = () => {
   document.getElementById('chat-file-input').click();
 };
 
-const startVideoCall    = () => { if (!isVideoEnabled.value) return; alert(t('workspace.video-call-message')); };
-const navigateToDonation = () => { router.push({ name: 'payment-transactions-new', query: { receiverId: session.value?.tutorId, walletId: session.value?.tutorId } }); };
+const startVideoCall = async () => {
+  if (!isVideoEnabled.value) return;
+  // Marca la sesión como completada al iniciar la videollamada
+  const current = session.value;
+  if (current && current.status === 'scheduled') {
+    const updated = new Session({
+      ...current,
+      status: 'completed',
+    });
+    store.updateSession(updated);
+  }
+  alert(t('workspace.video-call-message'));
+};
+const navigateToDonation = () => { router.push({ name: 'payment-transactions-new', query: { tutorId: session.value?.tutorId, tutorName: session.value?.tutorId } }); };
 const navigateToReview   = () => { router.push({ name: 'reputation-reviews-new',   query: { tutorId: session.value?.tutorId, sessionId: route.params.id } }); };
 const navigateBack       = () => { router.push({ name: 'workspace-sessions' }); };
+const navigateToReport = () => {
+  router.push({
+    name:  'moderation-reports-new',
+    query: {
+      sessionId:      route.params.id,
+      reportedUserId: session.value?.tutorId,
+    }
+  });
+};
 </script>
 
 <template>
@@ -99,6 +121,12 @@ const navigateBack       = () => { router.push({ name: 'workspace-sessions' }); 
       </div>
 
       <div class="flex gap-2">
+        <pv-button
+            :label="t('workspace.report')"
+            icon="pi pi-flag"
+            class="btn-report"
+            :disabled="!session"
+            @click="navigateToReport"/>
         <pv-button
             :label="t('workspace.start-call')"
             icon="pi pi-video"
@@ -588,4 +616,23 @@ const navigateBack       = () => { router.push({ name: 'workspace-sessions' }); 
 /* Upload feedback */
 .upload-error   { color: #dc2626; font-size: 0.85rem; display: flex; align-items: center; }
 .upload-loading { color: #1e4d8c; font-size: 0.85rem; display: flex; align-items: center; }
+.status-readonly {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+.btn-report {
+  background-color: #ffffff !important;
+  border: 1px solid #e53e4f !important;
+  color: #e53e4f !important;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+}
+.btn-report:hover { background-color: #fef2f2 !important; }
 </style>

@@ -53,21 +53,26 @@ const useWorkspaceStore = defineStore('workspace', () => {
     }
 
     function addSession(session) {
-        workspaceApi.createSession(session).then(response => {
+        return workspaceApi.createSession(session).then(response => {
             const resource   = response.data;
             const newSession = SessionAssembler.toEntityFromResource(resource);
             sessions.value.push(newSession);
+            return newSession;
         }).catch(error => {
             errors.value.push(error);
+            return null;
         });
     }
 
     function addMessage(message) {
-        workspaceApi.createMessage(message).then(response => {
-            messages.value.push(MessageAssembler.toEntityFromResource(response.data));
+        return workspaceApi.createMessage(message).then(response => {
+            const newMessage = MessageAssembler.toEntityFromResource(response.data);
+            messages.value.push(newMessage);
+            return newMessage;
         }).catch(error => {
             errors.value.push(error);
             console.error('Error adding message:', error);
+            return null;
         });
     }
 

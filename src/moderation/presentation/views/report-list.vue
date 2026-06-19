@@ -4,7 +4,6 @@ import { useI18n }             from 'vue-i18n';
 import { useRouter }           from 'vue-router';
 import useModerationStore      from '@/moderation/application/moderation.store.js';
 import useDiscoveryStore        from '@/discovery/application/discovery.store.js';
-import { Report }              from '@/moderation/domain/model/report-entity.js';
 import { formatDate }          from '@/shared/utils/format-date.js';
 
 const { t }  = useI18n();
@@ -14,8 +13,7 @@ const discoveryStore = useDiscoveryStore();
 
 const activeReports   = computed(() => store.activeReports);
 const resolvedReports = computed(() => store.resolvedReports);
-const pendingCount    = computed(() => store.activeReports.filter(r => r.status === 'pending').length);
-const searchQuery = ref('');
+const searchQuery     = ref('');
 
 const filteredActiveReports = computed(() => {
   if (!searchQuery.value.trim()) return activeReports.value;
@@ -41,33 +39,21 @@ const userRole = (id) => {
   return isTutor ? 'tutor' : 'aprendiz';
 };
 
-function statusLabel(status) {
-  const map = {
-    pending:   t('moderation.status-pending'),
-    warning:   t('moderation.status-warning'),
-    dismissed: t('moderation.status-dismissed'),
-    resolved:  t('moderation.status-resolved')
-  };
-  return map[status] ?? status;
+/** PATCH /Reports/{id}/close — única acción de resolución soportada por el backend */
+function resolveReport(report) {
+  store.closeReport(report.id);
 }
 
-function resolveReport(report) {
-  const updated = new Report({
-    id:             report.id,
-    reporterUserId: report.reporterUserId,
-    reportedUserId: report.reportedUserId,
-    reason:         report.reason,
-    status:         report.status === 'pending' ? 'warning' : report.status,
-    closed:         true,
-    createdAt:      report.createdAt.toISOString()
+const navigateToSanction = (report) => {
+  router.push({
+    name:  'moderation-sanctions-new',
+    query: { reportId: report.id, sanctionedUserId: report.reportedUserId }
   });
-  store.updateReport(updated);
-}
+};
 </script>
 
 <template>
   <div class="page-layout">
-
 
     <div class="col-left">
       <div class="page-header">
@@ -81,13 +67,9 @@ function resolveReport(report) {
             {{ t('moderation.table-reports') }}
             <span class="badge-count">{{ activeReports.length }}</span>
           </span>
-          <span style="font-size:13px; color:#9ca3af;">
-            {{ t('moderation.pending-label') }}:
-            <strong style="color:#d97706;">{{ pendingCount }}</strong>
-          </span>
         </div>
 
-        <!-- Búsqueda por nombre o razón (Boris feedback) -->
+        <!-- Búsqueda por nombre o razón -->
         <div style="padding: 12px 20px; border-bottom: 1px solid #f1f3f5;">
           <pv-icon-field>
             <pv-input-icon class="pi pi-search"/>
@@ -122,16 +104,16 @@ function resolveReport(report) {
             <template #body="{ data }">
               <span>{{ userName(data.reporterUserId) }}</span>
               <span :class="userRole(data.reporterUserId) === 'tutor' ? 'badge-tutor' : 'badge-aprendiz'">
-      {{ userRole(data.reporterUserId) === 'tutor' ? 'Tutor' : 'Aprendiz' }}
-    </span>
+                {{ userRole(data.reporterUserId) === 'tutor' ? 'Tutor' : 'Aprendiz' }}
+              </span>
             </template>
           </pv-column>
 
           <pv-column :header="t('moderation.col-reported')" field="reportedUserId">
             <template #body="{ data }">
               <span
-                class="user-link clickable"
-                @click="router.push({ name: 'moderation-reports-chat', params: { userId: data.reportedUserId } })"
+                  class="user-link clickable"
+                  @click="router.push({ name: 'moderation-reports-chat', params: { userId: data.reportedUserId } })"
               >{{ userName(data.reportedUserId) }}</span>
             </template>
           </pv-column>
@@ -142,33 +124,19 @@ function resolveReport(report) {
             </template>
           </pv-column>
 
-          <pv-column :header="t('moderation.col-status')" field="status">
-            <template #body="{ data }">
-              <span class="chip" :class="{
-                'chip-pending':   data.status === 'pending',
-                'chip-warning':   data.status === 'warning',
-                'chip-dismissed': data.status === 'dismissed',
-                'chip-resolved':  data.status === 'resolved'
-              }">{{ statusLabel(data.status) }}</span>
-            </template>
-          </pv-column>
-
           <pv-column :header="t('moderation.col-date')" field="createdAt">
             <template #body="{ data }">
               <span style="color:#6b7280; font-size:13px;">{{ formatDate(data.createdAt) }}</span>
             </template>
           </pv-column>
 
-          <pv-column :header="t('moderation.col-actions')" style="width:110px;">
+          <pv-column :header="t('moderation.col-actions')" style="width:140px;">
             <template #body="{ data }">
               <div class="actions-wrap">
-                <button class="action-icon"
-                  @click="router.push({ name: 'moderation-reports-edit', params: { id: data.id } })">
-                  <i class="pi pi-pencil" style="font-size:15px;"></i>
+                <button class="action-icon sanction" :title="'Sancionar'" @click="navigateToSanction(data)">
+                  <i class="pi pi-gavel" style="font-size:15px;"></i>
                 </button>
-                <button class="action-icon check"
-                  :disabled="data.closed || data.status === 'pending'"
-                  @click="resolveReport(data)">
+                <button class="action-icon check" :title="'Resolver sin sanción'" @click="resolveReport(data)">
                   <i class="pi pi-check-circle" style="font-size:15px;"></i>
                 </button>
               </div>
@@ -182,7 +150,6 @@ function resolveReport(report) {
       </div>
     </div>
 
-
     <div class="col-right">
       <div class="resolved-box">
         <div class="resolved-header">
@@ -193,16 +160,12 @@ function resolveReport(report) {
         <div v-for="r in resolvedReports" :key="r.id" class="resolved-item">
           <div class="resolved-top">
             <span class="resolved-user">{{ userName(r.reportedUserId) }}</span>
-            <button class="action-icon delete" @click="store.deleteReport(r.id)">
-              <i class="pi pi-trash" style="font-size:14px;"></i>
-            </button>
           </div>
           <div class="resolved-reason">{{ r.reason }}</div>
           <div class="resolved-meta">
             <span style="font-size:11px; color:#9ca3af;">{{ formatDate(r.createdAt) }}</span>
-            <span class="chip" style="font-size:11px; padding:2px 8px;"
-              :class="{ 'chip-warning': r.status === 'warning', 'chip-dismissed': r.status === 'dismissed' }">
-              {{ statusLabel(r.status) }}
+            <span class="chip chip-resolved" style="font-size:11px; padding:2px 8px;">
+              {{ t('moderation.status-resolved') }}
             </span>
           </div>
         </div>
@@ -231,23 +194,18 @@ function resolveReport(report) {
 .spinner-wrap { padding: 32px; text-align: center; }
 
 .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-.chip-pending   { background: #fef9ee; color: #d97706; border: 1px solid #fde68a; }
-.chip-warning   { background: #fff1f0; color: #ef4444; border: 1px solid #fecaca; }
-.chip-dismissed { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
 .chip-resolved  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
 
 .actions-wrap { display: flex; align-items: center; gap: 4px; }
 .action-icon  { width: 32px; height: 32px; border: none; background: none; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #9ca3af; transition: all 0.15s; }
-.action-icon:hover        { background: #f3f4f6; color: #1a2a40; }
-.action-icon.check:hover  { background: #f0fdf4; color: #16a34a; }
-.action-icon.delete:hover { background: #fff1f0; color: #ef4444; }
-.action-icon:disabled     { opacity: 0.35; cursor: not-allowed; }
+.action-icon:hover           { background: #f3f4f6; color: #1a2a40; }
+.action-icon.check:hover     { background: #f0fdf4; color: #16a34a; }
+.action-icon.sanction:hover  { background: #fff1f0; color: #e53e4f; }
 
 .user-link           { color: #1e4d8c; font-weight: 500; }
 .user-link.clickable { cursor: pointer; text-decoration: underline; }
 .user-link.clickable:hover { color: #1a2a40; }
 .empty-msg { text-align: center; color: #9ca3af; font-size: 13px; padding: 32px; }
-
 
 :deep(.p-datatable)                      { background: #ffffff !important; }
 :deep(.p-datatable-table-container)      { background: #ffffff !important; }
@@ -271,26 +229,11 @@ function resolveReport(report) {
 .resolved-meta   { display: flex; justify-content: space-between; align-items: center; }
 .resolved-empty  { text-align: center; color: #9ca3af; font-size: 13px; padding: 24px; }
 .badge-tutor {
-  display: inline-block;
-  background: #e0f2fe;
-  color: #0284c7;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 20px;
-  margin-left: 6px;
-  vertical-align: middle;
+  display: inline-block; background: #e0f2fe; color: #0284c7; font-size: 0.7rem;
+  font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle;
 }
-
 .badge-aprendiz {
-  display: inline-block;
-  background: #f0fdf4;
-  color: #16a34a;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 20px;
-  margin-left: 6px;
-  vertical-align: middle;
+  display: inline-block; background: #f0fdf4; color: #16a34a; font-size: 0.7rem;
+  font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; vertical-align: middle;
 }
 </style>

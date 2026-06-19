@@ -22,35 +22,30 @@ export class PaymentApi extends BaseApi {
         return this.#walletsEndpoint.getById(id);
     }
 
+    getWalletByUserId(userId) {
+        return this.http.get(`${walletsEndpointPath}/user/${userId}`);
+    }
+
     createWallet(resource) {
         return this.#walletsEndpoint.create(resource);
-    }
-
-    updateWallet(resource) {
-        return this.#walletsEndpoint.update(resource.id, resource);
-    }
-
-    deleteWallet(id) {
-        return this.#walletsEndpoint.delete(id);
     }
 
     getTransactions() {
         return this.#transactionsEndpoint.getAll();
     }
 
-    getTransactionById(id) {
-        return this.#transactionsEndpoint.getById(id);
+    getTransactionsByWalletId(walletId) {
+        return this.http.get(`${transactionsEndpointPath}/wallet/${walletId}`);
     }
 
     createTransaction(resource) {
         return this.#transactionsEndpoint.create(resource);
     }
 
-    updateTransaction(resource) {
-        return this.#transactionsEndpoint.update(resource.id, resource);
-    }
-
-    deleteTransaction(id) {
-        return this.#transactionsEndpoint.delete(id);
+    /** POST /Transactions/donate — operación atómica de donación */
+    donate({ fromUserId, toUserId, amount, description }) {
+        return this.http.post(`${transactionsEndpointPath}/donate`, {
+            fromUserId, toUserId, amount, description
+        });
     }
 }

@@ -17,13 +17,11 @@ export class ReviewAssembler {
 
     static toResourceFromEntity(entity) {
         return {
-            tutorId:   entity.tutorId,
-            studentId: entity.studentId,
-            sessionId: entity.sessionId,
-            score:     entity.score,
-            comment:   entity.comment,
-            status:    entity.status,
-            date:      entity.date,
+            reviewerId: entity.reviewerId,
+            tutorId:    entity.tutorId,
+            sessionId:  entity.sessionId,
+            rating:     entity.rating,
+            comment:    entity.comment,
         };
     }
 }

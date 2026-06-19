@@ -3,13 +3,15 @@ import {useI18n}            from "vue-i18n";
 import {useRouter}          from "vue-router";
 import useWorkspaceStore    from "@/workspace/application/workspace.store.js";
 import useDiscoveryStore    from "@/discovery/application/discovery.store.js";
-import {computed, onMounted} from "vue";
+import useReputationStore   from "@/reputation/application/reputation.store.js";
+import {computed, onMounted, watch} from "vue";
 import {formatDateTime}     from "@/shared/utils/format-date.js";
 
 const {t}    = useI18n();
 const router = useRouter();
 const store  = useWorkspaceStore();
-const discoveryStore = useDiscoveryStore();
+const discoveryStore   = useDiscoveryStore();
+const reputationStore  = useReputationStore();
 const { fetchSessions, acceptSession, rejectSession } = store;
 
 onMounted(() => {
@@ -17,10 +19,31 @@ onMounted(() => {
   if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
 });
 
+// Apenas cargan los tutores, pedimos el summary real de cada uno (rating + reviewCount)
+watch(() => discoveryStore.tutorsLoaded, (loaded) => {
+  if (loaded) {
+    discoveryStore.tutors.forEach(tutor => {
+      reputationStore.fetchTutorSummary(tutor.userId);
+    });
+  }
+}, { immediate: true });
+
 /** Resuelve nombre por userId */
 const userName = (id) => {
   const tutor = discoveryStore.tutors.find(t => t.userId === id);
   return tutor ? tutor.name : `Usuario #${id}`;
+};
+
+/** Rating real desde el summary, con fallback al campo estático del tutor */
+const displayRating = (tutor) => {
+  const summary = reputationStore.getTutorSummary(tutor.userId);
+  return summary?.averageRating ?? tutor.rating;
+};
+
+/** Cantidad de reviews real desde el summary, con fallback */
+const displayReviewCount = (tutor) => {
+  const summary = reputationStore.getTutorSummary(tutor.userId);
+  return summary?.reviewCount ?? tutor.reviewCount;
 };
 
 const scheduledSessions = computed(() =>
@@ -31,9 +54,12 @@ const pendingSessions = computed(() =>
     store.sessions.filter(s => s.status === 'pending')
 );
 
-/** Tutores en línea desde el store (reemplaza el array hardcodeado) */
-const onlineTutors = computed(() =>
-    discoveryStore.tutors.filter(t => t.online).slice(0, 3)
+/** Tutores mejor calificados — usando el rating real del summary, no el campo estático */
+const recommendedTutors = computed(() =>
+    [...discoveryStore.tutors]
+        .filter(t => displayReviewCount(t) > 0)
+        .sort((a, b) => displayRating(b) - displayRating(a))
+        .slice(0, 3)
 );
 
 const statusClass = (status) => {
@@ -168,18 +194,22 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
         </div>
 
         <div class="section mt-4">
-          <h2 class="section-title">Mis tutores en línea</h2>
+          <h2 class="section-title">Tutores recomendados</h2>
 
-          <div class="tutors-list">
+          <div v-if="recommendedTutors.length === 0" class="empty-sessions">
+            <p>Aún no hay tutores con reseñas.</p>
+          </div>
+
+          <div v-else class="tutors-list">
             <div
-                v-for="tutor in onlineTutors"
+                v-for="tutor in recommendedTutors"
                 :key="tutor.id"
-                class="tutor-card">
+                class="tutor-card"
+                @click="router.push({ name: 'discovery-profile', params: { id: tutor.id } })">
               <div class="tutor-avatar-wrap">
                 <div class="tutor-avatar">
                   <i class="pi pi-user tutor-avatar-icon"/>
                 </div>
-                <span class="online-dot"/>
               </div>
               <div class="tutor-info">
                 <p class="tutor-name">
@@ -187,15 +217,20 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
                   <i v-if="tutor.verified" class="pi pi-check verified-icon"/>
                 </p>
                 <p class="tutor-career">{{ tutor.career }} - {{ tutor.university }}</p>
-                <span class="btn-schedule">Programar sesión</span>
+
+                <span class="rating-pill">
+                  <i class="pi pi-star-fill" style="font-size:0.7rem;"/>
+                  {{ Number(displayRating(tutor)).toFixed(1) }} ({{ displayReviewCount(tutor) }})
+                </span>
+
               </div>
-              <i class="pi pi-heart heart-icon"/>
             </div>
           </div>
 
           <pv-button
-              label="Ver todos mis tutores"
-              class="btn-all-tutors w-full mt-3"/>
+              label="Ver todos los tutores"
+              class="btn-all-tutors w-full mt-3"
+              @click="navigateToSearch"/>
         </div>
 
       </div>
@@ -463,16 +498,7 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
 
 .tutor-avatar-icon { color: #718096; font-size: 1.3rem; }
 
-.online-dot {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  background-color: #16a34a;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-}
+
 
 .tutor-info { flex: 1; min-width: 0; }
 
@@ -493,18 +519,6 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
   font-size: 0.8rem;
   margin: 0 0 0.4rem 0;
 }
-
-.btn-schedule {
-  background-color: #f5a623;
-  color: #1a2a40;
-  font-weight: 700;
-  font-size: 0.75rem;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  cursor: pointer;
-}
-
-.heart-icon { color: #e53e4f; font-size: 1.2rem; flex-shrink: 0; }
 
 .btn-all-tutors {
   background-color: #1e4d8c !important;
@@ -529,4 +543,22 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
   display: flex;
   align-items: center;
 }
+.tutor-card {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tutor-card:hover { background: #f0f4ff; }
+
+.rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #fef3c7;
+  color: #d97706;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+}
+
 </style>

@@ -88,7 +88,11 @@
     "action-reject": "Rechazar",
     "action-cancel": "Cancelar",
     "action-edit": "Editar",
-    "action-delete": "Eliminar"
+    "action-delete": "Eliminar",
+    "initial-message":     "Mensaje inicial",
+    "initial-message-ph":  "Escribí tu duda o lo que querés repasar...",
+    "initial-message-hint":"Este mensaje se enviará al chat de la sesión apenas se cree.",
+    "optional":             "opcional"
   },
   "session": {
     "new-title": "Crear Nueva Sesion",
@@ -127,7 +131,8 @@
     "review-title": "Sesion completada! Califica a tu tutor.",
     "review-sub": "Tu calificacion ayuda a construir la reputacion del tutor en SkillSwap.",
     "btn-review": "Dejar Reseña",
-    "attach-file": "Adjuntar archivo"
+    "attach-file": "Adjuntar archivo",
+    "report": "Reportar"
   },
   "wallets": {
     "title": "Billeteras",
@@ -185,7 +190,31 @@
     "status": "Estado",
     "description": "Descripcion",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "checking-wallet":       "Verificando billetera del tutor...",
+    "no-wallet-title":       "Este tutor aún no tiene billetera",
+    "no-wallet-sub":         "{name} todavía no configuró su billetera para recibir donaciones.",
+    "back-to-session":       "Volver a la sesión",
+    "donating-to":           "Donando a",
+    "amount-label":          "Monto a donar",
+    "message-label":         "Mensaje",
+    "message-ph":            "Gracias por la ayuda...",
+    "continue-to-pay":       "Continuar al pago",
+    "gateway-title":         "Pago seguro",
+    "gateway-sub":           "Tus datos están protegidos",
+    "card-number":           "Número de tarjeta",
+    "card-expiry":           "Vencimiento",
+    "pay-now":               "Pagar USD {amount}",
+    "processing":            "Procesando tu pago...",
+    "success-title":         "¡Donación exitosa!",
+    "success-sub":           "Tu aporte a {name} fue enviado correctamente.",
+    "error-title":           "No se pudo procesar el pago",
+    "error-not-found":       "El tutor no tiene una billetera configurada todavía.",
+    "error-invalid":         "Monto inválido o fondos insuficientes.",
+    "error-unknown":         "Ocurrió un error inesperado. Intenta de nuevo.",
+    "try-again":             "Intentar de nuevo",
+    "no-sender-wallet-title": "No tienes una billetera configurada",
+    "no-sender-wallet-sub":   "Necesitas una billetera para poder donar. Contacta a soporte para crear una."
   },
   "errors": {
     "occurred": "Ocurrieron errores"
@@ -285,7 +314,8 @@
     "comment": "Comentario",
     "status": "Estado",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "reviewerId": "ID del estudiante"
   },
   "reputations": {
     "title": "Reputaciones de Tutores",

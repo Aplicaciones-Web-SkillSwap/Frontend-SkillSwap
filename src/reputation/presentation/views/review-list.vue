@@ -1,7 +1,6 @@
 <script lang="js" setup>
 import {useI18n}              from "vue-i18n";
 import {useRoute, useRouter}  from "vue-router";
-import {useConfirm}           from "primevue";
 import useReputationStore     from "@/reputation/application/reputation.store.js";
 import useDiscoveryStore      from "@/discovery/application/discovery.store.js";
 import {computed, onMounted, ref, toRefs} from "vue";
@@ -10,11 +9,10 @@ import {formatDate}           from "@/shared/utils/format-date.js";
 const {t}     = useI18n();
 const route   = useRoute();
 const router  = useRouter();
-const confirm = useConfirm();
 const store   = useReputationStore();
 const discoveryStore = useDiscoveryStore();
 const { reviews, errors, reviewsLoaded } = toRefs(store);
-const { fetchReviews, deleteReview }     = store;
+const { fetchReviews }                   = store;
 
 /** Búsqueda por nombre de tutor (pedido por el profesor) */
 const searchQuery = ref('');
@@ -32,7 +30,6 @@ const displayedReviews = computed(() => {
       ? store.getReviewsByTutorId(filterTutorId.value)
       : reviews.value;
 
-  // Filtro por nombre de tutor
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase().trim();
     result = result.filter(r => tutorName(r.tutorId).toLowerCase().includes(q));
@@ -51,29 +48,10 @@ onMounted(() => {
   if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
 });
 
-const navigateToNew  = ()   => router.push({ name: 'reputation-reviews-new',  query: filterTutorId.value ? { tutorId: filterTutorId.value } : {} });
-const navigateToEdit = (id) => router.push({ name: 'reputation-reviews-edit', params: { id } });
-const navigateBack   = ()   => {
+const navigateToNew = () => router.push({ name: 'reputation-reviews-new', query: filterTutorId.value ? { tutorId: filterTutorId.value } : {} });
+const navigateBack  = () => {
   if (filterTutorId.value) router.push({ name: 'discovery-search' });
-  else router.push({ name: 'reputation-reputations' });
-};
-
-const confirmDelete = (review) => {
-  confirm.require({
-    message: t('reviews.confirm-delete', { id: review.id }),
-    header:  t('reviews.delete-header'),
-    icon:    'pi pi-exclamation-triangle',
-    accept:  () => { deleteReview(review); },
-  });
-};
-
-const statusClass = (status) => {
-  const map = {
-    PUBLISHED: 'status-badge status-published',
-    PENDING:   'status-badge status-pending',
-    REMOVED:   'status-badge status-removed',
-  };
-  return map[status] || 'status-badge';
+  else router.push({ name: 'home' });
 };
 </script>
 
@@ -128,16 +106,16 @@ const statusClass = (status) => {
           </template>
         </pv-column>
 
-        <pv-column :header="t('reviews.studentId')" field="studentId" sortable>
+        <pv-column :header="t('reviews.reviewerId')" field="reviewerId" sortable>
           <template #body="slotProps">
-            <span class="text-neutral">Usuario #{{ slotProps.data.studentId }}</span>
+            <span class="text-neutral">Usuario #{{ slotProps.data.reviewerId }}</span>
           </template>
         </pv-column>
 
-        <pv-column :header="t('reviews.score')" field="score" sortable>
+        <pv-column :header="t('reviews.score')" field="rating" sortable>
           <template #body="slotProps">
             <span class="text-score">
-              {{ slotProps.data.score }}
+              {{ slotProps.data.rating }}
               <i class="pi pi-star-fill text-yellow-500 ml-1" style="font-size: 0.9rem;"></i>
             </span>
           </template>
@@ -149,27 +127,18 @@ const statusClass = (status) => {
           </template>
         </pv-column>
 
-        <pv-column :header="t('reviews.status')" field="status" sortable>
-          <template #body="slotProps">
-            <span :class="statusClass(slotProps.data.status)">{{ slotProps.data.status }}</span>
-          </template>
-        </pv-column>
-
-        <pv-column :header="t('reviews.date')" field="date" sortable>
+        <pv-column :header="t('reviews.date')" field="reviewedAt" sortable>
           <template #body="slotProps">
             <span class="text-date">
               <i class="pi pi-calendar icon-cal"/>
-              {{ formatDate(slotProps.data.date) }}
+              {{ formatDate(slotProps.data.reviewedAt) }}
             </span>
           </template>
         </pv-column>
 
-        <pv-column :header="t('reviews.actions')">
-          <template #body="slotProps">
-            <div class="actions-cell">
-              <pv-button icon="pi pi-pencil" rounded text class="action-btn-edit"   @click="navigateToEdit(slotProps.data.id)"/>
-              <pv-button icon="pi pi-trash"  rounded text class="action-btn-delete" @click="confirmDelete(slotProps.data)"/>
-            </div>
+        <pv-column :header="t('reviews.status')">
+          <template #body>
+            <span class="status-badge status-published">Published</span>
           </template>
         </pv-column>
 
@@ -180,7 +149,6 @@ const statusClass = (status) => {
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
     </div>
 
-    <pv-confirm-dialog/>
   </div>
 </template>
 
@@ -259,16 +227,7 @@ const statusClass = (status) => {
 
 .status-badge     { padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.3px; }
 .status-published { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.status-pending   { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-.status-removed   { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-
-.actions-cell { display: flex; align-items: center; gap: 0.2rem; }
-.action-btn-edit   { color: #94a3b8 !important; }
-.action-btn-edit:hover { color: #3b82f6 !important; background-color: #eff6ff !important; }
-
-.action-btn-delete { color: #f87171 !important; }
-.action-btn-delete:hover { color: #ef4444 !important; background-color: #fef2f2 !important; }
 
 .error-msg { font-weight: bold; }
 

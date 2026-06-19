@@ -16,17 +16,13 @@ export class ReportAssembler {
         return items.map(r => this.toEntityFromResource(r));
     }
 
+    /** POST /Reports solo espera estos 4 campos */
     static toResourceFromEntity(entity) {
         return {
-            id:             entity.id,
-            reportedUserId: entity.reportedUserId,
             reporterUserId: entity.reporterUserId,
+            reportedUserId: entity.reportedUserId,
+            sessionId:      entity.sessionId,
             reason:         entity.reason,
-            status:         entity.status,
-            closed:         entity.closed,
-            createdAt:      entity.createdAt instanceof Date
-                                ? entity.createdAt.toISOString()
-                                : entity.createdAt
         };
     }
 }

@@ -103,7 +103,11 @@
     "cancel": "Cancel",
     "from-discovery-title": "Request from tutor profile",
     "from-discovery-sub": "The tutor ID has been pre-filled. Complete the topic and date to send the request.",
-    "tutor-prefilled": "Pre-filled from the selected tutor profile."
+    "tutor-prefilled": "Pre-filled from the selected tutor profile.",
+    "initial-message":     "Initial message",
+    "initial-message-ph":  "Write your question or what you'd like to review...",
+    "initial-message-hint":"This message will be sent to the session chat once created.",
+    "optional":             "optional"
   },
   "workspace": {
     "title": "Session Workspace",
@@ -127,7 +131,8 @@
     "review-title": "Session completed! Rate your tutor.",
     "review-sub": "Your rating helps build the tutor's reputation on SkillSwap.",
     "btn-review": "Leave a Review",
-    "attach-file": "Attach file"
+    "attach-file": "Attach file",
+    "report": "Report"
   },
   "wallets": {
     "title": "Wallets",
@@ -197,7 +202,31 @@
     "skillswap-commission": "SkillSwap commission",
     "tutor-receives": "Tutor receives",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "checking-wallet":       "Checking tutor's wallet...",
+    "no-wallet-title":       "This tutor doesn't have a wallet yet",
+    "no-wallet-sub":         "{name} hasn't set up their wallet to receive donations yet.",
+    "back-to-session":       "Back to session",
+    "donating-to":           "Donating to",
+    "amount-label":          "Donation amount",
+    "message-label":         "Message",
+    "message-ph":            "Thanks for your help...",
+    "continue-to-pay":       "Continue to payment",
+    "gateway-title":         "Secure payment",
+    "gateway-sub":           "Your information is protected",
+    "card-number":           "Card number",
+    "card-expiry":           "Expiry date",
+    "pay-now":               "Pay USD {amount}",
+    "processing":            "Processing your payment...",
+    "success-title":         "Donation successful!",
+    "success-sub":           "Your contribution to {name} was sent successfully.",
+    "error-title":           "Payment could not be processed",
+    "error-not-found":       "The tutor doesn't have a wallet set up yet.",
+    "error-invalid":         "Invalid amount or insufficient funds.",
+    "error-unknown":         "An unexpected error occurred. Please try again.",
+    "try-again":             "Try again",
+    "no-sender-wallet-title": "You don't have a wallet set up yet",
+    "no-sender-wallet-sub":   "You need a wallet to make donations. Contact support to create one."
   },
   "errors": {
     "occurred": "Errors occurred"
@@ -285,7 +314,8 @@
     "confirm-delete": "Are you sure you want to delete review #{id}?",
     "delete-header": "Confirm Deletion",
     "title-filtered": "Reviews — Tutor #{tutorId}",
-    "filter-label": "Filtered by tutor"
+    "filter-label": "Filtered by tutor",
+    "reviewerId": "Student ID"
   },
   "review": {
     "new-title": "Write a Review",

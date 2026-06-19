@@ -20,11 +20,11 @@ const report = computed(() =>
     moderationStore.reports.find(r => r.reportedUserId === userId.value) ?? null
 );
 
+// Sesión real vinculada por sessionId — ya no por heurística de tutor/learner
 const session = computed(() =>
-    workspaceStore.sessions.find(s =>
-        s.tutorId   === report.value?.reporterUserId ||
-        s.learnerId === report.value?.reportedUserId
-    ) ?? null
+    report.value?.sessionId
+        ? workspaceStore.getSessionById(report.value.sessionId)
+        : null
 );
 
 const sessionMessages = computed(() =>
@@ -37,7 +37,7 @@ const userName = (id) => {
 };
 
 const caseDate = computed(() => report.value
-    ? formatDateTime(report.value.createdAt)
+    ? formatDateTime(report.value.reportedAt)
     : '—'
 );
 const status = computed(() => report.value?.status ?? '—');

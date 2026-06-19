@@ -3,8 +3,9 @@ import {useI18n}              from "vue-i18n";
 import {useRoute, useRouter}  from "vue-router";
 import useDiscoveryStore      from "@/discovery/application/discovery.store.js";
 import useReputationStore     from "@/reputation/application/reputation.store.js";
-import {computed, onMounted}  from "vue";
+import {computed, onMounted, watch} from "vue";
 import {formatDate}           from "@/shared/utils/format-date.js";
+
 
 const {t}    = useI18n();
 const route  = useRoute();
@@ -13,8 +14,8 @@ const router = useRouter();
 const discoveryStore   = useDiscoveryStore();
 const reputationStore  = useReputationStore();
 
-const { fetchTutors }     = discoveryStore;
-const { fetchReviews }    = reputationStore;
+const { fetchTutors }  = discoveryStore;
+const { fetchReviews } = reputationStore;
 
 const tutor = computed(() => discoveryStore.getTutorById(route.params.id));
 
@@ -23,30 +24,32 @@ const tutorReviews = computed(() => {
   if (!tutor.value) return [];
   return reputationStore
       .getReviewsByTutorId(tutor.value.userId)
-      .filter(r => r.isPublished())
       .slice(0, 3);
 });
 
 const hasReviews = computed(() => tutorReviews.value.length > 0);
 
-// Reputación real del tutor
-const tutorReputation = computed(() =>
-    reputationStore.getReputationByTutorId(tutor.value?.userId)
+// Resumen real del tutor — GET /Reviews/tutor/{tutorId}/summary
+const tutorSummary = computed(() =>
+    tutor.value ? reputationStore.getTutorSummary(tutor.value.userId) : null
 );
 
 const averageScore = computed(() =>
-    tutorReputation.value?.averageScore ?? tutor.value?.rating ?? 0
+    tutorSummary.value?.averageRating ?? tutor.value?.rating ?? 0
 );
 
 const reviewCount = computed(() =>
-    tutorReputation.value?.publishedReviews ?? tutor.value?.reviewCount ?? 0
+    tutorSummary.value?.reviewCount ?? tutor.value?.reviewCount ?? 0
 );
 
 onMounted(() => {
-  if (!discoveryStore.tutorsLoaded)       fetchTutors();
-  if (!reputationStore.reviewsLoaded)     fetchReviews();
-  if (!reputationStore.reputationsLoaded) reputationStore.fetchReputations();
+  if (!discoveryStore.tutorsLoaded)   fetchTutors();
+  if (!reputationStore.reviewsLoaded) fetchReviews();
 });
+
+watch(tutor, (newTutor) => {
+  if (newTutor) reputationStore.fetchTutorSummary(newTutor.userId);
+}, { immediate: true });
 
 const renderStars = (rating) => {
   const full  = Math.floor(rating);
@@ -54,7 +57,6 @@ const renderStars = (rating) => {
   const empty = 5 - full - half;
   return { full, half, empty };
 };
-
 
 // US08 — Enviar solicitud de tutoría
 const sendRequest = () => {
@@ -76,7 +78,6 @@ const navigateBack = () => {
   router.push({ name: 'discovery-search' });
 };
 </script>
-
 <template>
   <div class="profile-container">
 
@@ -202,14 +203,14 @@ const navigateBack = () => {
                     <i class="pi pi-user reviewer-avatar-icon"/>
                   </div>
                   <div>
-                    <p class="reviewer-name">{{ t('discovery.student') }} #{{ review.studentId }}</p>
-                    <p class="review-date">{{ formatDate(review.date) }}</p>
+                    <p class="reviewer-name">{{ t('discovery.student') }} #{{ review.reviewerId }}</p>
+                    <p class="review-date">{{ formatDate(review.reviewedAt) }}</p>
                   </div>
                 </div>
                 <div class="review-stars">
-                  <span v-for="n in Math.floor(review.score)"       :key="'f'+n" class="star star-full">★</span>
-                  <span v-for="n in (5 - Math.floor(review.score))" :key="'e'+n" class="star star-empty">★</span>
-                  <span class="score-badge">{{ review.score }}</span>
+                  <span v-for="n in Math.floor(review.rating)"       :key="'f'+n" class="star star-full">★</span>
+                  <span v-for="n in (5 - Math.floor(review.rating))" :key="'e'+n" class="star star-empty">★</span>
+                  <span class="score-badge">{{ review.rating }}</span>
                 </div>
               </div>
               <p class="review-comment">{{ review.comment }}</p>

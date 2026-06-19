@@ -14,47 +14,26 @@ export class ModerationApi extends BaseApi {
         this.#sanctionsEndpoint = new BaseEndpoint(this, sanctionsPath);
     }
 
-    getReports() {
-        return this.#reportsEndpoint.getAll();
+    // Reports
+    getReports()         { return this.#reportsEndpoint.getAll(); }
+    getReportById(id)    { return this.#reportsEndpoint.getById(id); }
+    createReport(resource) { return this.#reportsEndpoint.create(resource); }
+
+    /** PATCH /Reports/{id}/close */
+    closeReport(id) {
+        return this.http.patch(`${reportsPath}/${id}/close`);
     }
 
-    getReportById(id) {
-        return this.#reportsEndpoint.getById(id);
+    getReportsByReportedUser(userId) {
+        return this.http.get(`${reportsPath}/reported-user/${userId}`);
     }
 
-    createReport(resource) {
-        return this.#reportsEndpoint.create(resource);
-    }
+    // Sanctions
+    getSanctions()         { return this.#sanctionsEndpoint.getAll(); }
+    getSanctionById(id)    { return this.#sanctionsEndpoint.getById(id); }
+    createSanction(resource) { return this.#sanctionsEndpoint.create(resource); }
 
-    updateReport(id, resource) {
-        return this.#reportsEndpoint.update(id, resource);
-    }
-
-    deleteReport(id) {
-        return this.#reportsEndpoint.delete(id);
-    }
-
-    getSanctions() {
-        return this.#sanctionsEndpoint.getAll();
-    }
-
-    getSanctionById(id) {
-        return this.#sanctionsEndpoint.getById(id);
-    }
-
-    createSanction(resource) {
-        return this.#sanctionsEndpoint.create(resource);
-    }
-
-    updateSanction(id, resource) {
-        return this.#sanctionsEndpoint.update(id, resource);
-    }
-
-    deleteSanction(id) {
-        return this.#sanctionsEndpoint.delete(id);
-    }
-
-    getMessagesByUser(userId) {
-        return this.http.get(`/messages?reportedUserId=${userId}`).then(r => r.data);
+    getSanctionsByReportId(reportId) {
+        return this.http.get(`${sanctionsPath}/report/${reportId}`);
     }
 }
