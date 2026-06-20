@@ -16,18 +16,36 @@ export class QuizAssembler {
         return items.map(r => this.toEntityFromResource(r));
     }
 
-    static toResourceFromEntity(entity) {
+    /** POST /Quizzes — solo el quiz base, sin preguntas */
+    static toCreateResource(entity) {
         return {
-            id:          entity.id,
             tutorId:     entity.tutorId,
             course:      entity.course,
             title:       entity.title,
             description: entity.description,
-            questions:   entity.questions,
-            status:      entity.status,
-            createdAt:   entity.createdAt instanceof Date
-                ? entity.createdAt.toISOString()
-                : entity.createdAt
+        };
+    }
+
+    /** PUT /Quizzes/{id} — incluye preguntas completas */
+    static toUpdateResource(entity) {
+        return {
+            course:      entity.course,
+            title:       entity.title,
+            description: entity.description,
+            questions:   entity.questions.map(q => ({
+                questionString: q.questionString,
+                answers:        q.answers,
+                correctAnswer:  q.correctAnswer,
+            })),
+        };
+    }
+
+    /** POST /Quizzes/{quizId}/questions */
+    static toQuestionResource(question) {
+        return {
+            questionString: question.questionString,
+            answers:        question.answers,
+            correctAnswer:  question.correctAnswer,
         };
     }
 }

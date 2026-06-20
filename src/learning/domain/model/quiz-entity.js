@@ -1,3 +1,17 @@
+export class Question {
+    constructor({
+                    id             = null,
+                    questionString = '',
+                    answers        = ['', '', '', ''],
+                    correctAnswer  = 0
+                }) {
+        this.id             = id;
+        this.questionString = questionString;
+        this.answers        = answers;
+        this.correctAnswer  = correctAnswer;
+    }
+}
+
 export class Quiz {
     constructor({
                     id          = null,
@@ -5,26 +19,15 @@ export class Quiz {
                     course      = '',
                     title       = '',
                     description = '',
-                    questions   = [],
-                    status      = 'draft',
-                    createdAt   = new Date().toISOString()
+                    questions   = []
                 }) {
         this.id          = id;
         this.tutorId     = tutorId;
         this.course      = course;
         this.title       = title;
         this.description = description;
-        this.questions   = questions;
-        this.status      = status;
-        this.createdAt   = new Date(createdAt);
+        this.questions   = questions.map(q => q instanceof Question ? q : new Question(q));
     }
 
-    getFormattedCreatedAt() {
-        return this.createdAt.toLocaleDateString('es-PE', {
-            year: 'numeric', month: '2-digit', day: '2-digit'
-        });
-    }
-
-    isPublished() { return this.status === 'published'; }
     questionCount() { return this.questions.length; }
 }

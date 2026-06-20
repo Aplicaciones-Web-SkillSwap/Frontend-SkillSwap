@@ -3,45 +3,46 @@ import { ref, onMounted }      from 'vue';
 import { useI18n }             from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import useLearningStore        from '@/learning/application/learning.store.js';
-import { Quiz }                from '@/learning/domain/model/quiz-entity.js';
+import { Quiz, Question }      from '@/learning/domain/model/quiz-entity.js';
 
 const { t }  = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useLearningStore();
 
+const CURRENT_USER_ID = 1;
+
 const isEdit = ref(false);
 const quizId = ref(null);
+const saving = ref(false);
 
-const form = ref({ tutorId: 1, course: '', title: '', description: '', status: 'draft' });
+const form = ref({ course: '', title: '', description: '' });
 const questions = ref([]);
 const errors = ref({ title: '', course: '', questions: '' });
 
-const statusOptions = [
-  { value: 'draft',     label: 'learning.status-draft'     },
-  { value: 'published', label: 'learning.status-published' }
-];
-
-onMounted(() => {
-  store.fetchQuizzes();
+onMounted(async () => {
   const id = route.params.id;
   if (id) {
     quizId.value = parseInt(id);
     isEdit.value = true;
-    const existing = store.getQuizById(id);
+    const existing = await store.fetchQuizById(id);
     if (existing) {
-      form.value.tutorId     = existing.tutorId;
       form.value.course      = existing.course;
       form.value.title       = existing.title;
       form.value.description = existing.description;
-      form.value.status      = existing.status;
-      questions.value        = existing.questions.map(q => ({ ...q, options: [...q.options] }));
+      questions.value        = existing.questions.map(q => ({
+        questionString: q.questionString,
+        answers:        [...q.answers],
+        correctAnswer:  q.correctAnswer,
+      }));
+    } else {
+      router.push({ name: 'learning-quizzes' });
     }
   }
 });
 
 function addQuestion() {
-  questions.value.push({ text: '', options: ['', '', '', ''], correctIndex: 0 });
+  questions.value.push({ questionString: '', answers: ['', '', '', ''], correctAnswer: 0 });
 }
 
 function removeQuestion(index) {
@@ -49,35 +50,57 @@ function removeQuestion(index) {
 }
 
 function updateOption(qIndex, oIndex, value) {
-  questions.value[qIndex].options[oIndex] = value;
+  questions.value[qIndex].answers[oIndex] = value;
 }
 
 function validate() {
   errors.value.title     = !form.value.title.trim()  ? t('learning.err-title')  : '';
   errors.value.course    = !form.value.course.trim() ? t('learning.err-course') : '';
-  const invalidQ = questions.value.some(q => !q.text.trim() || q.options.some(o => !o.trim()));
+  const invalidQ = questions.value.some(q => !q.questionString.trim() || q.answers.some(a => !a.trim()));
   errors.value.questions = questions.value.length === 0
       ? t('learning.err-no-questions')
       : invalidQ ? t('learning.err-incomplete-question') : '';
   return !errors.value.title && !errors.value.course && !errors.value.questions;
 }
 
-function submit() {
+async function submit() {
   if (!validate()) return;
-  const quiz = new Quiz({
-    id:          quizId.value ?? 0,
-    tutorId:     Number(form.value.tutorId),
-    course:      form.value.course.trim(),
-    title:       form.value.title.trim(),
-    description: form.value.description.trim(),
-    questions:   questions.value.map(q => ({
-      text: q.text.trim(), options: q.options.map(o => o.trim()), correctIndex: q.correctIndex
-    })),
-    status:    form.value.status,
-    createdAt: new Date().toISOString()
-  });
-  if (isEdit.value) { store.updateQuiz(quiz); }
-  else              { store.addQuiz(quiz);    }
+  saving.value = true;
+
+  const cleanedQuestions = questions.value.map(q => new Question({
+    questionString: q.questionString.trim(),
+    answers:        q.answers.map(a => a.trim()),
+    correctAnswer:  q.correctAnswer,
+  }));
+
+  if (isEdit.value) {
+    // PUT /Quizzes/{id} acepta el quiz completo con preguntas incluidas
+    const quiz = new Quiz({
+      id:          quizId.value,
+      tutorId:     CURRENT_USER_ID,
+      course:      form.value.course.trim(),
+      title:       form.value.title.trim(),
+      description: form.value.description.trim(),
+      questions:   cleanedQuestions,
+    });
+    await store.updateQuiz(quiz);
+  } else {
+    // POST /Quizzes crea solo el quiz base; las preguntas se agregan una por una después
+    const quiz = new Quiz({
+      tutorId:     CURRENT_USER_ID,
+      course:      form.value.course.trim(),
+      title:       form.value.title.trim(),
+      description: form.value.description.trim(),
+    });
+    const created = await store.addQuiz(quiz);
+    if (created) {
+      for (const q of cleanedQuestions) {
+        await store.addQuestion(created.id, q);
+      }
+    }
+  }
+
+  saving.value = false;
   router.push({ name: 'learning-quizzes' });
 }
 </script>
@@ -107,13 +130,6 @@ function submit() {
           <div class="field-group field-full">
             <label class="field-label">{{ t('learning.field-description') }}</label>
             <pv-input-text v-model="form.description" :placeholder="t('learning.field-description-ph')" fluid/>
-          </div>
-          <div class="field-group">
-            <label class="field-label">{{ t('learning.field-status') }}</label>
-            <pv-select v-model="form.status" :options="statusOptions" option-label="label" option-value="value" fluid>
-              <template #option="{ option }">{{ t(option.label) }}</template>
-              <template #value="{ value }">{{ t(statusOptions.find(s => s.value === value)?.label ?? '') }}</template>
-            </pv-select>
           </div>
         </div>
       </div>
@@ -146,11 +162,11 @@ function submit() {
             </div>
             <div class="field-group" style="margin-bottom:14px;">
               <label class="field-label">{{ t('learning.field-question-text') }}</label>
-              <pv-input-text v-model="q.text" :placeholder="t('learning.field-question-ph')" fluid/>
+              <pv-input-text v-model="q.questionString" :placeholder="t('learning.field-question-ph')" fluid/>
             </div>
             <div class="options-grid">
-              <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="option-row" :class="{ 'option-correct': q.correctIndex === oIdx }">
-                <input type="radio" :name="`correct-${qIdx}`" :value="oIdx" v-model="q.correctIndex" class="radio-correct" :title="t('learning.mark-correct')"/>
+              <div v-for="(opt, oIdx) in q.answers" :key="oIdx" class="option-row" :class="{ 'option-correct': q.correctAnswer === oIdx }">
+                <input type="radio" :name="`correct-${qIdx}`" :value="oIdx" v-model="q.correctAnswer" class="radio-correct" :title="t('learning.mark-correct')"/>
                 <span class="option-letter">{{ ['A','B','C','D'][oIdx] }}</span>
                 <pv-input-text :model-value="opt" :placeholder="`${t('learning.option-placeholder')} ${['A','B','C','D'][oIdx]}`" class="option-input" fluid @update:model-value="val => updateOption(qIdx, oIdx, val)"/>
               </div>
@@ -164,11 +180,12 @@ function submit() {
       </div>
 
       <div class="btn-row">
-        <button class="btn-primary" type="submit">
-          <i class="pi pi-save" style="font-size:14px;"></i>
+        <button class="btn-primary" type="submit" :disabled="saving">
+          <i v-if="!saving" class="pi pi-save" style="font-size:14px;"></i>
+          <i v-else class="pi pi-spin pi-spinner" style="font-size:14px;"></i>
           {{ isEdit ? t('learning.btn-update') : t('learning.btn-create-quiz') }}
         </button>
-        <button class="btn-secondary" type="button" @click="router.push({ name: 'learning-quizzes' })">
+        <button class="btn-secondary" type="button" :disabled="saving" @click="router.push({ name: 'learning-quizzes' })">
           {{ t('learning.btn-cancel') }}
         </button>
       </div>
@@ -214,6 +231,8 @@ function submit() {
 .btn-row { display: flex; gap: 12px; }
 .btn-primary   { display: inline-flex; align-items: center; gap: 6px; background: #1a2a40; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; font-family: inherit; }
 .btn-primary:hover { background: #2d4a6e; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-secondary { display: inline-flex; align-items: center; background: none; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: inherit; }
 .btn-secondary:hover { border-color: #1a2a40; color: #1a2a40; }
+.btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>

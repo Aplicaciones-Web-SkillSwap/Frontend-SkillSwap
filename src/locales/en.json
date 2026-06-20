@@ -132,7 +132,12 @@
     "review-sub": "Your rating helps build the tutor's reputation on SkillSwap.",
     "btn-review": "Leave a Review",
     "attach-file": "Attach file",
-    "report": "Report"
+    "report": "Report",
+    "share-quiz":        "Share quiz",
+    "quiz-shared":        "Quiz shared",
+    "pick-quiz-title":    "Pick a quiz to review",
+    "pick-quiz-search":   "Search for a quiz...",
+    "pick-quiz-empty":    "No quizzes found"
   },
   "wallets": {
     "title": "Wallets",
@@ -388,6 +393,24 @@
     "err-title": "Quiz title is required",
     "err-course": "Course is required",
     "err-no-questions": "You must add at least one question",
-    "err-incomplete-question": "All questions and their options must be filled in"
+    "err-incomplete-question": "All questions and their options must be filled in",
+    "col-description": "Description",
+    "summary-total-questions": "summary total questions",
+    "confirm-delete": "¿Delete the quizz \"{title}\"?",
+    "question-of":           "{index} of",
+    "btn-previous":          "Previous",
+    "btn-next":              "Next",
+    "btn-submit-quiz":       "Submit quiz",
+    "attempt-done-title":    "Quiz submitted!",
+    "attempt-done-sub":      "Your quiz has been submitted successfully.",
+    "btn-back-to-session":   "Back to session",
+    "attempt-error-title":   "Quiz submission failed",
+    "attempt-error":         "An error occurred while submitting the quiz. Please try again.",
+    "btn-try-again":         "Try again",
+    "btn-results":            "View results",
+    "results-total-attempts": "Total attempts:",
+    "results-average":        "Average score:",
+    "results-questions":      "Questions:",
+    "no-attempts":            "No attempts yet"
   }
 }

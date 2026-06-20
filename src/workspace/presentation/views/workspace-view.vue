@@ -2,6 +2,7 @@
 import {useI18n}                from "vue-i18n";
 import {useRoute, useRouter}    from "vue-router";
 import useWorkspaceStore        from "@/workspace/application/workspace.store.js";
+import useLearningStore         from "@/learning/application/learning.store.js";
 import {uploadFile, validateFile} from "@/workspace/infrastructure/cloudinary-service.js";
 import {computed, onMounted, ref} from "vue";
 import {Message}                from "@/workspace/domain/model/message-entity.js";
@@ -12,12 +13,17 @@ const {t}    = useI18n();
 const route  = useRoute();
 const router = useRouter();
 const store  = useWorkspaceStore();
+const learningStore = useLearningStore();
 const { fetchSessions, fetchMessages, addMessage, addFileMessage, errors } = store;
 
 const newMessageContent = ref('');
 const isUploading       = ref(false);
 const uploadError       = ref('');
 const CURRENT_USER_ID   = 1;
+
+const showQuizPicker = ref(false);
+const quizSearch      = ref('');
+const sharingQuiz      = ref(false);
 
 const session        = computed(() => store.getSessionById(route.params.id));
 const sessionMessages = computed(() => store.getMessagesBySessionId(route.params.id));
@@ -28,6 +34,7 @@ const isCompleted    = computed(() => session.value?.status === 'completed');
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
   if (!store.messagesLoaded) fetchMessages();
+  if (!learningStore.quizzes.length) learningStore.fetchQuizzes();
 });
 
 const sendMessage = () => {
@@ -72,6 +79,39 @@ const handleFileUpload = async (event) => {
 
 const triggerFileInput = () => {
   document.getElementById('chat-file-input').click();
+};
+
+/** Quizzes disponibles para compartir, filtrados por búsqueda libre */
+const filteredQuizzes = computed(() => {
+  if (!quizSearch.value.trim()) return learningStore.quizzes;
+  const q = quizSearch.value.toLowerCase().trim();
+  return learningStore.quizzes.filter(quiz =>
+      quiz.title.toLowerCase().includes(q) || quiz.course.toLowerCase().includes(q)
+  );
+});
+
+const openQuizPicker  = () => { showQuizPicker.value = true; };
+const closeQuizPicker = () => { showQuizPicker.value = false; quizSearch.value = ''; };
+
+/** Comparte un quiz como mensaje especial en el chat */
+const shareQuiz = async (quiz) => {
+  sharingQuiz.value = true;
+  await store.addMessage({
+    sessionId: parseInt(route.params.id),
+    senderId:  CURRENT_USER_ID,
+    content:   '',
+    fileUrl:   '',
+    fileName:  '',
+    quizId:    quiz.id,
+    quizTitle: quiz.title,
+    sentAt:    new Date().toISOString(),
+  });
+  sharingQuiz.value = false;
+  closeQuizPicker();
+};
+
+const goToQuiz = (msg) => {
+  router.push({ name: 'learning-quizzes-attempt', params: { id: msg.quizId }, query: { sessionId: route.params.id } });
 };
 
 const startVideoCall = async () => {
@@ -213,10 +253,20 @@ const navigateToReport = () => {
               class="message-row mb-3"
               :class="msg.senderId === CURRENT_USER_ID ? 'own-message' : 'other-message'">
 
-            <div class="bubble p-3">
-              <!-- Mensaje de texto -->
+            <div v-if="msg.quizId" class="quiz-card" @click="goToQuiz(msg)">
+              <div class="quiz-card-icon">
+                <i class="pi pi-question-circle"/>
+              </div>
+              <div class="quiz-card-body">
+                <p class="quiz-card-label">{{ t('workspace.quiz-shared') }}</p>
+                <p class="quiz-card-title">{{ msg.quizTitle }}</p>
+              </div>
+              <i class="pi pi-chevron-right quiz-card-arrow"/>
+            </div>
+
+            <!-- Mensaje normal de texto/archivo -->
+            <div v-else class="bubble p-3">
               <p v-if="msg.content" class="m-0 msg-text">{{ msg.content }}</p>
-              <!-- Archivo adjunto (US11) -->
               <div v-if="msg.fileUrl" class="file-attachment">
                 <i class="pi pi-file attachment-icon"/>
                 <a :href="msg.fileUrl" target="_blank" class="attachment-link">
@@ -246,6 +296,13 @@ const navigateToReport = () => {
               :disabled="isCompleted || isUploading"
               :title="t('workspace.attach-file')"
               @click="triggerFileInput"/>
+
+          <pv-button
+              icon="pi pi-question-circle"
+              class="btn-quiz"
+              :disabled="isCompleted"
+              :title="t('workspace.share-quiz')"
+              @click="openQuizPicker"/>
 
           <pv-input-text
               v-model="newMessageContent"
@@ -281,6 +338,37 @@ const navigateToReport = () => {
       <i class="pi pi-exclamation-circle mr-2"></i>
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
     </div>
+
+    <pv-dialog v-model:visible="showQuizPicker" modal :header="t('workspace.pick-quiz-title')" style="width: 480px;">
+      <div class="quiz-picker">
+        <pv-input-text
+            v-model="quizSearch"
+            :placeholder="t('workspace.pick-quiz-search')"
+            class="w-full mb-3"/>
+
+        <div v-if="learningStore.loading" class="quiz-picker-loading">
+          <i class="pi pi-spin pi-spinner"/>
+        </div>
+
+        <div v-else-if="filteredQuizzes.length === 0" class="quiz-picker-empty">
+          {{ t('workspace.pick-quiz-empty') }}
+        </div>
+
+        <div v-else class="quiz-picker-list">
+          <div
+              v-for="quiz in filteredQuizzes"
+              :key="quiz.id"
+              class="quiz-picker-item"
+              @click="!sharingQuiz && shareQuiz(quiz)">
+            <div class="quiz-picker-info">
+              <p class="quiz-picker-title">{{ quiz.title }}</p>
+              <p class="quiz-picker-meta">{{ quiz.course }} · {{ quiz.questionCount() }} {{ t('learning.questions-label') }}</p>
+            </div>
+            <i class="pi pi-send" style="color:#1e4d8c;"/>
+          </div>
+        </div>
+      </div>
+    </pv-dialog>
 
     <pv-toast/>
   </div>
@@ -635,4 +723,64 @@ const navigateToReport = () => {
   padding: 0.6rem 1.2rem;
 }
 .btn-report:hover { background-color: #fef2f2 !important; }
+
+/* Botón compartir quiz */
+.btn-quiz {
+  background-color: #f0f4ff !important;
+  border: 1px solid #c7d2fe !important;
+  color: #1e4d8c !important;
+  border-radius: 8px !important;
+  padding: 0.8rem !important;
+}
+.btn-quiz:hover { background-color: #e0e7ff !important; }
+
+/* Quiz card en el chat */
+.quiz-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #1e4d8c 0%, #2d4a6e 100%);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  max-width: 280px;
+  transition: transform 0.15s;
+}
+.quiz-card:hover { transform: translateY(-1px); }
+
+.quiz-card-icon {
+  background: rgba(255,255,255,0.15);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fbbf24;
+  font-size: 1.1rem;
+}
+
+.quiz-card-body { flex: 1; min-width: 0; }
+.quiz-card-label { color: #cbd5e1; font-size: 0.7rem; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+.quiz-card-title { color: #ffffff; font-size: 0.9rem; font-weight: 700; margin: 0.15rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quiz-card-arrow { color: #cbd5e1; flex-shrink: 0; }
+
+/* Quiz picker modal */
+.quiz-picker-loading,
+.quiz-picker-empty { text-align: center; padding: 2rem; color: #94a3b8; }
+.quiz-picker-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; }
+.quiz-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.quiz-picker-item:hover { background: #f0f4ff; border-color: #c7d2fe; }
+.quiz-picker-title { color: #1a2a40; font-weight: 700; font-size: 0.9rem; margin: 0; }
+.quiz-picker-meta  { color: #94a3b8; font-size: 0.78rem; margin: 0.15rem 0 0; }
 </style>

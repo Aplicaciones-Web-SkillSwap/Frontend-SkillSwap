@@ -132,7 +132,12 @@
     "review-sub": "Tu calificacion ayuda a construir la reputacion del tutor en SkillSwap.",
     "btn-review": "Dejar Reseña",
     "attach-file": "Adjuntar archivo",
-    "report": "Reportar"
+    "report": "Reportar",
+    "share-quiz":        "Compartir quiz",
+    "quiz-shared":        "Quiz compartido",
+    "pick-quiz-title":    "Selecciona un quiz",
+    "pick-quiz-search":   "Buscar por título o curso...",
+    "pick-quiz-empty":    "No tienes quizzes creados todavía."
   },
   "wallets": {
     "title": "Billeteras",
@@ -376,6 +381,24 @@
     "err-title": "El título del quiz es requerido",
     "err-course": "El curso es requerido",
     "err-no-questions": "Debes agregar al menos una pregunta",
-    "err-incomplete-question": "Todas las preguntas y sus opciones deben estar completas"
+    "err-incomplete-question": "Todas las preguntas y sus opciones deben estar completas",
+    "col-description": "Descripción",
+    "summary-total-questions": "Total de preguntas",
+    "confirm-delete": "¿Eliminar el quiz \"{title}\"?",
+    "question-of":           "Pregunta {current} de {total}",
+    "btn-previous":          "Anterior",
+    "btn-next":              "Siguiente",
+    "btn-submit-quiz":       "Enviar respuestas",
+    "attempt-done-title":    "¡Quiz completado!",
+    "attempt-done-sub":      "Tu tutor podrá ver el detalle de tus respuestas.",
+    "btn-back-to-session":   "Volver a la sesión",
+    "attempt-error-title":   "No se pudo enviar el quiz",
+    "attempt-error":         "Ocurrió un error al enviar tus respuestas. Intenta de nuevo.",
+    "btn-try-again":         "Intentar de nuevo",
+    "btn-results":            "Ver resultados",
+    "results-total-attempts": "Intentos totales",
+    "results-average":        "Promedio",
+    "results-questions":      "Preguntas",
+    "no-attempts":            "Nadie ha rendido este quiz todavía."
   }
 }
