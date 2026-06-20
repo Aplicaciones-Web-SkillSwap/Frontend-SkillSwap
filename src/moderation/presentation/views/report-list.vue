@@ -113,7 +113,7 @@ const navigateToSanction = (report) => {
             <template #body="{ data }">
               <span
                   class="user-link clickable"
-                  @click="router.push({ name: 'moderation-reports-chat', params: { userId: data.reportedUserId } })"
+                  @click="router.push({ name: 'moderation-reports-chat', params: { userId: data.reportedUserId }, query: { reportId: data.id } })"
               >{{ userName(data.reportedUserId) }}</span>
             </template>
           </pv-column>

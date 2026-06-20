@@ -16,11 +16,14 @@ const discoveryStore  = useDiscoveryStore();
 
 const userId = computed(() => Number(route.params.userId));
 
-const report = computed(() =>
-    moderationStore.reports.find(r => r.reportedUserId === userId.value) ?? null
-);
+const report = computed(() => {
 
-// Sesión real vinculada por sessionId — ya no por heurística de tutor/learner
+  if (route.query.reportId) {
+    return moderationStore.reports.find(r => r.id === Number(route.query.reportId)) ?? null;
+  }
+  return moderationStore.reports.find(r => r.reportedUserId === userId.value) ?? null;
+});
+
 const session = computed(() =>
     report.value?.sessionId
         ? workspaceStore.getSessionById(report.value.sessionId)
@@ -157,6 +160,11 @@ const navigateToSanction = () => {
               <a :href="msg.fileUrl" target="_blank" class="file-link">
                 {{ msg.fileName || 'Archivo adjunto' }}
               </a>
+            </div>
+            <!-- Quiz compartido (evidencia, sin acción de click) -->
+            <div v-if="msg.quizId" class="bubble quiz-bubble">
+              <i class="pi pi-question-circle mr-1"/>
+              <span>{{ t('moderation.chat-quiz-shared') }}: <strong>{{ msg.quizTitle }}</strong></span>
             </div>
           </div>
         </div>
@@ -303,4 +311,12 @@ const navigateToSanction = () => {
 
 .file-bubble { display: flex; align-items: center; gap: 4px; }
 .file-link   { color: #1e4d8c; font-weight: 600; font-size: 13px; text-decoration: underline; }
+.quiz-bubble {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f4ff;
+  color: #1e4d8c;
+  border: 1px solid #c7d2fe;
+}
 </style>

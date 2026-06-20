@@ -291,7 +291,8 @@
     "chat-tutor": "Tutor / Reportador",
     "chat-student": "Estudiante / Reportado",
     "chat-messages": "Mensajes",
-    "chat-no-messages": "No se encontraron mensajes para este reporte."
+    "chat-no-messages": "No se encontraron mensajes para este reporte.",
+    "chat-quiz-shared": "Quiz compartido"
   },
   "reviews": {
     "title": "Reseñas",

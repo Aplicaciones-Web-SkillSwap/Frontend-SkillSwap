@@ -303,7 +303,8 @@
     "chat-tutor": "Tutor / Reporter",
     "chat-student": "Student / Reported",
     "chat-messages": "Messages",
-    "chat-no-messages": "No messages found for this report."
+    "chat-no-messages": "No messages found for this report.",
+    "chat-quiz-shared": "Shared quiz"
   },
   "reviews": {
     "title": "Reviews",
