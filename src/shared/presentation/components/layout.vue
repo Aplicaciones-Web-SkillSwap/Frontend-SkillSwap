@@ -122,7 +122,7 @@ const items = [
     <div class="footer">
       <footer-content/>
       <div class="admin-bar">
-        <router-link to="/moderation/reports" class="btn-admin">
+        <router-link to="/dashboard" class="btn-admin">
           <i class="pi pi-shield"></i>
           {{ t('moderation.admin-btn') }}
         </router-link>

@@ -10,9 +10,11 @@ import learningRoutes    from "@/learning/presentation/learning-routes.js";
 
 const about        = () => import("@/shared/presentation/views/about.vue");
 const pageNotFound = () => import("@/shared/presentation/views/page-not-found.vue");
+const coordinatorDashboard = () => import("@/shared/presentation/views/coordinator-dashboard.vue");
 
 const routes = [
     { path: '/home',            name: 'home',       component: Home,        meta: { title: 'Home'          } },
+    { path: '/dashboard',       name: 'coordinator-dashboard', component: coordinatorDashboard, meta: { title: 'Coordinator Dashboard' } },
 
     { path: '/workspace',       name: 'workspace',  children: workspaceRoutes                                 },
     { path: '/payment',         name: 'payment',    children: paymentRoutes                                   },

@@ -400,5 +400,20 @@
     "results-average":        "Promedio",
     "results-questions":      "Preguntas",
     "no-attempts":            "Nadie ha rendido este quiz todavía."
+  },
+  "coordinator": {
+    "title": "Panel del Coordinador",
+    "sub": "Resumen de actividad académica de la comunidad",
+    "section-sessions": "Sesiones",
+    "section-moderation": "Moderación",
+    "section-community": "Comunidad académica",
+    "metric-active-sessions": "Sesiones activas",
+    "metric-pending-sessions": "Solicitudes pendientes",
+    "metric-pending-reports": "Reportes pendientes",
+    "metric-resolved-reports": "Reportes resueltos",
+    "metric-total-tutors": "Total de tutores",
+    "metric-verified-tutors": "Tutores verificados",
+    "metric-total-quizzes": "Quizzes creados",
+    "btn-go-reports": "Ir a gestión de reportes"
   }
 }

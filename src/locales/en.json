@@ -412,5 +412,20 @@
     "results-average":        "Average score:",
     "results-questions":      "Questions:",
     "no-attempts":            "No attempts yet"
+  },
+  "coordinator": {
+    "title": "Coordinator Panel",
+    "sub": "Community academic activity summary",
+    "section-sessions": "Sessions",
+    "section-moderation": "Moderation",
+    "section-community": "Academic community",
+    "metric-active-sessions": "Active sessions",
+    "metric-pending-sessions": "Pending requests",
+    "metric-pending-reports": "Pending reports",
+    "metric-resolved-reports": "Resolved reports",
+    "metric-total-tutors": "Total tutors",
+    "metric-verified-tutors": "Verified tutors",
+    "metric-total-quizzes": "Quizzes created",
+    "btn-go-reports": "Go to report management"
   }
 }
