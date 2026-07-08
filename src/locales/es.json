@@ -8,6 +8,25 @@
     "reviews": "Reseñas",
     "quizzes": "Banco de Quizzes"
   },
+  "auth": {
+    "login-sub": "Inicia sesión para continuar",
+    "register-sub": "Crea tu cuenta con tu correo institucional",
+    "username": "Usuario",
+    "email": "Correo institucional",
+    "email-hint": "Debe ser un correo institucional (.edu.pe)",
+    "password": "Contraseña",
+    "confirm-password": "Confirmar contraseña",
+    "password-mismatch": "Las contraseñas no coinciden",
+    "role": "Rol",
+    "role-student": "Estudiante",
+    "role-coordinator": "Coordinador",
+    "login-submit": "Iniciar Sesión",
+    "register-submit": "Registrarse",
+    "no-account": "¿No tienes cuenta?",
+    "go-register": "Regístrate",
+    "have-account": "¿Ya tienes cuenta?",
+    "go-login": "Inicia sesión"
+  },
   "authoring-phrase": {
     "intro": "Hecho con",
     "use": "utilizando",

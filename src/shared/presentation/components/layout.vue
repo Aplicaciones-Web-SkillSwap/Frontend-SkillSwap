@@ -5,11 +5,18 @@ import { ref, computed, onMounted } from "vue";
 import LanguageSwitcher      from "@/shared/presentation/components/language-switcher.vue";
 import FooterContent         from "@/shared/presentation/components/footer-content.vue";
 import useWorkspaceStore     from "@/workspace/application/workspace.store.js";
+import useAuthStore          from "@/iam/application/auth.store.js";
 
 const { t }  = useI18n();
 const router = useRouter();
 const drawer = ref(false);
 const store  = useWorkspaceStore();
+const authStore = useAuthStore();
+
+const logout = () => {
+  authStore.logout();
+  router.push({ name: 'login' });
+};
 
 onMounted(() => {
   if (!store.sessionsLoaded) store.fetchSessions();
@@ -86,6 +93,7 @@ const items = [
                 label="Cerrar Sesión"
                 class="logout-btn"
                 rounded
+                @click="logout"
             />
 
             <language-switcher/>

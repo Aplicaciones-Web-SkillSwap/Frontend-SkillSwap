@@ -16,7 +16,7 @@ import {
     ConfirmationService,
     ConfirmDialog, DataTable, DatePicker, Dialog,
     DialogService, Drawer, FileUpload, FloatLabel, IconField, InputIcon, InputNumber, InputText, Menu,
-    Rating, Row, Select, SelectButton, Tag, Textarea, Toast,
+    Password, Rating, Row, Select, SelectButton, Tag, Textarea, Toast,
     ToastService, Toolbar, Tooltip
 } from "primevue";
 import pinia from "@/pinia.js";
@@ -48,6 +48,7 @@ createApp(App)
     .component('pv-input-text',     InputText)
     .component('pv-input-number',   InputNumber)
     .component('pv-menu',           Menu)
+    .component('pv-password',       Password)
     .component('pv-rating',         Rating)
     .component('pv-row',            Row)
     .component('pv-drawer',         Drawer)

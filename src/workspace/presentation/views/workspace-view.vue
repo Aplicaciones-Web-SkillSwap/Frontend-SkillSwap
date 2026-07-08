@@ -8,18 +8,20 @@ import {computed, onMounted, ref} from "vue";
 import {Message}                from "@/workspace/domain/model/message-entity.js";
 import {formatDateTime}         from "@/shared/utils/format-date.js";
 import { Session } from "@/workspace/domain/model/session-entity.js";
+import useAuthStore from "@/iam/application/auth.store.js";
 
 const {t}    = useI18n();
 const route  = useRoute();
 const router = useRouter();
 const store  = useWorkspaceStore();
 const learningStore = useLearningStore();
+const authStore = useAuthStore();
 const { fetchSessions, fetchMessages, addMessage, addFileMessage, errors } = store;
 
 const newMessageContent = ref('');
 const isUploading       = ref(false);
 const uploadError       = ref('');
-const CURRENT_USER_ID   = 1;
+const CURRENT_USER_ID   = computed(() => authStore.user?.id);
 
 const showQuizPicker = ref(false);
 const quizSearch      = ref('');
@@ -41,7 +43,7 @@ const sendMessage = () => {
   if (!newMessageContent.value.trim()) return;
   const message = new Message({
     sessionId: parseInt(route.params.id),
-    senderId:  CURRENT_USER_ID,
+    senderId:  CURRENT_USER_ID.value,
     content:   newMessageContent.value.trim(),
     fileUrl:   null,
     fileName:  null,
@@ -68,7 +70,7 @@ const handleFileUpload = async (event) => {
 
   try {
     const { fileUrl, fileName } = await uploadFile(file);
-    addFileMessage(route.params.id, CURRENT_USER_ID, fileUrl, fileName);
+    addFileMessage(route.params.id, CURRENT_USER_ID.value, fileUrl, fileName);
   } catch (err) {
     uploadError.value = err.message;
   } finally {
@@ -98,7 +100,7 @@ const shareQuiz = async (quiz) => {
   sharingQuiz.value = true;
   await store.addMessage({
     sessionId: parseInt(route.params.id),
-    senderId:  CURRENT_USER_ID,
+    senderId:  CURRENT_USER_ID.value,
     content:   '',
     fileUrl:   '',
     fileName:  '',

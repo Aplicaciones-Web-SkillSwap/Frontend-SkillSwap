@@ -1,16 +1,18 @@
 <script setup>
-import { ref, onMounted }      from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useI18n }             from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import useLearningStore        from '@/learning/application/learning.store.js';
 import { Quiz, Question }      from '@/learning/domain/model/quiz-entity.js';
+import useAuthStore            from '@/iam/application/auth.store.js';
 
 const { t }  = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useLearningStore();
+const authStore = useAuthStore();
 
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = computed(() => authStore.user?.id);
 
 const isEdit = ref(false);
 const quizId = ref(null);
@@ -77,7 +79,7 @@ async function submit() {
     // PUT /Quizzes/{id} acepta el quiz completo con preguntas incluidas
     const quiz = new Quiz({
       id:          quizId.value,
-      tutorId:     CURRENT_USER_ID,
+      tutorId:     CURRENT_USER_ID.value,
       course:      form.value.course.trim(),
       title:       form.value.title.trim(),
       description: form.value.description.trim(),
@@ -87,7 +89,7 @@ async function submit() {
   } else {
     // POST /Quizzes crea solo el quiz base; las preguntas se agregan una por una después
     const quiz = new Quiz({
-      tutorId:     CURRENT_USER_ID,
+      tutorId:     CURRENT_USER_ID.value,
       course:      form.value.course.trim(),
       title:       form.value.title.trim(),
       description: form.value.description.trim(),

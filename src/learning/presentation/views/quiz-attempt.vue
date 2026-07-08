@@ -3,13 +3,15 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n }                  from 'vue-i18n';
 import { useRoute, useRouter }      from 'vue-router';
 import useLearningStore             from '@/learning/application/learning.store.js';
+import useAuthStore                 from '@/iam/application/auth.store.js';
 
 const { t }  = useI18n();
 const route  = useRoute();
 const router = useRouter();
 const store  = useLearningStore();
+const authStore = useAuthStore();
 
-const CURRENT_USER_ID = 1; // estudiante actual
+const CURRENT_USER_ID = computed(() => authStore.user?.id); // estudiante actual
 
 const loading      = ref(true);
 const quiz         = ref(null);
@@ -58,7 +60,7 @@ const submitQuiz = async () => {
   submitError.value = '';
 
   const response = await store.submitAttempt(quiz.value.id, {
-    learnerId:       CURRENT_USER_ID,
+    learnerId:       CURRENT_USER_ID.value,
     sessionId:       sessionId.value,
     selectedAnswers: selectedAnswers.value,
   });

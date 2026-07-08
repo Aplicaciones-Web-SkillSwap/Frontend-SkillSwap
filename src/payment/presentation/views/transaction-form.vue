@@ -4,14 +4,16 @@ import {useRoute, useRouter} from "vue-router";
 import usePaymentStore       from "@/payment/application/payment.store.js";
 import useDiscoveryStore     from "@/discovery/application/discovery.store.js";
 import {computed, onMounted, ref} from "vue";
+import useAuthStore          from "@/iam/application/auth.store.js";
 
 const {t}    = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = usePaymentStore();
 const discoveryStore = useDiscoveryStore();
+const authStore = useAuthStore();
 
-const CURRENT_USER_ID = 20;
+const CURRENT_USER_ID = computed(() => authStore.user?.id);
 
 /** Pasos: 'form' → 'gateway' → 'success' | 'error' */
 const step = ref('form');
@@ -41,7 +43,7 @@ const donationError  = ref('');
 onMounted(async () => {
   if (!discoveryStore.tutorsLoaded) await discoveryStore.fetchTutors();
 
-  const checks = [store.checkWalletExists(CURRENT_USER_ID)];
+  const checks = [store.checkWalletExists(CURRENT_USER_ID.value)];
   if (tutorId.value) checks.push(store.checkWalletExists(tutorId.value));
   else checks.push(Promise.resolve(true));
 
@@ -86,7 +88,7 @@ const confirmPayment = async () => {
   await new Promise(resolve => setTimeout(resolve, 1800));
 
   const result = await store.donate({
-    fromUserId:  CURRENT_USER_ID,
+    fromUserId:  CURRENT_USER_ID.value,
     toUserId:    tutorId.value,
     amount:      amount.value,
     description: description.value || `Donación para ${tutorName.value}`,

@@ -1,6 +1,7 @@
 <script setup>
 
 import { useI18n } from "vue-i18n";
+import { useRoute } from "vue-router";
 import Layout from "@/shared/presentation/components/layout.vue";
 
 /**
@@ -8,10 +9,12 @@ import Layout from "@/shared/presentation/components/layout.vue";
  * @type {Object}
  */
 const { t } = useI18n();
+const route = useRoute();
 </script>
 
 <template>
-  <layout/>
+  <layout v-if="!route.meta.public"/>
+  <router-view v-else/>
 </template>
 
 <style scoped>

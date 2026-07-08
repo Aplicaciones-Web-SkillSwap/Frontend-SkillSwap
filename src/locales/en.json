@@ -8,6 +8,25 @@
     "reviews": "Reviews",
     "quizzes": "Quiz Bank"
   },
+  "auth": {
+    "login-sub": "Sign in to continue",
+    "register-sub": "Create your account with your institutional email",
+    "username": "Username",
+    "email": "Institutional email",
+    "email-hint": "Must be an institutional email (.edu.pe)",
+    "password": "Password",
+    "confirm-password": "Confirm password",
+    "password-mismatch": "Passwords do not match",
+    "role": "Role",
+    "role-student": "Student",
+    "role-coordinator": "Coordinator",
+    "login-submit": "Sign In",
+    "register-submit": "Sign Up",
+    "no-account": "Don't have an account?",
+    "go-register": "Sign up",
+    "have-account": "Already have an account?",
+    "go-login": "Sign in"
+  },
   "authoring-phrase": {
     "intro": "Made with",
     "use": "using",
