@@ -4,7 +4,8 @@ import {useRouter} from "vue-router";
 import {useConfirm} from "primevue";
 import useWorkspaceStore from "@/workspace/application/workspace.store.js";
 import useDiscoveryStore from "@/discovery/application/discovery.store.js";
-import {onMounted, toRefs} from "vue";
+import useAuthStore      from "@/iam/application/auth.store.js";
+import {computed, onMounted, toRefs} from "vue";
 import {formatDateTime} from "@/shared/utils/format-date.js";
 
 const {t}     = useI18n();
@@ -12,8 +13,14 @@ const router  = useRouter();
 const confirm = useConfirm();
 const store   = useWorkspaceStore();
 const discoveryStore = useDiscoveryStore();
-const { sessions, errors, sessionsLoaded } = toRefs(store);
+const authStore = useAuthStore();
+const { errors, sessionsLoaded } = toRefs(store);
 const { fetchSessions, acceptSession, rejectSession, cancelSession } = store;
+
+/** Solo las sesiones donde participo, como aprendiz o como tutor */
+const sessions = computed(() =>
+    store.sessions.filter(s => s.learnerId === authStore.user?.id || s.tutorId === authStore.user?.id)
+);
 
 onMounted(() => {
   if (!store.sessionsLoaded) {

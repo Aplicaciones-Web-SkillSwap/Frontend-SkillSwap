@@ -3,14 +3,19 @@ import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
 import {useConfirm} from "primevue";
 import usePaymentStore from "@/payment/application/payment.store.js";
-import {onMounted, toRefs} from "vue";
+import useAuthStore    from "@/iam/application/auth.store.js";
+import {computed, onMounted, toRefs} from "vue";
 
 const {t}     = useI18n();
 const router  = useRouter();
 const confirm = useConfirm();
 const store   = usePaymentStore();
-const { wallets, errors, walletsLoaded } = toRefs(store);
+const authStore = useAuthStore();
+const { errors, walletsLoaded } = toRefs(store);
 const { fetchWallets, deleteWallet }     = store;
+
+/** Solo mi propia billetera, nunca las de otros usuarios */
+const wallets = computed(() => store.wallets.filter(w => w.userId === authStore.user?.id));
 
 onMounted(() => {
   if (!store.walletsLoaded) {

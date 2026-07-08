@@ -3,6 +3,7 @@ import {useI18n} from "vue-i18n";
 import {useRoute, useRouter} from "vue-router";
 import {useConfirm} from "primevue";
 import usePaymentStore from "@/payment/application/payment.store.js";
+import useAuthStore    from "@/iam/application/auth.store.js";
 import {computed, onMounted, toRefs} from "vue";
 
 const {t}     = useI18n();
@@ -10,14 +11,18 @@ const route   = useRoute();
 const router  = useRouter();
 const confirm = useConfirm();
 const store   = usePaymentStore();
+const authStore = useAuthStore();
 const { transactions, errors, transactionsLoaded } = toRefs(store);
 const { fetchTransactions, deleteTransaction }     = store;
 
 const filterWalletId = computed(() => route.query.walletId || null);
 
+/** Mi propia billetera, para poder filtrar mis transacciones cuando no viene un walletId explícito */
+const myWalletId = computed(() => store.getWalletByUserId(authStore.user?.id)?.id);
+
 const displayedTransactions = computed(() => {
-  if (!filterWalletId.value) return transactions.value;
-  return store.getTransactionsByWalletId(filterWalletId.value);
+  if (filterWalletId.value) return store.getTransactionsByWalletId(filterWalletId.value);
+  return transactions.value.filter(tx => tx.walletId === myWalletId.value);
 });
 
 const pageTitle = computed(() =>
@@ -31,7 +36,7 @@ onMounted(() => {
     fetchTransactions();
     transactionsLoaded.value = store.transactionsLoaded;
   }
-  if (filterWalletId.value && !store.walletsLoaded) store.fetchWallets();
+  if (!store.walletsLoaded) store.fetchWallets();
 });
 
 const navigateToNew = () => {
