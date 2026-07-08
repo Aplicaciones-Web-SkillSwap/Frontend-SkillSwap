@@ -3,6 +3,7 @@ import { ref }        from 'vue';
 import { useI18n }    from 'vue-i18n';
 import { useRouter }  from 'vue-router';
 import useAuthStore   from '@/iam/application/auth.store.js';
+import LanguageSwitcher from '@/shared/presentation/components/language-switcher.vue';
 
 const { t }      = useI18n();
 const router     = useRouter();
@@ -22,6 +23,7 @@ function submit() {
 
 <template>
   <div class="auth-page">
+    <language-switcher class="auth-lang-switcher"/>
     <div class="auth-card">
       <h1 class="auth-brand">SkillSwap</h1>
       <p class="auth-sub">{{ t('auth.login-sub') }}</p>
@@ -57,12 +59,19 @@ function submit() {
 
 <style scoped>
 .auth-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%);
+}
+
+.auth-lang-switcher {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
 }
 
 .auth-card {

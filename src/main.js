@@ -24,9 +24,9 @@ import router from "@/router.js";
 
 
 
-createApp(App)
+const app = createApp(App)
     .use(i18n)
-    .use(PrimeVue, { theme: { preset: Material }, ripple: true })
+    .use(PrimeVue, { theme: { preset: Material, options: { darkModeSelector: false } }, ripple: true })
     .use(ConfirmationService)
     .use(DialogService)
     .use(ToastService)
@@ -58,5 +58,9 @@ createApp(App)
     .component('pv-toast',          Toast)
     .component('tooltip',           Tooltip)
     .use(router)
-    .use(pinia)
-    .mount('#app')
+    .use(pinia);
+
+// Wait for the router to resolve the initial route before mounting, otherwise
+// `route.meta` can briefly be empty on first render and let `layout.vue` mount
+// (and fire an authenticated fetch) before the auth guard has had a chance to run.
+router.isReady().then(() => app.mount('#app'));

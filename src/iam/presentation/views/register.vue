@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useI18n }       from 'vue-i18n';
 import { useRouter }     from 'vue-router';
 import useAuthStore      from '@/iam/application/auth.store.js';
+import LanguageSwitcher  from '@/shared/presentation/components/language-switcher.vue';
 
 const { t }      = useI18n();
 const router      = useRouter();
@@ -16,10 +17,10 @@ const form = ref({
   role: 'Student',
 });
 
-const roleOptions = [
+const roleOptions = computed(() => [
   { label: t('auth.role-student'),     value: 'Student' },
   { label: t('auth.role-coordinator'), value: 'Coordinator' },
-];
+]);
 
 const submitting = ref(false);
 const passwordMismatch = computed(() =>
@@ -43,6 +44,7 @@ function submit() {
 
 <template>
   <div class="auth-page">
+    <language-switcher class="auth-lang-switcher"/>
     <div class="auth-card">
       <h1 class="auth-brand">SkillSwap</h1>
       <p class="auth-sub">{{ t('auth.register-sub') }}</p>
@@ -55,7 +57,7 @@ function submit() {
 
         <div class="field-group">
           <label class="field-label">{{ t('auth.email') }}</label>
-          <pv-input-text v-model="form.email" type="email" fluid required autocomplete="email"/>
+          <pv-input-text v-model="form.email" type="email" placeholder="example@upc.edu.pe" fluid required autocomplete="email"/>
           <small class="field-hint"><i class="pi pi-info-circle mr-1"/> {{ t('auth.email-hint') }}</small>
         </div>
 
@@ -95,12 +97,19 @@ function submit() {
 
 <style scoped>
 .auth-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%);
+}
+
+.auth-lang-switcher {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
 }
 
 .auth-card {
