@@ -3,6 +3,7 @@ import {useI18n}              from "vue-i18n";
 import {useRoute, useRouter}  from "vue-router";
 import useReputationStore     from "@/reputation/application/reputation.store.js";
 import useDiscoveryStore      from "@/discovery/application/discovery.store.js";
+import useAuthStore           from "@/iam/application/auth.store.js";
 import {computed, onMounted, ref, toRefs} from "vue";
 import {formatDate}           from "@/shared/utils/format-date.js";
 
@@ -11,6 +12,7 @@ const route   = useRoute();
 const router  = useRouter();
 const store   = useReputationStore();
 const discoveryStore = useDiscoveryStore();
+const authStore = useAuthStore();
 const { reviews, errors, reviewsLoaded } = toRefs(store);
 const { fetchReviews }                   = store;
 
@@ -21,14 +23,20 @@ const filterTutorId = computed(() => route.query.tutorId || null);
 
 /** Resuelve nombre de tutor por tutorId */
 const tutorName = (tutorId) => {
-  const tutor = discoveryStore.tutors.find(t => t.id === tutorId);
+  const tutor = discoveryStore.tutors.find(t => t.userId === tutorId);
   return tutor ? tutor.name : `Tutor #${tutorId}`;
 };
 
 const displayedReviews = computed(() => {
-  let result = filterTutorId.value
-      ? store.getReviewsByTutorId(filterTutorId.value)
-      : reviews.value;
+  let result;
+  if (filterTutorId.value) {
+    // Browsing a specific tutor's public reviews (e.g. from their profile) stays public.
+    result = store.getReviewsByTutorId(filterTutorId.value);
+  } else {
+    // The general "Reviews" nav page is personal: reviews I wrote or reviews I received as a tutor.
+    const userId = authStore.user?.id;
+    result = reviews.value.filter(r => r.reviewerId === userId || r.tutorId === userId);
+  }
 
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase().trim();
