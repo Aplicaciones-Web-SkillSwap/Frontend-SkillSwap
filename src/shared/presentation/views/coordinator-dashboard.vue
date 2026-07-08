@@ -42,6 +42,11 @@ const navigateToQuizzes = () => router.push({ name: 'learning-quizzes' });
 <template>
   <div class="dashboard-container">
 
+    <div class="admin-badge">
+      <i class="pi pi-shield"/>
+      <span>{{ t('coordinator.admin-mode') }}</span>
+    </div>
+
     <div class="dashboard-header">
       <i class="pi pi-shield header-icon"/>
       <div>
@@ -117,6 +122,13 @@ const navigateToQuizzes = () => router.push({ name: 'learning-quizzes' });
 
 <style scoped>
 .dashboard-container { max-width: 920px; margin: 0 auto; }
+
+.admin-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff7ed; color: #d97706; border: 1px solid #fed7aa;
+  border-radius: 20px; padding: 0.4rem 1rem; font-size: 0.8rem; font-weight: 700;
+  margin-bottom: 1.25rem;
+}
 
 .dashboard-header { display: flex; align-items: center; gap: 16px; margin-bottom: 2rem; }
 .header-icon { font-size: 2.2rem; color: #1e4d8c; }

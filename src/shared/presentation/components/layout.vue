@@ -30,13 +30,15 @@ const toggleDrawer   = () => { drawer.value = !drawer.value; };
 const navigateToSearch = () => { router.push({ name: 'discovery-search' }); };
 const navigateToPending = () => { router.push({ name: 'workspace-sessions' }); };
 
-const items = [
+const isCoordinator = computed(() => authStore.user?.role === 'Coordinator');
+
+const items = computed(() => [
   { label: 'option.home',     path: '/home'               },
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
   { label: 'option.reviews',  path: '/reputation/reviews' },
-  { label: 'option.quizzes',  path: '/learning/quizzes'   },
-];
+  ...(isCoordinator.value ? [{ label: 'option.quizzes', path: '/learning/quizzes' }] : []),
+]);
 </script>
 
 <template>
@@ -129,7 +131,7 @@ const items = [
 
     <div class="footer">
       <footer-content/>
-      <div class="admin-bar">
+      <div v-if="isCoordinator" class="admin-bar">
         <router-link to="/dashboard" class="btn-admin">
           <i class="pi pi-shield"></i>
           {{ t('moderation.admin-btn') }}

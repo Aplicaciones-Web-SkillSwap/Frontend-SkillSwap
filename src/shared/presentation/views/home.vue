@@ -4,6 +4,7 @@ import {useRouter}          from "vue-router";
 import useWorkspaceStore    from "@/workspace/application/workspace.store.js";
 import useDiscoveryStore    from "@/discovery/application/discovery.store.js";
 import useReputationStore   from "@/reputation/application/reputation.store.js";
+import useAuthStore         from "@/iam/application/auth.store.js";
 import {computed, onMounted, watch} from "vue";
 import {formatDateTime}     from "@/shared/utils/format-date.js";
 
@@ -12,6 +13,7 @@ const router = useRouter();
 const store  = useWorkspaceStore();
 const discoveryStore   = useDiscoveryStore();
 const reputationStore  = useReputationStore();
+const authStore        = useAuthStore();
 const { fetchSessions, acceptSession, rejectSession } = store;
 
 onMounted(() => {
@@ -97,7 +99,7 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
       <div class="left-col">
 
         <div class="welcome-row">
-          <h1 class="welcome-title">¡Bienvenida de nuevo, <span class="highlight">Alexandra</span>!</h1>
+          <h1 class="welcome-title">¡Bienvenido de nuevo, <span class="highlight">{{ authStore.user?.username }}</span>!</h1>
           <pv-button label="Aprender un nuevo tema" class="btn-learn" @click="navigateToSessions"/>
         </div>
 

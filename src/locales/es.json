@@ -422,6 +422,7 @@
     "no-attempts":            "Nadie ha rendido este quiz todavía."
   },
   "coordinator": {
+    "admin-mode": "Modo Coordinador",
     "title": "Panel del Coordinador",
     "sub": "Resumen de actividad académica de la comunidad",
     "section-sessions": "Sesiones",

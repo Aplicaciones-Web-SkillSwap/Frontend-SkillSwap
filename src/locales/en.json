@@ -434,6 +434,7 @@
     "no-attempts":            "No attempts yet"
   },
   "coordinator": {
+    "admin-mode": "Coordinator Mode",
     "title": "Coordinator Panel",
     "sub": "Community academic activity summary",
     "section-sessions": "Sessions",
