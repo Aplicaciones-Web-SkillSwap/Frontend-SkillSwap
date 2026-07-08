@@ -48,12 +48,19 @@ const displayReviewCount = (tutor) => {
   return summary?.reviewCount ?? tutor.reviewCount;
 };
 
+/** Sesiones donde el usuario actual participa, ya sea como aprendiz o como tutor */
+const mySessions = computed(() => {
+  const userId = authStore.user?.id;
+  return store.sessions.filter(s => s.learnerId === userId || s.tutorId === userId);
+});
+
 const scheduledSessions = computed(() =>
-    store.sessions.filter(s => s.status === 'scheduled' || s.status === 'completed').slice(0, 3)
+    mySessions.value.filter(s => s.status === 'scheduled' || s.status === 'completed').slice(0, 3)
 );
 
+/** Solicitudes entrantes: sesiones pendientes donde el usuario actual es el tutor */
 const pendingSessions = computed(() =>
-    store.sessions.filter(s => s.status === 'pending')
+    store.sessions.filter(s => s.tutorId === authStore.user?.id && s.status === 'pending')
 );
 
 /** Tutores mejor calificados — usando el rating real del summary, no el campo estático */
