@@ -21,6 +21,22 @@ const useAuthStore = defineStore('auth', () => {
 
     const isAuthenticated = computed(() => !!token.value);
 
+    /** Directorio de nombres de usuario, usado para resolver "Usuario #X" en listas/sidebars */
+    const usersDirectory = ref([]);
+    const usersDirectoryLoaded = ref(false);
+
+    function fetchAllUsers() {
+        return iamApi.getAllUsers().then(response => {
+            usersDirectory.value = response.data;
+            usersDirectoryLoaded.value = true;
+        }).catch(() => {});
+    }
+
+    function getUsername(id) {
+        const found = usersDirectory.value.find(u => u.id === id);
+        return found ? found.username : null;
+    }
+
     function persist(userEntity, jwt) {
         user.value  = userEntity;
         token.value = jwt;
@@ -64,7 +80,10 @@ const useAuthStore = defineStore('auth', () => {
         localStorage.setItem(USER_KEY, JSON.stringify(userEntity));
     }
 
-    return {user, token, error, isAuthenticated, login, register, logout, updateUser};
+    return {
+        user, token, error, isAuthenticated, login, register, logout, updateUser,
+        usersDirectory, usersDirectoryLoaded, fetchAllUsers, getUsername,
+    };
 });
 
 export default useAuthStore;

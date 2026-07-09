@@ -1,42 +1,14 @@
 <script setup>
-import { useI18n }           from 'vue-i18n';
-import { useRouter }         from 'vue-router';
-import { computed, onMounted } from 'vue';
-import useWorkspaceStore     from '@/workspace/application/workspace.store.js';
-import useModerationStore    from '@/moderation/application/moderation.store.js';
-import useDiscoveryStore     from '@/discovery/application/discovery.store.js';
-import useLearningStore      from '@/learning/application/learning.store.js';
+import { useI18n } from 'vue-i18n';
+import QuizList    from '@/learning/presentation/views/quiz-list.vue';
 
-const { t }  = useI18n();
-const router = useRouter();
+const { t } = useI18n();
 
-const workspaceStore  = useWorkspaceStore();
-const moderationStore = useModerationStore();
-const discoveryStore  = useDiscoveryStore();
-const learningStore   = useLearningStore();
-
-onMounted(() => {
-  if (!workspaceStore.sessionsLoaded) workspaceStore.fetchSessions();
-  moderationStore.fetchReports();
-  if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
-  if (!learningStore.quizzes.length) learningStore.fetchQuizzes();
-});
-
-const activeSessions = computed(() =>
-    workspaceStore.sessions.filter(s => s.status === 'scheduled').length
-);
-const pendingSessions = computed(() =>
-    workspaceStore.sessions.filter(s => s.status === 'pending').length
-);
-const pendingReportsCount  = computed(() => moderationStore.activeReports.length);
-const resolvedReportsCount = computed(() => moderationStore.resolvedReports.length);
-const totalTutors      = computed(() => discoveryStore.tutors.length);
-const verifiedTutors    = computed(() => discoveryStore.tutors.filter(t => t.verified).length);
-const totalQuizzes     = computed(() => learningStore.quizzes.length);
-
-const navigateToReports = () => router.push({ name: 'moderation-reports' });
-const navigateToTutors  = () => router.push({ name: 'discovery-search' });
-const navigateToQuizzes = () => router.push({ name: 'learning-quizzes' });
+/** Pestañas del panel de coordinador. Por ahora solo Quizzes; se irán agregando más. */
+const activeTab = 'quizzes';
+const tabs = [
+  { key: 'quizzes', label: 'coordinator.tab-quizzes', icon: 'pi pi-question-circle' },
+];
 </script>
 
 <template>
@@ -55,73 +27,22 @@ const navigateToQuizzes = () => router.push({ name: 'learning-quizzes' });
       </div>
     </div>
 
-    <!-- Sesiones -->
-    <div class="section-block">
-      <h2 class="section-label">{{ t('coordinator.section-sessions') }}</h2>
-      <div class="cards-row">
-        <div class="metric-card">
-          <i class="pi pi-calendar-check metric-icon metric-icon-blue"/>
-          <p class="metric-value">{{ activeSessions }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-active-sessions') }}</p>
-        </div>
-        <div class="metric-card">
-          <i class="pi pi-clock metric-icon metric-icon-orange"/>
-          <p class="metric-value">{{ pendingSessions }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-pending-sessions') }}</p>
-        </div>
+    <div class="tabs-bar">
+      <div v-for="tab in tabs" :key="tab.key" class="tab-item" :class="{ active: tab.key === activeTab }">
+        <i :class="tab.icon"/>
+        <span>{{ t(tab.label) }}</span>
       </div>
     </div>
 
-    <!-- Moderación -->
-    <div class="section-block">
-      <h2 class="section-label">{{ t('coordinator.section-moderation') }}</h2>
-      <div class="cards-row">
-        <div class="metric-card metric-card-clickable" @click="navigateToReports">
-          <i class="pi pi-exclamation-triangle metric-icon metric-icon-red"/>
-          <p class="metric-value">{{ pendingReportsCount }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-pending-reports') }}</p>
-        </div>
-        <div class="metric-card metric-card-clickable" @click="navigateToReports">
-          <i class="pi pi-check-circle metric-icon metric-icon-green"/>
-          <p class="metric-value">{{ resolvedReportsCount }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-resolved-reports') }}</p>
-        </div>
-      </div>
+    <div class="tab-content">
+      <QuizList v-if="activeTab === 'quizzes'"/>
     </div>
-
-    <!-- Comunidad académica -->
-    <div class="section-block">
-      <h2 class="section-label">{{ t('coordinator.section-community') }}</h2>
-      <div class="cards-row">
-        <div class="metric-card metric-card-clickable" @click="navigateToTutors">
-          <i class="pi pi-users metric-icon metric-icon-blue"/>
-          <p class="metric-value">{{ totalTutors }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-total-tutors') }}</p>
-        </div>
-        <div class="metric-card metric-card-clickable" @click="navigateToTutors">
-          <i class="pi pi-verified metric-icon metric-icon-green"/>
-          <p class="metric-value">{{ verifiedTutors }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-verified-tutors') }}</p>
-        </div>
-        <div class="metric-card metric-card-clickable" @click="navigateToQuizzes">
-          <i class="pi pi-book metric-icon metric-icon-purple"/>
-          <p class="metric-value">{{ totalQuizzes }}</p>
-          <p class="metric-label">{{ t('coordinator.metric-total-quizzes') }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Acceso a moderación detallada -->
-    <button class="btn-reports" @click="navigateToReports">
-      <i class="pi pi-shield" style="font-size:14px;"></i>
-      {{ t('coordinator.btn-go-reports') }}
-    </button>
 
   </div>
 </template>
 
 <style scoped>
-.dashboard-container { max-width: 920px; margin: 0 auto; }
+.dashboard-container { max-width: 1100px; margin: 0 auto; }
 
 .admin-badge {
   display: inline-flex; align-items: center; gap: 8px;
@@ -130,42 +51,32 @@ const navigateToQuizzes = () => router.push({ name: 'learning-quizzes' });
   margin-bottom: 1.25rem;
 }
 
-.dashboard-header { display: flex; align-items: center; gap: 16px; margin-bottom: 2rem; }
+.dashboard-header { display: flex; align-items: center; gap: 16px; margin-bottom: 1.75rem; }
 .header-icon { font-size: 2.2rem; color: #1e4d8c; }
 .dashboard-title { color: #1a2a40; font-weight: 800; font-size: 1.7rem; margin: 0; }
 .dashboard-sub   { color: #9ca3af; font-size: 0.9rem; margin: 0.2rem 0 0; }
 
-.section-block { margin-bottom: 1.75rem; }
-.section-label {
-  color: #8c98a4; font-size: 0.78rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 0.75rem;
+.tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #f0f2f5;
+  margin-bottom: 1.5rem;
 }
 
-.cards-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
-
-.metric-card {
-  background: #fff; border: 1px solid #f0f2f5; border-radius: 14px;
-  padding: 1.5rem; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  transition: all 0.15s;
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  color: #8c98a4;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
 }
-.metric-card-clickable { cursor: pointer; }
-.metric-card-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
 
-.metric-icon { font-size: 1.6rem; display: block; margin-bottom: 0.5rem; }
-.metric-icon-blue   { color: #1e4d8c; }
-.metric-icon-orange { color: #d97706; }
-.metric-icon-red    { color: #dc2626; }
-.metric-icon-green  { color: #16a34a; }
-.metric-icon-purple { color: #7c3aed; }
-
-.metric-value { color: #1a2a40; font-weight: 800; font-size: 1.9rem; margin: 0; }
-.metric-label { color: #6b7280; font-size: 0.82rem; margin: 0.3rem 0 0; }
-
-.btn-reports {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: #1a2a40; color: #fff; border: none; border-radius: 10px;
-  padding: 0.8rem 1.6rem; font-size: 0.92rem; font-weight: 700;
-  cursor: pointer; transition: background 0.15s; font-family: inherit; margin-top: 0.5rem;
+.tab-item.active {
+  color: #1a2a40;
+  border-bottom-color: #1a2a40;
 }
-.btn-reports:hover { background: #2d4a6e; }
 </style>

@@ -15,7 +15,10 @@ const submitting = ref(false);
 function submit() {
   submitting.value = true;
   authStore.login(form.value)
-      .then(() => router.push({ name: 'home' }))
+      .then(() => {
+        const isCoordinator = authStore.user?.role === 'Coordinator';
+        router.push({ name: isCoordinator ? 'coordinator-dashboard' : 'home' });
+      })
       .catch(() => {})
       .finally(() => { submitting.value = false; });
 }

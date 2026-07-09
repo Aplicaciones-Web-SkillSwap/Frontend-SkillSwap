@@ -58,8 +58,13 @@ onMounted(() => {
 });
 
 const navigateBack  = () => {
-  if (filterTutorId.value) router.push({ name: 'discovery-search' });
-  else router.push({ name: 'home' });
+  if (filterTutorId.value) {
+    const tutor = discoveryStore.getTutorByUserId(filterTutorId.value);
+    if (tutor) router.push({ name: 'discovery-profile', params: { id: tutor.id } });
+    else router.push({ name: 'discovery-search' });
+  } else {
+    router.push({ name: 'home' });
+  }
 };
 </script>
 

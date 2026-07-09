@@ -23,7 +23,7 @@ onMounted(() => {
 });
 
 const pendingCount = computed(() =>
-    store.sessions.filter(s => s.status === 'pending').length
+    store.sessions.filter(s => s.tutorId === authStore.user?.id && s.status === 'pending').length
 );
 
 const toggleDrawer   = () => { drawer.value = !drawer.value; };
@@ -33,17 +33,16 @@ const navigateToPending = () => { router.push({ name: 'workspace-sessions' }); }
 const isCoordinator = computed(() => authStore.user?.role === 'Coordinator');
 
 const items = computed(() => [
-  { label: 'option.home',     path: '/home'               },
+  { label: 'option.home',     path: isCoordinator.value ? '/dashboard' : '/home' },
   { label: 'option.sessions', path: '/workspace/sessions' },
   { label: 'option.wallets',  path: '/payment/wallets'    },
-  { label: 'option.reviews',  path: '/reputation/reviews' },
   ...(isCoordinator.value ? [{ label: 'option.quizzes', path: '/learning/quizzes' }] : []),
 ]);
 </script>
 
 <template>
   <pv-toast/>
-  <pv-confirm-dialog/>
+  <pv-confirm-dialog :pt="{ footer: { style: 'display: flex; width: 100%; box-sizing: border-box; flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: 0.75rem;' } }"/>
 
   <div class="app-shell">
 
@@ -328,4 +327,5 @@ const items = computed(() => [
   background: #f0f4ff;
   color: #1e4d8c;
 }
+
 </style>

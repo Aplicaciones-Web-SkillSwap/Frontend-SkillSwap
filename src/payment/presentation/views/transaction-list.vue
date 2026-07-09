@@ -57,6 +57,8 @@ const confirmDelete = (transaction) => {
     message: t('transactions.confirm-delete', { id: transaction.id }),
     header:  t('transactions.delete-header'),
     icon:    'pi pi-exclamation-triangle',
+    acceptProps: { severity: 'success' },
+    rejectProps: { severity: 'danger' },
     accept:  () => { deleteTransaction(transaction); },
   });
 };
@@ -167,8 +169,6 @@ const statusClass = (status) => {
       <i class="pi pi-exclamation-circle mr-2"></i>
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
     </div>
-
-    <pv-confirm-dialog/>
   </div>
 </template>
 

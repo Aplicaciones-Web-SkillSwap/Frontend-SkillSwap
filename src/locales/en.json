@@ -108,7 +108,7 @@
   "sessions": {
     "title": "Tutoring Sessions",
     "id": "ID",
-    "topic": "Topic",
+    "topic": "Course",
     "learnerId": "Learner ID",
     "tutorId": "Tutor ID",
     "status": "Status",
@@ -139,7 +139,18 @@
     "action-reject": "Reject",
     "action-cancel": "Cancel",
     "action-edit": "Edit",
-    "action-delete": "Delete"
+    "action-delete": "Delete",
+    "sidebar-title-tutor": "Pending requests",
+    "sidebar-title-learner": "Status of your requests",
+    "waiting-for-learner": "Waiting for the learner's response",
+    "waiting-for-tutor": "Waiting for the tutor's response",
+    "action-reschedule": "Reschedule",
+    "action-counter": "Counter-offer",
+    "reschedule-title": "Propose a new date",
+    "reschedule-label": "New date and time",
+    "reschedule-confirm": "Send proposal",
+    "no-pending-requests": "You don't have any pending requests.",
+    "no-sent-requests": "You haven't sent any requests yet."
   },
   "session": {
     "new-title": "Create New Session",
@@ -152,12 +163,17 @@
     "courseId": "Course ID",
     "save": "Save",
     "cancel": "Cancel",
-    "from-discovery-title": "Request from tutor profile",
-    "from-discovery-sub": "The tutor ID has been pre-filled. Complete the topic and date to send the request.",
+    "from-discovery-title": "Tutoring request",
+    "from-discovery-sub": "Pick a course, write a brief message, and choose the date you'd like to schedule the session with {tutorName}.",
     "tutor-prefilled": "Pre-filled from the selected tutor profile.",
+    "course": "Course",
+    "course-placeholder": "Select a course this tutor teaches",
+    "course-empty": "This tutor hasn't added any courses to their profile yet.",
+    "pending-warning-title": "You already have a pending request",
+    "pending-warning-sub": "You already sent a tutoring request to {tutorName} that's still pending approval. Wait for their response before sending another one.",
     "initial-message":     "Initial message",
     "initial-message-ph":  "Write your question or what you'd like to review...",
-    "initial-message-hint":"This message will be sent to the session chat once created.",
+    "initial-message-hint":"This message will be shown to the tutor along with your request, before they accept or reject it.",
     "optional":             "optional"
   },
   "workspace": {
@@ -186,6 +202,7 @@
     "report": "Report",
     "share-quiz":        "Share quiz",
     "quiz-shared":        "Quiz shared",
+    "quiz-completed":     "Quiz completed",
     "pick-quiz-title":    "Pick a quiz to review",
     "pick-quiz-search":   "Search for a quiz...",
     "pick-quiz-empty":    "No quizzes found"
@@ -449,7 +466,7 @@
     "col-description": "Description",
     "summary-total-questions": "summary total questions",
     "confirm-delete": "¿Delete the quizz \"{title}\"?",
-    "question-of":           "{index} of",
+    "question-of":           "Question {current} of {total}",
     "btn-previous":          "Previous",
     "btn-next":              "Next",
     "btn-submit-quiz":       "Submit quiz",
@@ -459,6 +476,8 @@
     "attempt-error-title":   "Quiz submission failed",
     "attempt-error":         "An error occurred while submitting the quiz. Please try again.",
     "btn-try-again":         "Try again",
+    "attempt-waiting-title": "Waiting for the learner's response",
+    "attempt-waiting-sub":   "Once the learner completes this quiz, you'll be able to see their score and a breakdown of their answers here.",
     "btn-results":            "View results",
     "results-total-attempts": "Total attempts:",
     "results-average":        "Average score:",
@@ -468,17 +487,7 @@
   "coordinator": {
     "admin-mode": "Coordinator Mode",
     "title": "Coordinator Panel",
-    "sub": "Community academic activity summary",
-    "section-sessions": "Sessions",
-    "section-moderation": "Moderation",
-    "section-community": "Academic community",
-    "metric-active-sessions": "Active sessions",
-    "metric-pending-sessions": "Pending requests",
-    "metric-pending-reports": "Pending reports",
-    "metric-resolved-reports": "Resolved reports",
-    "metric-total-tutors": "Total tutors",
-    "metric-verified-tutors": "Verified tutors",
-    "metric-total-quizzes": "Quizzes created",
-    "btn-go-reports": "Go to report management"
+    "sub": "Academic content management",
+    "tab-quizzes": "Quizzes"
   }
 }

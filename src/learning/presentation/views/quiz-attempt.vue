@@ -3,29 +3,43 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n }                  from 'vue-i18n';
 import { useRoute, useRouter }      from 'vue-router';
 import useLearningStore             from '@/learning/application/learning.store.js';
+import useWorkspaceStore            from '@/workspace/application/workspace.store.js';
 import useAuthStore                 from '@/iam/application/auth.store.js';
+import { formatDateTime }           from '@/shared/utils/format-date.js';
 
 const { t }  = useI18n();
 const route  = useRoute();
 const router = useRouter();
 const store  = useLearningStore();
+const workspaceStore = useWorkspaceStore();
 const authStore = useAuthStore();
 
-const CURRENT_USER_ID = computed(() => authStore.user?.id); // estudiante actual
+const CURRENT_USER_ID = computed(() => authStore.user?.id);
 
 const loading      = ref(true);
 const quiz         = ref(null);
+const session      = ref(null);
 const currentIndex = ref(0);
 const selectedAnswers = ref([]);
 
 const submitting = ref(false);
-const result     = ref(null); // respuesta real del backend tras enviar
 const submitError = ref('');
 
+/** Intento ya registrado para este quiz en esta sesión (propio si soy aprendiz, o el del aprendiz si soy tutor) */
+const existingAttempt = ref(null);
+
 const sessionId = computed(() => route.query.sessionId ? Number(route.query.sessionId) : 0);
+const isTutor   = computed(() => session.value?.tutorId === CURRENT_USER_ID.value);
 
 onMounted(async () => {
   if (!sessionId.value) {
+    router.push({ name: 'workspace-sessions' });
+    return;
+  }
+
+  if (!workspaceStore.sessionsLoaded) await workspaceStore.fetchSessions();
+  session.value = workspaceStore.getSessionById(sessionId.value);
+  if (!session.value) {
     router.push({ name: 'workspace-sessions' });
     return;
   }
@@ -37,6 +51,10 @@ onMounted(async () => {
   }
   quiz.value = fetched;
   selectedAnswers.value = new Array(fetched.questions.length).fill(null);
+
+  const attempts = await store.getAttemptsByQuiz(fetched.id);
+  existingAttempt.value = attempts.find(a => a.sessionId === sessionId.value) ?? null;
+
   loading.value = false;
 });
 
@@ -73,10 +91,16 @@ const submitQuiz = async () => {
   submitting.value = false;
 
   if (response) {
-    result.value = response;
+    existingAttempt.value = response;
   } else {
     submitError.value = t('learning.attempt-error');
   }
+};
+
+const isCorrect = (questionIndex) => {
+  const question = quiz.value?.questions[questionIndex];
+  if (!question || !existingAttempt.value) return false;
+  return existingAttempt.value.selectedAnswers[questionIndex] === question.correctAnswer;
 };
 
 const navigateBack = () => {
@@ -95,17 +119,6 @@ const navigateBack = () => {
       <i class="pi pi-spin pi-spinner" style="font-size:2rem; color:#1a2a40;"></i>
     </div>
 
-    <!-- ── Resultado tras enviar ── -->
-    <div v-else-if="result" class="result-card">
-      <i class="pi pi-check-circle result-icon"/>
-      <h2 class="result-title">{{ t('learning.attempt-done-title') }}</h2>
-      <p class="result-score">{{ result.score }} / {{ result.total }}</p>
-      <p class="result-sub">{{ t('learning.attempt-done-sub') }}</p>
-      <button class="btn-primary" @click="navigateBack">
-        {{ t('learning.btn-back-to-session') }}
-      </button>
-    </div>
-
     <!-- ── Error al enviar ── -->
     <div v-else-if="submitError" class="result-card">
       <i class="pi pi-times-circle result-icon result-icon-error"/>
@@ -114,7 +127,54 @@ const navigateBack = () => {
       <button class="btn-primary" @click="submitError = ''">{{ t('learning.btn-try-again') }}</button>
     </div>
 
-    <!-- ── Quiz en progreso ── -->
+    <!-- ── Resultado: ya resuelto (propio o del aprendiz, visto por el tutor) ── -->
+    <div v-else-if="existingAttempt" class="result-page">
+      <div class="result-summary">
+        <i class="pi pi-check-circle result-icon"/>
+        <h2 class="result-title">{{ t('learning.attempt-done-title') }}</h2>
+        <p class="result-score">{{ existingAttempt.score }} / {{ existingAttempt.total }}</p>
+        <p class="result-sub">{{ formatDateTime(existingAttempt.completedAt) }}</p>
+      </div>
+
+      <div class="detail-list">
+        <div v-for="(question, qIdx) in quiz.questions" :key="qIdx" class="detail-question">
+          <p class="detail-question-text">
+            <i class="pi" :class="isCorrect(qIdx) ? 'pi-check-circle detail-icon-ok' : 'pi-times-circle detail-icon-bad'"/>
+            {{ question.questionString }}
+          </p>
+          <div class="detail-answers">
+            <span
+                v-for="(answer, aIdx) in question.answers"
+                :key="aIdx"
+                class="detail-answer"
+                :class="{
+                  'detail-answer-correct':  aIdx === question.correctAnswer,
+                  'detail-answer-selected-wrong': aIdx === existingAttempt.selectedAnswers[qIdx] && aIdx !== question.correctAnswer
+                }">
+              {{ ['A','B','C','D'][aIdx] }}. {{ answer }}
+              <i v-if="aIdx === question.correctAnswer" class="pi pi-check" style="font-size:11px; margin-left:4px;"/>
+              <i v-else-if="aIdx === existingAttempt.selectedAnswers[qIdx]" class="pi pi-times" style="font-size:11px; margin-left:4px;"/>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" @click="navigateBack">
+        {{ t('learning.btn-back-to-session') }}
+      </button>
+    </div>
+
+    <!-- ── Tutor, aún sin intento del aprendiz ── -->
+    <div v-else-if="isTutor" class="result-card">
+      <i class="pi pi-clock result-icon" style="color:#d97706;"/>
+      <h2 class="result-title">{{ t('learning.attempt-waiting-title') }}</h2>
+      <p class="result-sub">{{ t('learning.attempt-waiting-sub') }}</p>
+      <button class="btn-primary" @click="navigateBack">
+        {{ t('learning.btn-back-to-session') }}
+      </button>
+    </div>
+
+    <!-- ── Quiz en progreso (aprendiz, sin intento previo) ── -->
     <div v-else class="quiz-card-wrap">
 
       <div class="quiz-header">
@@ -236,11 +296,32 @@ const navigateBack = () => {
 .btn-secondary:hover:not(:disabled) { border-color: #1a2a40 !important; color: #1a2a40; }
 .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-/* Resultado */
+/* Resultado simple (esperando / error) */
 .result-card { text-align: center; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 3rem 2rem; }
 .result-icon { font-size: 3.5rem; color: #16a34a; display: block; margin-bottom: 1rem; }
 .result-icon-error { color: #dc2626; }
 .result-title { color: #1a2a40; font-weight: 800; font-size: 1.3rem; margin: 0 0 0.5rem; }
-.result-score { color: #1e4d8c; font-weight: 800; font-size: 2.5rem; margin: 0 0 0.5rem; }
 .result-sub   { color: #9ca3af; font-size: 0.9rem; margin: 0 0 1.5rem; }
+
+/* Resultado completo con desglose por pregunta */
+.result-page { display: flex; flex-direction: column; gap: 1.5rem; }
+.result-summary { text-align: center; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 2.5rem 2rem; }
+.result-score { color: #1e4d8c; font-weight: 800; font-size: 2.5rem; margin: 0 0 0.5rem; }
+
+.detail-list { display: flex; flex-direction: column; gap: 1rem; }
+.detail-question {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.detail-question-text { color: #1a2a40; font-weight: 600; font-size: 0.92rem; margin: 0; display: flex; align-items: center; gap: 6px; }
+.detail-icon-ok   { color: #16a34a; }
+.detail-icon-bad  { color: #dc2626; }
+
+.detail-answers { display: flex; flex-direction: column; gap: 4px; padding-left: 1.4rem; }
+.detail-answer {
+  font-size: 0.85rem; color: #6b7280; padding: 0.4rem 0.7rem; border-radius: 6px;
+  display: flex; align-items: center;
+}
+.detail-answer-correct { background: #f0fdf4; color: #16a34a; font-weight: 600; }
+.detail-answer-selected-wrong { background: #fef2f2; color: #dc2626; font-weight: 600; }
 </style>

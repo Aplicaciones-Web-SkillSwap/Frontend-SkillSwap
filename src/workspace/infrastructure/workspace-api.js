@@ -30,6 +30,10 @@ export class WorkspaceApi extends BaseApi {
         return this.#sessionsEndpoint.update(resource.id, resource);
     }
 
+    rescheduleSession(id, newScheduledAt) {
+        return this.http.patch(`${sessionsEndpointPath}/${id}/reschedule`, { newScheduledAt });
+    }
+
     deleteSession(id) {
         return this.#sessionsEndpoint.delete(id);
     }

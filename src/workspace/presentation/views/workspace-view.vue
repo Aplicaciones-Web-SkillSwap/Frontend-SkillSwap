@@ -4,7 +4,7 @@ import {useRoute, useRouter}    from "vue-router";
 import useWorkspaceStore        from "@/workspace/application/workspace.store.js";
 import useLearningStore         from "@/learning/application/learning.store.js";
 import {uploadFile, validateFile} from "@/workspace/infrastructure/cloudinary-service.js";
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {Message}                from "@/workspace/domain/model/message-entity.js";
 import {formatDateTime}         from "@/shared/utils/format-date.js";
 import { Session } from "@/workspace/domain/model/session-entity.js";
@@ -34,11 +34,36 @@ const isVideoEnabled = computed(() => session.value?.status === 'scheduled');
 const isCompleted    = computed(() => session.value?.status === 'completed');
 const isLearner      = computed(() => session.value?.learnerId === authStore.user?.id);
 
+/** Nombre de la otra persona en la sesión (tutor si soy aprendiz, aprendiz si soy tutor) */
+const counterpartId = computed(() => {
+  if (!session.value) return null;
+  return isLearner.value ? session.value.tutorId : session.value.learnerId;
+});
+const counterpartName = computed(() =>
+    counterpartId.value ? (authStore.getUsername(counterpartId.value) || `Usuario #${counterpartId.value}`) : ''
+);
+
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
   if (!store.messagesLoaded) fetchMessages();
+  if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
   if (!learningStore.quizzes.length) learningStore.fetchQuizzes();
 });
+
+/** Intentos de los quizzes compartidos en esta sesión, para mostrar el resultado directo en el chat */
+const quizAttempts = ref([]);
+
+async function loadQuizAttempts() {
+  const quizIds = [...new Set(sessionMessages.value.filter(m => m.quizId).map(m => m.quizId))];
+  if (quizIds.length === 0) { quizAttempts.value = []; return; }
+  const results = await Promise.all(quizIds.map(id => learningStore.getAttemptsByQuiz(id)));
+  quizAttempts.value = results.flat();
+}
+
+watch(() => store.messagesLoaded, (loaded) => { if (loaded) loadQuizAttempts(); }, { immediate: true });
+
+const attemptFor = (quizId) =>
+    quizAttempts.value.find(a => a.quizId === quizId && a.sessionId === parseInt(route.params.id));
 
 const sendMessage = () => {
   if (!newMessageContent.value.trim()) return;
@@ -151,7 +176,7 @@ const navigateToReport = () => {
       <div class="flex align-items-center gap-3">
         <pv-button icon="pi pi-arrow-left" text @click="navigateBack" class="action-btn-view"/>
         <div>
-          <h2 class="page-title m-0">{{ t('workspace.title') }}</h2>
+          <h2 class="page-title m-0">{{ counterpartName || t('workspace.title') }}</h2>
           <p v-if="session" class="subtitle m-0 mt-1">
             {{ t('workspace.topic') }}: <strong class="text-color">{{ session.topic }}</strong>
             <span class="mx-2 text-300">|</span>
@@ -256,13 +281,21 @@ const navigateToReport = () => {
               class="message-row mb-3"
               :class="msg.senderId === CURRENT_USER_ID ? 'own-message' : 'other-message'">
 
-            <div v-if="msg.quizId" class="quiz-card" @click="goToQuiz(msg)">
+            <div v-if="msg.quizId" class="quiz-card" :class="{ 'quiz-card-done': attemptFor(msg.quizId) }" @click="goToQuiz(msg)">
               <div class="quiz-card-icon">
-                <i class="pi pi-question-circle"/>
+                <i :class="attemptFor(msg.quizId) ? 'pi pi-check-circle' : 'pi pi-question-circle'"/>
               </div>
               <div class="quiz-card-body">
-                <p class="quiz-card-label">{{ t('workspace.quiz-shared') }}</p>
-                <p class="quiz-card-title">{{ msg.quizTitle }}</p>
+                <template v-if="attemptFor(msg.quizId)">
+                  <p class="quiz-card-label">{{ t('workspace.quiz-completed') }}</p>
+                  <p class="quiz-card-title">
+                    {{ msg.quizTitle }} — {{ attemptFor(msg.quizId).score }}/{{ attemptFor(msg.quizId).total }}
+                  </p>
+                </template>
+                <template v-else>
+                  <p class="quiz-card-label">{{ t('workspace.quiz-shared') }}</p>
+                  <p class="quiz-card-title">{{ msg.quizTitle }}</p>
+                </template>
               </div>
               <i class="pi pi-chevron-right quiz-card-arrow"/>
             </div>
@@ -301,6 +334,7 @@ const navigateToReport = () => {
               @click="triggerFileInput"/>
 
           <pv-button
+              v-if="!isLearner"
               icon="pi pi-question-circle"
               class="btn-quiz"
               :disabled="isCompleted"
@@ -751,6 +785,8 @@ const navigateToReport = () => {
 }
 .quiz-card:hover { transform: translateY(-1px); }
 
+.quiz-card-done { background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); }
+
 .quiz-card-icon {
   background: rgba(255,255,255,0.15);
   width: 36px;
@@ -763,6 +799,8 @@ const navigateToReport = () => {
   color: #fbbf24;
   font-size: 1.1rem;
 }
+
+.quiz-card-done .quiz-card-icon { color: #ffffff; }
 
 .quiz-card-body { flex: 1; min-width: 0; }
 .quiz-card-label { color: #cbd5e1; font-size: 0.7rem; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }

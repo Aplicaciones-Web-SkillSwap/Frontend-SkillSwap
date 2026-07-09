@@ -19,6 +19,7 @@ const { fetchSessions, acceptSession, rejectSession } = store;
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
   if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
+  if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 });
 
 // Apenas cargan los tutores, pedimos el summary real de cada uno (rating + reviewCount)
@@ -30,11 +31,8 @@ watch(() => discoveryStore.tutorsLoaded, (loaded) => {
   }
 }, { immediate: true });
 
-/** Resuelve nombre por userId */
-const userName = (id) => {
-  const tutor = discoveryStore.tutors.find(t => t.userId === id);
-  return tutor ? tutor.name : `Usuario #${id}`;
-};
+/** Resuelve nombre real por userId */
+const userName = (id) => authStore.getUsername(id) || `Usuario #${id}`;
 
 /** Rating real desde el summary, con fallback al campo estático del tutor */
 const displayRating = (tutor) => {

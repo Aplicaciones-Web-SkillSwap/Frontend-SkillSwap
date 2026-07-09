@@ -108,7 +108,7 @@
   "sessions": {
     "title": "Sesiones de Tutoria",
     "id": "ID",
-    "topic": "Tema",
+    "topic": "Curso",
     "learnerId": "ID Aprendiz",
     "tutorId": "ID Tutor",
     "status": "Estado",
@@ -130,7 +130,7 @@
     "confirm-cancel": "Estas seguro de que quieres cancelar la sesion '{topic}'?",
     "cancel-header": "Cancelar Sesion",
     "status-pending": "Pendiente",
-    "status-scheduled": "Programada",
+    "status-scheduled": "Agendada",
     "status-completed": "Completada",
     "status-cancelled": "Cancelada",
     "status-rejected": "Rechazada",
@@ -142,8 +142,19 @@
     "action-delete": "Eliminar",
     "initial-message":     "Mensaje inicial",
     "initial-message-ph":  "Escribí tu duda o lo que querés repasar...",
-    "initial-message-hint":"Este mensaje se enviará al chat de la sesión apenas se cree.",
-    "optional":             "opcional"
+    "initial-message-hint":"Este mensaje se mostrará al tutor junto con tu solicitud, antes de que la acepte o rechace.",
+    "optional":             "opcional",
+    "sidebar-title-tutor": "Solicitudes pendientes",
+    "sidebar-title-learner": "Estado de tus solicitudes",
+    "waiting-for-learner": "Esperando respuesta del aprendiz",
+    "waiting-for-tutor": "Esperando respuesta del tutor",
+    "action-reschedule": "Reprogramar",
+    "action-counter": "Contraofertar",
+    "reschedule-title": "Proponer nueva fecha",
+    "reschedule-label": "Nueva fecha y hora",
+    "reschedule-confirm": "Enviar propuesta",
+    "no-pending-requests": "No tienes solicitudes pendientes.",
+    "no-sent-requests": "No has enviado ninguna solicitud aún."
   },
   "session": {
     "new-title": "Crear Nueva Sesion",
@@ -156,9 +167,14 @@
     "courseId": "ID Curso",
     "save": "Guardar",
     "cancel": "Cancelar",
-    "from-discovery-title": "Solicitud desde perfil de tutor",
-    "from-discovery-sub": "El ID del tutor ha sido prellenado. Completa el tema y la fecha para enviar la solicitud.",
-    "tutor-prefilled": "Prellenado desde el perfil del tutor seleccionado."
+    "from-discovery-title": "Solicitud de tutoría",
+    "from-discovery-sub": "Selecciona el curso, escribe un mensaje breve y elige la fecha en la que te gustaría programar la sesión con {tutorName}.",
+    "tutor-prefilled": "Prellenado desde el perfil del tutor seleccionado.",
+    "course": "Curso",
+    "course-placeholder": "Selecciona un curso que dicte este tutor",
+    "course-empty": "Este tutor aún no agregó cursos a su perfil.",
+    "pending-warning-title": "Ya tienes una solicitud pendiente",
+    "pending-warning-sub": "Ya enviaste una solicitud de tutoría a {tutorName} que sigue pendiente de aprobación. Espera su respuesta antes de enviar otra."
   },
   "workspace": {
     "title": "Sala de Trabajo",
@@ -186,6 +202,7 @@
     "report": "Reportar",
     "share-quiz":        "Compartir quiz",
     "quiz-shared":        "Quiz compartido",
+    "quiz-completed":     "Quiz completado",
     "pick-quiz-title":    "Selecciona un quiz",
     "pick-quiz-search":   "Buscar por título o curso...",
     "pick-quiz-empty":    "No tienes quizzes creados todavía."
@@ -447,6 +464,8 @@
     "attempt-error-title":   "No se pudo enviar el quiz",
     "attempt-error":         "Ocurrió un error al enviar tus respuestas. Intenta de nuevo.",
     "btn-try-again":         "Intentar de nuevo",
+    "attempt-waiting-title": "Esperando la respuesta del aprendiz",
+    "attempt-waiting-sub":   "Cuando el aprendiz resuelva este quiz, vas a poder ver aquí su resultado y el detalle de sus respuestas.",
     "btn-results":            "Ver resultados",
     "results-total-attempts": "Intentos totales",
     "results-average":        "Promedio",
@@ -456,17 +475,7 @@
   "coordinator": {
     "admin-mode": "Modo Coordinador",
     "title": "Panel del Coordinador",
-    "sub": "Resumen de actividad académica de la comunidad",
-    "section-sessions": "Sesiones",
-    "section-moderation": "Moderación",
-    "section-community": "Comunidad académica",
-    "metric-active-sessions": "Sesiones activas",
-    "metric-pending-sessions": "Solicitudes pendientes",
-    "metric-pending-reports": "Reportes pendientes",
-    "metric-resolved-reports": "Reportes resueltos",
-    "metric-total-tutors": "Total de tutores",
-    "metric-verified-tutors": "Tutores verificados",
-    "metric-total-quizzes": "Quizzes creados",
-    "btn-go-reports": "Ir a gestión de reportes"
+    "sub": "Gestión de contenido académico",
+    "tab-quizzes": "Quizzes"
   }
 }

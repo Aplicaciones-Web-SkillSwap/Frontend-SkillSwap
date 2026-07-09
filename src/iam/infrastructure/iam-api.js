@@ -20,6 +20,10 @@ export class IamApi extends BaseApi {
         return this.http.get(`${usersEndpointPath}/${id}`);
     }
 
+    getAllUsers() {
+        return this.http.get(`${usersEndpointPath}`);
+    }
+
     updateBio(id, bio) {
         return this.http.patch(`${usersEndpointPath}/${id}/bio`, {bio});
     }

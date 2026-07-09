@@ -153,6 +153,18 @@ const useWorkspaceStore = defineStore('workspace', () => {
     }
 
 
+    function rescheduleSession(session, newScheduledAt) {
+        return workspaceApi.rescheduleSession(session.id, newScheduledAt).then(response => {
+            const updatedSession = SessionAssembler.toEntityFromResource(response.data);
+            const index = sessions.value.findIndex(s => s['id'] === updatedSession.id);
+            if (index !== -1) sessions.value[index] = updatedSession;
+            return updatedSession;
+        }).catch(error => {
+            errors.value.push(error);
+            return null;
+        });
+    }
+
     function deleteSession(session) {
         workspaceApi.deleteSession(session.id).then(() => {
             const index = sessions.value.findIndex(s => s['id'] === session.id);
@@ -180,7 +192,7 @@ const useWorkspaceStore = defineStore('workspace', () => {
         getSessionById, getMessagesBySessionId,
         addSession, addMessage,
         updateSession, updateMessage,
-        acceptSession, rejectSession, cancelSession,
+        acceptSession, rejectSession, cancelSession, rescheduleSession,
         deleteSession, deleteMessage,
         addFileMessage
     };

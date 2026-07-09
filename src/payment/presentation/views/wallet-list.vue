@@ -34,6 +34,8 @@ const confirmDelete = (wallet) => {
     message: t('wallets.confirm-delete', { userId: wallet.userId }),
     header:  t('wallets.delete-header'),
     icon:    'pi pi-exclamation-triangle',
+    acceptProps: { severity: 'success' },
+    rejectProps: { severity: 'danger' },
     accept:  () => { deleteWallet(wallet); },
   });
 };
@@ -114,8 +116,6 @@ const confirmDelete = (wallet) => {
     <div v-if="errors.length" class="text-red-500 mt-3 error-msg">
       {{ t('errors.occurred') }}: {{ errors.map(e => e.message).join(', ') }}
     </div>
-
-    <pv-confirm-dialog/>
   </div>
 </template>
 
