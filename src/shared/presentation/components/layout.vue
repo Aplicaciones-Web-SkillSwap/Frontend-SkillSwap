@@ -89,6 +89,8 @@ const items = computed(() => [
                 image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
                 shape="circle"
                 class="user-avatar"
+                :title="t('profile.title')"
+                @click="router.push({ name: 'profile' })"
             />
 
             <pv-button

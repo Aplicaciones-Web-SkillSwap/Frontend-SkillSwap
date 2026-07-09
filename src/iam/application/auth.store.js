@@ -59,7 +59,12 @@ const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem(USER_KEY);
     }
 
-    return {user, token, error, isAuthenticated, login, register, logout};
+    function updateUser(userEntity) {
+        user.value = userEntity;
+        localStorage.setItem(USER_KEY, JSON.stringify(userEntity));
+    }
+
+    return {user, token, error, isAuthenticated, login, register, logout, updateUser};
 });
 
 export default useAuthStore;

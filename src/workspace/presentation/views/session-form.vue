@@ -2,6 +2,7 @@
 import {useI18n} from "vue-i18n";
 import {useRoute, useRouter} from "vue-router";
 import useWorkspaceStore from "@/workspace/application/workspace.store.js";
+import useAuthStore      from "@/iam/application/auth.store.js";
 import {computed, onMounted, ref} from "vue";
 import {Session} from "@/workspace/domain/model/session-entity.js";
 
@@ -18,13 +19,13 @@ const {t}    = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useWorkspaceStore();
+const authStore = useAuthStore();
 const { addSession, errors, updateSession } = store;
 
 /**
  * Local form field mappings bound to session properties.
  */
 const form = ref({
-  learnerId:   null,
   tutorId:     route.query.tutorId ? parseInt(route.query.tutorId) : null,
   topic:       '',
   status:      'pending',
@@ -70,7 +71,6 @@ onMounted(() => {
     const sessionFound = getSessionById(route.params.id);
     console.log('session found:', sessionFound);
     if (sessionFound) {
-      form.value.learnerId   = sessionFound.learnerId;
       form.value.tutorId     = sessionFound.tutorId;
       form.value.topic       = sessionFound.topic;
       form.value.status      = sessionFound.status;
@@ -95,7 +95,7 @@ function getSessionById(id) {
 const saveSession = async () => {
   const session = new Session({
     id:          isEdit.value ? parseInt(route.params.id) : null,
-    learnerId:   form.value.learnerId,
+    learnerId:   authStore.user?.id,
     tutorId:     form.value.tutorId,
     topic:       form.value.topic,
     status:      isEdit.value ? form.value.status : 'pending',
@@ -111,7 +111,7 @@ const saveSession = async () => {
     if (createdSession && form.value.initialMessage.trim()) {
       await store.addMessage({
         sessionId: createdSession.id,
-        senderId:  form.value.learnerId,
+        senderId:  authStore.user?.id,
         content:   form.value.initialMessage.trim(),
         fileUrl:   null,
         fileName:  null,
@@ -161,13 +161,15 @@ const navigateBack = () => {
         <div class="grid">
 
           <div class="col-12 md:col-6 field mb-4">
-            <label for="learnerId" class="custom-label">{{ t('session.learnerId') }}</label>
-            <pv-input-number id="learnerId" v-model="form.learnerId" class="w-full" :min="1" required/>
+            <label class="custom-label">{{ t('session.learnerId') }}</label>
+            <div class="readonly-value">{{ authStore.user?.username }}</div>
           </div>
 
           <div class="col-12 md:col-6 field mb-4">
             <label for="tutorId" class="custom-label">{{ t('session.tutorId') }}</label>
+            <div v-if="isEdit" class="readonly-value">Tutor #{{ form.tutorId }}</div>
             <pv-input-number
+                v-else
                 id="tutorId"
                 v-model="form.tutorId"
                 class="w-full"
@@ -333,6 +335,16 @@ const navigateBack = () => {
   margin-top: 0.4rem;
   display: flex;
   align-items: center;
+}
+
+.readonly-value {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  color: #1a2a40;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 

@@ -32,6 +32,7 @@ const sessionMessages = computed(() => store.getMessagesBySessionId(route.params
 const isChatEnabled  = computed(() => session.value?.status === 'scheduled');
 const isVideoEnabled = computed(() => session.value?.status === 'scheduled');
 const isCompleted    = computed(() => session.value?.status === 'completed');
+const isLearner      = computed(() => session.value?.learnerId === authStore.user?.id);
 
 onMounted(() => {
   if (!store.sessionsLoaded) fetchSessions();
@@ -202,7 +203,7 @@ const navigateToReport = () => {
       </div>
     </div>
 
-    <div v-else-if="isCompleted" class="completed-actions mb-4">
+    <div v-else-if="isCompleted && isLearner" class="completed-actions mb-4">
 
       <div class="action-banner review-banner">
         <div class="banner-content">

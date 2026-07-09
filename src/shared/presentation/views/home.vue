@@ -66,7 +66,7 @@ const pendingSessions = computed(() =>
 /** Tutores mejor calificados — usando el rating real del summary, no el campo estático */
 const recommendedTutors = computed(() =>
     [...discoveryStore.tutors]
-        .filter(t => displayReviewCount(t) > 0)
+        .filter(t => t.visible && t.userId !== authStore.user?.id && displayReviewCount(t) > 0)
         .sort((a, b) => displayRating(b) - displayRating(a))
         .slice(0, 3)
 );

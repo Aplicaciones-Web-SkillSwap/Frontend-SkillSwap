@@ -19,4 +19,8 @@ export class IamApi extends BaseApi {
     getUserById(id) {
         return this.http.get(`${usersEndpointPath}/${id}`);
     }
+
+    updateBio(id, bio) {
+        return this.http.patch(`${usersEndpointPath}/${id}/bio`, {bio});
+    }
 }

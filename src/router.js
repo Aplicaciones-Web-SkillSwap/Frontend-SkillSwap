@@ -14,6 +14,7 @@ const pageNotFound = () => import("@/shared/presentation/views/page-not-found.vu
 const coordinatorDashboard = () => import("@/shared/presentation/views/coordinator-dashboard.vue");
 const login        = () => import("@/iam/presentation/views/login.vue");
 const register      = () => import("@/iam/presentation/views/register.vue");
+const myProfile      = () => import("@/iam/presentation/views/my-profile.vue");
 
 const routes = [
     { path: '/login',           name: 'login',      component: login,       meta: { title: 'Login', public: true } },
@@ -21,6 +22,7 @@ const routes = [
 
     { path: '/home',            name: 'home',       component: Home,        meta: { title: 'Home'          } },
     { path: '/dashboard',       name: 'coordinator-dashboard', component: coordinatorDashboard, meta: { title: 'Coordinator Dashboard', requiresRole: 'Coordinator' } },
+    { path: '/profile',         name: 'profile',    component: myProfile,   meta: { title: 'My Profile'    } },
 
     { path: '/workspace',       name: 'workspace',  children: workspaceRoutes                                 },
     { path: '/payment',         name: 'payment',    children: paymentRoutes                                   },

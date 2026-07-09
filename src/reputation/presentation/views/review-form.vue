@@ -2,6 +2,7 @@
 import {useI18n}                  from "vue-i18n";
 import {useRoute, useRouter}      from "vue-router";
 import useReputationStore         from "@/reputation/application/reputation.store.js";
+import useAuthStore               from "@/iam/application/auth.store.js";
 import {computed, onMounted, ref} from "vue";
 import {Review}                   from "@/reputation/domain/model/review-entity.js";
 
@@ -9,20 +10,20 @@ const {t}    = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useReputationStore();
+const authStore = useAuthStore();
 const { addReview, errors } = store;
 
 const isEdit = computed(() => !!route.params.id);
 
 const form = ref({
   tutorId:    route.query.tutorId ? parseInt(route.query.tutorId) : null,
-  reviewerId: null,
   sessionId:  route.query.sessionId ? parseInt(route.query.sessionId) : null,
   rating:     0,
   comment:    '',
 });
 
 onMounted(() => {
-  if (isEdit.value) {
+  if (isEdit.value || !form.value.tutorId || !form.value.sessionId) {
     router.push({ name: 'reputation-reviews' });
   }
 });
@@ -30,7 +31,7 @@ onMounted(() => {
 const saveReview = () => {
   const review = new Review({
     tutorId:    form.value.tutorId,
-    reviewerId: form.value.reviewerId,
+    reviewerId: authStore.user?.id,
     sessionId:  form.value.sessionId,
     rating:     form.value.rating,
     comment:    form.value.comment,
@@ -60,13 +61,13 @@ const navigateBack = () => router.push({ name: 'reputation-reviews' });
           </div>
 
           <div class="field">
-            <label class="custom-label">{{ t('review.reviewerId') }}</label>
-            <pv-input-number v-model="form.reviewerId" class="w-full" :min="1" :use-grouping="false" required/>
+            <label class="custom-label">{{ t('review.tutorId') }}</label>
+            <div class="readonly-value">Tutor #{{ form.tutorId }}</div>
           </div>
 
           <div class="field">
             <label class="custom-label">{{ t('review.sessionId') }}</label>
-            <pv-input-number v-model="form.sessionId" class="w-full" :min="1" :use-grouping="false"/>
+            <div class="readonly-value">Sesión #{{ form.sessionId }}</div>
           </div>
 
           <div class="field field-full">
@@ -111,6 +112,16 @@ const navigateBack = () => router.push({ name: 'reputation-reviews' });
 .field { display: flex; flex-direction: column; gap: 0.5rem; }
 
 .custom-label { color: #8c98a4; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+
+.readonly-value {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  color: #1a2a40;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
 
 .rating-wrap { display: flex; align-items: center; gap: 1rem; }
 .score-number { color: #1a2a40; font-weight: 700; font-size: 1rem; }

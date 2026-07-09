@@ -14,6 +14,7 @@ export class Tutor {
                     avatarUrl       = null,
                     experienceYears = 0,
                     mainSubject     = '',
+                    visible         = true,
                 }) {
         this.id              = id;
         this.userId          = userId;
@@ -29,5 +30,6 @@ export class Tutor {
         this.avatarUrl       = avatarUrl;
         this.experienceYears = experienceYears;
         this.mainSubject     = mainSubject;
+        this.visible         = visible;
     }
 }

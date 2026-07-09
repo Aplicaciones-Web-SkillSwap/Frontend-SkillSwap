@@ -5,7 +5,7 @@ import {useConfirm} from "primevue";
 import useWorkspaceStore from "@/workspace/application/workspace.store.js";
 import useDiscoveryStore from "@/discovery/application/discovery.store.js";
 import useAuthStore      from "@/iam/application/auth.store.js";
-import {computed, onMounted, toRefs} from "vue";
+import {computed, onMounted, ref, toRefs} from "vue";
 import {formatDateTime} from "@/shared/utils/format-date.js";
 
 const {t}     = useI18n();
@@ -17,10 +17,17 @@ const authStore = useAuthStore();
 const { errors, sessionsLoaded } = toRefs(store);
 const { fetchSessions, acceptSession, rejectSession, cancelSession } = store;
 
-/** Solo las sesiones donde participo, como aprendiz o como tutor */
-const sessions = computed(() =>
-    store.sessions.filter(s => s.learnerId === authStore.user?.id || s.tutorId === authStore.user?.id)
-);
+/** Vista activa: 'learner' (sesiones donde soy aprendiz) o 'tutor' (sesiones donde soy tutor) */
+const viewMode = ref('learner');
+const viewModeOptions = computed(() => [
+  { label: t('sessions.tab-learner'), value: 'learner' },
+  { label: t('sessions.tab-tutor'),   value: 'tutor' },
+]);
+
+/** Sesiones donde participo, separadas por el rol que cumplo en cada una */
+const learnerSessions = computed(() => store.sessions.filter(s => s.learnerId === authStore.user?.id));
+const tutorSessions   = computed(() => store.sessions.filter(s => s.tutorId === authStore.user?.id));
+const sessions = computed(() => viewMode.value === 'learner' ? learnerSessions.value : tutorSessions.value);
 
 onMounted(() => {
   if (!store.sessionsLoaded) {
@@ -75,11 +82,22 @@ const confirmCancel = (session) => {
     <div class="header-actions flex justify-content-between align-items-center mb-4">
       <h1 class="page-title m-0">{{ t('sessions.title') }}</h1>
       <pv-button
+          v-if="viewMode === 'learner'"
           :label="t('sessions.new')"
           @click="navigateToNew"
           class="btn-new"
           icon="pi pi-plus"
       />
+    </div>
+
+    <div class="mb-4">
+      <pv-select-button
+          v-model="viewMode"
+          :allow-empty="false"
+          :options="viewModeOptions"
+          option-label="label"
+          option-value="value"
+          class="view-toggle"/>
     </div>
 
     <div class="table-card">
@@ -91,6 +109,10 @@ const confirmCancel = (session) => {
           paginator
           class="clean-table"
           table-style="min-width: 50rem">
+
+        <template #empty>
+          <p class="empty-msg">{{ t(viewMode === 'learner' ? 'sessions.empty-learner' : 'sessions.empty-tutor') }}</p>
+        </template>
 
         <pv-column :header="t('sessions.id')" field="id" sortable>
           <template #body="slotProps">
@@ -112,15 +134,14 @@ const confirmCancel = (session) => {
           </template>
         </pv-column>
 
-        <pv-column :header="t('sessions.learnerId')" field="learnerId" sortable>
+        <pv-column
+            :header="t(viewMode === 'learner' ? 'sessions.counterpart-tutor' : 'sessions.counterpart-learner')"
+            :field="viewMode === 'learner' ? 'tutorId' : 'learnerId'"
+            sortable>
           <template #body="slotProps">
-            <span class="text-neutral">{{ userName(slotProps.data.learnerId) }}</span>
-          </template>
-        </pv-column>
-
-        <pv-column :header="t('sessions.tutorId')" field="tutorId" sortable>
-          <template #body="slotProps">
-            <span class="text-neutral">{{ userName(slotProps.data.tutorId) }}</span>
+            <span class="text-neutral">
+              {{ userName(viewMode === 'learner' ? slotProps.data.tutorId : slotProps.data.learnerId) }}
+            </span>
           </template>
         </pv-column>
 
@@ -147,7 +168,7 @@ const confirmCancel = (session) => {
 
 
               <pv-button
-                  v-if="slotProps.data.status === 'pending'"
+                  v-if="slotProps.data.status === 'pending' && slotProps.data.tutorId === authStore.user?.id"
                   icon="pi pi-check"
                   rounded text
                   class="action-btn-accept"
@@ -156,7 +177,7 @@ const confirmCancel = (session) => {
 
 
               <pv-button
-                  v-if="slotProps.data.status === 'pending'"
+                  v-if="slotProps.data.status === 'pending' && slotProps.data.tutorId === authStore.user?.id"
                   icon="pi pi-times"
                   rounded text
                   class="action-btn-reject"
@@ -293,4 +314,20 @@ const confirmCancel = (session) => {
 .action-btn-delete { color: #e53e4f !important; }
 
 .error-msg { font-weight: bold; }
+
+.empty-msg { color: #94a3b8; text-align: center; padding: 2rem 0; margin: 0; }
+
+.view-toggle :deep(.p-togglebutton) {
+  border-color: #e2e8f0;
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.6rem 1.2rem;
+}
+
+.view-toggle :deep(.p-togglebutton.p-togglebutton-checked) {
+  background-color: #1a2a40;
+  border-color: #1a2a40;
+  color: #ffffff;
+}
 </style>

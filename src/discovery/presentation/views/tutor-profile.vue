@@ -203,7 +203,7 @@ const navigateBack = () => {
                     <i class="pi pi-user reviewer-avatar-icon"/>
                   </div>
                   <div>
-                    <p class="reviewer-name">{{ t('discovery.student') }} #{{ review.reviewerId }}</p>
+                    <p class="reviewer-name">{{ t('discovery.anonymous-student') }}</p>
                     <p class="review-date">{{ formatDate(review.reviewedAt) }}</p>
                   </div>
                 </div>
@@ -214,17 +214,6 @@ const navigateBack = () => {
                 </div>
               </div>
               <p class="review-comment">{{ review.comment }}</p>
-            </div>
-
-            <!-- Ver todas -->
-            <div class="see-all-row">
-              <pv-button
-                  :label="t('discovery.see-all-reviews')"
-                  link
-                  icon="pi pi-external-link"
-                  icon-pos="right"
-                  class="see-all-btn"
-                  @click="navigateToAllReviews"/>
             </div>
           </div>
         </div>
@@ -434,10 +423,6 @@ const navigateBack = () => {
 .empty-reviews { text-align: center; padding: 2rem; }
 .empty-icon    { font-size: 2.5rem; color: #cbd5e0; display: block; margin-bottom: 0.75rem; }
 .empty-title   { color: #a0aec0; font-size: 0.9rem; margin: 0; }
-
-/* Ver todas */
-.see-all-row { display: flex; justify-content: flex-end; }
-.see-all-btn { color: #e53e4f !important; font-weight: 600 !important; }
 
 /* No encontrado */
 .empty-state     { text-align: center; padding: 4rem; }

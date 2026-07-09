@@ -25,6 +25,11 @@ const submitError = ref('');
 const sessionId = computed(() => route.query.sessionId ? Number(route.query.sessionId) : 0);
 
 onMounted(async () => {
+  if (!sessionId.value) {
+    router.push({ name: 'workspace-sessions' });
+    return;
+  }
+
   const fetched = await store.fetchQuizById(route.params.id);
   if (!fetched || fetched.questions.length === 0) {
     router.push({ name: 'workspace-sessions' });
