@@ -5,6 +5,7 @@ import { useRouter }           from 'vue-router';
 import useModerationStore      from '@/moderation/application/moderation.store.js';
 import useAuthStore            from '@/iam/application/auth.store.js';
 import { formatDate }          from '@/shared/utils/format-date.js';
+import { usePolling }          from '@/shared/composables/use-polling.js';
 
 const { t }  = useI18n();
 const router = useRouter();
@@ -40,10 +41,15 @@ const filteredReports = computed(() => {
 });
 
 onMounted(() => {
-  store.fetchReports();
-  store.fetchSanctions();
   if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 });
+
+/** Refresca reportes y sanciones periódicamente para que el moderador vea casos nuevos sin recargar. */
+const REPORTS_POLL_INTERVAL_MS = 6000;
+usePolling(() => {
+  store.fetchReports();
+  store.fetchSanctions();
+}, REPORTS_POLL_INTERVAL_MS);
 
 const userName = (id) => authStore.getUsername(id) || `Usuario #${id}`;
 

@@ -1,13 +1,14 @@
 <script lang="js" setup>
 import { useI18n }           from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import LanguageSwitcher      from "@/shared/presentation/components/language-switcher.vue";
 import FooterContent         from "@/shared/presentation/components/footer-content.vue";
 import SanctionNotice        from "@/moderation/presentation/components/sanction-notice.vue";
 import useWorkspaceStore     from "@/workspace/application/workspace.store.js";
 import useModerationStore    from "@/moderation/application/moderation.store.js";
 import useAuthStore          from "@/iam/application/auth.store.js";
+import {usePolling}          from "@/shared/composables/use-polling.js";
 
 const { t }  = useI18n();
 const route  = useRoute();
@@ -22,10 +23,14 @@ const logout = () => {
   router.push({ name: 'login' });
 };
 
-onMounted(() => {
-  if (!store.sessionsLoaded) store.fetchSessions();
-  moderationStore.fetchMySanctions();
-});
+/**
+ * Refresca sesiones y sanciones periódicamente (no solo al navegar), para que
+ * solicitudes, cambios de estado y sanciones lleguen sin necesidad de recargar
+ * la página o cambiar de ruta.
+ */
+const GLOBAL_POLL_INTERVAL_MS = 6000;
+usePolling(() => store.fetchSessions(), GLOBAL_POLL_INTERVAL_MS);
+usePolling(() => moderationStore.fetchMySanctions(), GLOBAL_POLL_INTERVAL_MS);
 
 /** Revisa si hay sanciones nuevas sin reconocer cada vez que el usuario navega */
 watch(() => route.fullPath, () => {

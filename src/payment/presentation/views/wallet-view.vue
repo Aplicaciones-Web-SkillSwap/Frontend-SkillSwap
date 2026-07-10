@@ -2,8 +2,9 @@
 import {useI18n} from "vue-i18n";
 import {useRoute, useRouter} from "vue-router";
 import usePaymentStore from "@/payment/application/payment.store.js";
-import {computed, onMounted} from "vue";
+import {computed} from "vue";
 import {formatDate} from "@/shared/utils/format-date.js";
+import {usePolling} from "@/shared/composables/use-polling.js";
 
 const {t}    = useI18n();
 const route  = useRoute();
@@ -29,10 +30,12 @@ const netBalance = computed(() => {
   return Number(wallet.value?.balance || 0).toFixed(2);
 });
 
-onMounted(() => {
-  if (!store.walletsLoaded)      fetchWallets();
-  if (!store.transactionsLoaded) fetchTransactions();
-});
+/** Refresca wallet y transacciones periódicamente para que las donaciones aparezcan sin recargar. */
+const WALLET_POLL_INTERVAL_MS = 6000;
+usePolling(() => {
+  fetchWallets();
+  fetchTransactions();
+}, WALLET_POLL_INTERVAL_MS);
 
 const navigateToTransactions = () => {
   router.push({ name: 'payment-transactions' });

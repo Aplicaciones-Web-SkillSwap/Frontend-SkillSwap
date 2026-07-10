@@ -22,19 +22,16 @@ const useWorkspaceStore = defineStore('workspace', () => {
     });
 
     function fetchSessions() {
-        workspaceApi.getSessions().then(response => {
+        return workspaceApi.getSessions().then(response => {
             sessions.value = SessionAssembler.toEntitiesFromResponse(response);
             sessionsLoaded.value = true;
-            console.log(sessionsLoaded.value);
-            console.log(sessions.value);
         }).catch(error => {
             errors.value.push(error);
-            console.log('Error fetching sessions:', error);
         });
     }
 
     function fetchMessages() {
-        workspaceApi.getMessages().then(response => {
+        return workspaceApi.getMessages().then(response => {
             messages.value = MessageAssembler.toEntitiesFromResponse(response);
             messagesLoaded.value = true;
         }).catch(error => {

@@ -9,6 +9,7 @@ import {IamApi}           from "@/iam/infrastructure/iam-api.js";
 import {UserAssembler}    from "@/iam/infrastructure/user.assembler.js";
 import {deriveUniversityFromEmail} from "@/shared/utils/derive-university.js";
 import {formatDate}       from "@/shared/utils/format-date.js";
+import {usePolling}       from "@/shared/composables/use-polling.js";
 
 const {t}    = useI18n();
 const router = useRouter();
@@ -70,7 +71,6 @@ const loadTutorTab = () => {
 
 onMounted(async () => {
   if (!discoveryStore.tutorsLoaded) await discoveryStore.fetchTutors();
-  if (!reputationStore.reviewsLoaded) reputationStore.fetchReviews();
   if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 
   if (authStore.user?.id) {
@@ -82,6 +82,10 @@ onMounted(async () => {
 
   loadTutorTab();
 });
+
+/** Refresca reseñas periódicamente para que las nuevas aparezcan sin recargar. */
+const REVIEWS_POLL_INTERVAL_MS = 6000;
+usePolling(() => reputationStore.fetchReviews(), REVIEWS_POLL_INTERVAL_MS);
 
 watch(viewMode, (mode) => {
   if (mode === 'tutor') loadTutorTab();

@@ -3,8 +3,9 @@ import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
 import usePaymentStore from "@/payment/application/payment.store.js";
 import useAuthStore    from "@/iam/application/auth.store.js";
-import {computed, onMounted, toRefs} from "vue";
+import {computed, toRefs} from "vue";
 import {formatDate} from "@/shared/utils/format-date.js";
+import {usePolling} from "@/shared/composables/use-polling.js";
 
 const {t}     = useI18n();
 const router  = useRouter();
@@ -20,13 +21,12 @@ const displayedTransactions = computed(() =>
     transactions.value.filter(tx => tx.walletId === myWalletId.value)
 );
 
-onMounted(() => {
-  if (!store.transactionsLoaded) {
-    fetchTransactions();
-    transactionsLoaded.value = store.transactionsLoaded;
-  }
-  if (!store.walletsLoaded) store.fetchWallets();
-});
+/** Refresca transacciones periódicamente para que las donaciones aparezcan sin recargar. */
+const TRANSACTIONS_POLL_INTERVAL_MS = 6000;
+usePolling(() => {
+  fetchTransactions();
+  store.fetchWallets();
+}, TRANSACTIONS_POLL_INTERVAL_MS);
 
 const navigateBack = () => {
   if (myWalletId.value) router.push({ name: 'payment-wallets-view', params: { id: myWalletId.value } });

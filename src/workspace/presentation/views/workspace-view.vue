@@ -5,12 +5,13 @@ import useWorkspaceStore        from "@/workspace/application/workspace.store.js
 import useLearningStore         from "@/learning/application/learning.store.js";
 import useReputationStore       from "@/reputation/application/reputation.store.js";
 import {uploadFile, validateFile} from "@/workspace/infrastructure/cloudinary-service.js";
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {Message}                from "@/workspace/domain/model/message-entity.js";
 import {formatDateTime}         from "@/shared/utils/format-date.js";
 import { Session } from "@/workspace/domain/model/session-entity.js";
 import { Review }  from "@/reputation/domain/model/review-entity.js";
 import useAuthStore from "@/iam/application/auth.store.js";
+import {usePolling} from "@/shared/composables/use-polling.js";
 
 const {t}    = useI18n();
 const route  = useRoute();
@@ -47,22 +48,21 @@ const counterpartName = computed(() =>
     counterpartId.value ? (authStore.getUsername(counterpartId.value) || `Usuario #${counterpartId.value}`) : ''
 );
 
-const MESSAGES_POLL_INTERVAL_MS = 4000;
-let messagesPollHandle = null;
-
 onMounted(() => {
-  if (!store.sessionsLoaded) fetchSessions();
-  fetchMessages();
   if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
   if (!learningStore.quizzes.length) learningStore.fetchQuizzes();
   if (!reputationStore.reviewsLoaded) reputationStore.fetchReviews();
-
-  messagesPollHandle = setInterval(fetchMessages, MESSAGES_POLL_INTERVAL_MS);
 });
 
-onUnmounted(() => {
-  if (messagesPollHandle) clearInterval(messagesPollHandle);
-});
+/**
+ * Refresca mensajes, estado de la sesión (para que la videollamada se refleje
+ * en ambas cuentas) e intentos de quiz, sin depender de recargar la página.
+ */
+const WORKSPACE_POLL_INTERVAL_MS = 4000;
+usePolling(async () => {
+  await Promise.all([fetchMessages(), fetchSessions()]);
+  await loadQuizAttempts();
+}, WORKSPACE_POLL_INTERVAL_MS);
 
 /** La reseña que YO ya dejé para esta sesión, si existe (evita volver a calificar) */
 const myReview = computed(() =>
