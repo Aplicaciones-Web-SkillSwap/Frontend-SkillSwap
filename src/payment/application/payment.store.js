@@ -21,7 +21,7 @@ const usePaymentStore = defineStore('payment', () => {
     const transactionsCount = computed(() => transactionsLoaded.value ? transactions.value.length : 0);
 
     function fetchWallets() {
-        paymentApi.getWallets().then(response => {
+        return paymentApi.getWallets().then(response => {
             wallets.value = WalletAssembler.toEntitiesFromResponse(response);
             walletsLoaded.value = true;
         }).catch(error => {
@@ -31,7 +31,7 @@ const usePaymentStore = defineStore('payment', () => {
     }
 
     function fetchTransactions() {
-        paymentApi.getTransactions().then(response => {
+        return paymentApi.getTransactions().then(response => {
             transactions.value = TransactionAssembler.toEntitiesFromResponse(response);
             transactionsLoaded.value = true;
         }).catch(error => {

@@ -3,6 +3,7 @@ import {useI18n} from "vue-i18n";
 import {useRoute, useRouter} from "vue-router";
 import usePaymentStore from "@/payment/application/payment.store.js";
 import {computed, onMounted} from "vue";
+import {formatDate} from "@/shared/utils/format-date.js";
 
 const {t}    = useI18n();
 const route  = useRoute();
@@ -14,7 +15,12 @@ const wallet = computed(() => store.getWalletById(route.params.id));
 
 const walletTransactions = computed(() => store.getTransactionsByWalletId(route.params.id));
 
-const recentTransactions = computed(() => walletTransactions.value.slice(0, 3));
+/** Las 3 donaciones más recientes primero */
+const recentTransactions = computed(() =>
+    [...walletTransactions.value]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 3)
+);
 
 const totalTransactions = computed(() => walletTransactions.value.length);
 
@@ -114,9 +120,9 @@ const navigateBack = () => {
               class="clean-table"
               table-style="min-width: 35rem">
 
-            <pv-column :header="t('transactions.id')" field="id" sortable>
+            <pv-column :header="t('transactions.createdAt')" field="createdAt" sortable>
               <template #body="slotProps">
-                <span class="text-id">#{{ slotProps.data.id }}</span>
+                <span class="text-date">{{ formatDate(slotProps.data.createdAt) }}</span>
               </template>
             </pv-column>
 
@@ -210,7 +216,7 @@ const navigateBack = () => {
 :deep(.clean-table .p-datatable-tbody > tr:hover) { background-color: #fcfcfc; }
 
 
-.text-id         { color: #a0aec0; font-weight: 700; }
+.text-date       { color: #4a5568; font-weight: 600; }
 .text-balance    { color: #1a2a40; font-weight: 700; }
 .text-commission { color: #dc2626; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
 .text-net        { color: #16a34a; font-weight: 800; }

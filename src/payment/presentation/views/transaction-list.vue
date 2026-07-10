@@ -4,6 +4,7 @@ import {useRouter} from "vue-router";
 import usePaymentStore from "@/payment/application/payment.store.js";
 import useAuthStore    from "@/iam/application/auth.store.js";
 import {computed, onMounted, toRefs} from "vue";
+import {formatDate} from "@/shared/utils/format-date.js";
 
 const {t}     = useI18n();
 const router  = useRouter();
@@ -55,18 +56,11 @@ const navigateBack = () => {
           class="clean-table"
           table-style="min-width: 55rem">
 
-        <pv-column :header="t('transactions.id')" field="id" sortable>
+        <pv-column :header="t('transactions.createdAt')" field="createdAt" sortable>
           <template #body="slotProps">
-            <span class="text-id">#{{ slotProps.data.id }}</span>
+            <span class="text-date"><i class="pi pi-clock icon-clock"/>{{ formatDate(slotProps.data.createdAt) }}</span>
           </template>
         </pv-column>
-
-        <pv-column :header="t('transactions.type')" field="type" sortable>
-          <template #body="slotProps">
-            <span class="text-neutral" style="text-transform: capitalize;">{{ slotProps.data.type }}</span>
-          </template>
-        </pv-column>
-
 
         <pv-column :header="t('transactions.original-amount')" field="amountSent" sortable>
           <template #body="slotProps">
@@ -88,12 +82,6 @@ const navigateBack = () => {
         <pv-column :header="t('transactions.net-amount')">
           <template #body="slotProps">
             <span class="text-net">USD {{ Number(slotProps.data.amountReceived).toFixed(2) }}</span>
-          </template>
-        </pv-column>
-
-        <pv-column :header="t('transactions.createdAt')" field="createdAt" sortable>
-          <template #body="slotProps">
-            <span class="text-date"><i class="pi pi-clock icon-clock"/>{{ slotProps.data.createdAt }}</span>
           </template>
         </pv-column>
 
@@ -153,8 +141,6 @@ const navigateBack = () => {
 }
 
 
-.text-id      { color: #a0aec0; font-weight: 700; }
-.text-neutral { color: #4a5568; }
 .text-amount  { color: #1a2a40; font-weight: 700; }
 
 .text-commission {

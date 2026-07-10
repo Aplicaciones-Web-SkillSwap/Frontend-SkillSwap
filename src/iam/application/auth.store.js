@@ -56,9 +56,9 @@ const useAuthStore = defineStore('auth', () => {
         });
     }
 
-    function register({username, email, password, role}) {
+    function register({username, email, password}) {
         error.value = '';
-        return iamApi.signUp({username, email, password, role})
+        return iamApi.signUp({username, email, password})
             .then(() => login({username, password}))
             .catch(err => {
                 if (!error.value) {

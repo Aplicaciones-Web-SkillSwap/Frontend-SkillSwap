@@ -3,8 +3,11 @@ import { useI18n } from "vue-i18n";
 
 const { locale, availableLocales } = useI18n();
 
+const LOCALE_KEY = 'skillswap_locale';
+
 const setLocale = (lang) => {
   if (locale.value !== lang) locale.value = lang;
+  localStorage.setItem(LOCALE_KEY, lang);
 };
 </script>
 

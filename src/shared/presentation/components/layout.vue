@@ -32,13 +32,23 @@ watch(() => route.fullPath, () => {
   moderationStore.fetchMySanctions();
 });
 
-const pendingCount = computed(() =>
-    store.sessions.filter(s => s.tutorId === authStore.user?.id && s.status === 'pending').length
-);
+/** Pendientes donde me toca responder a mí (el otro fue quien propuso la fecha actual) */
+const pendingAsLearnerCount = computed(() => {
+  const userId = authStore.user?.id;
+  return store.sessions.filter(s =>
+      s.learnerId === userId && s.status === 'pending' && s.proposedByUserId !== userId
+  ).length;
+});
+const pendingAsTutorCount = computed(() => {
+  const userId = authStore.user?.id;
+  return store.sessions.filter(s =>
+      s.tutorId === userId && s.status === 'pending' && s.proposedByUserId !== userId
+  ).length;
+});
+const totalPendingCount = computed(() => pendingAsLearnerCount.value + pendingAsTutorCount.value);
 
 const toggleDrawer   = () => { drawer.value = !drawer.value; };
 const navigateToSearch = () => { router.push({ name: 'discovery-search' }); };
-const navigateToPending = () => { router.push({ name: 'workspace-sessions' }); };
 
 const isCoordinator = computed(() => authStore.user?.role === 'Coordinator');
 
@@ -80,6 +90,7 @@ const items = computed(() => {
                 class="nav-link"
             >
               {{ t(item.label) }}
+              <span v-if="item.label === 'option.sessions' && totalPendingCount > 0" class="nav-badge">{{ totalPendingCount }}</span>
             </router-link>
 
 
@@ -88,14 +99,6 @@ const items = computed(() => {
                 :title="t('option.search')"
                 @click="navigateToSearch">
             </i>
-
-            <div
-                class="notification-container action-icon"
-                :title="pendingCount > 0 ? `${pendingCount} solicitudes pendientes` : 'Sin notificaciones'"
-                @click="navigateToPending">
-              <i class="pi pi-bell"></i>
-              <span v-if="pendingCount > 0" class="notification-badge">{{ pendingCount }}</span>
-            </div>
 
             <pv-avatar
                 image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
@@ -208,6 +211,9 @@ const items = computed(() => {
 
 
 .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   text-decoration: none;
   color: #000000;
   font-weight: 600;
@@ -228,6 +234,18 @@ const items = computed(() => {
   border-bottom: 2px solid #e53e4f;
 }
 
+.nav-badge {
+  background-color: #e53e4f;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  min-width: 18px;
+  line-height: 1.3;
+  text-align: center;
+}
+
 
 .action-icon {
   font-size: 1.4rem;
@@ -239,27 +257,6 @@ const items = computed(() => {
 
 .search-icon:hover {
   color: #e53e4f;
-}
-
-/* Campanita y badge */
-.notification-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  background-color: #e53e4f;
-  color: white;
-  border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  min-width: 18px;
-  text-align: center;
 }
 
 

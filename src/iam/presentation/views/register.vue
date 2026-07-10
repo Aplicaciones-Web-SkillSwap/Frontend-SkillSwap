@@ -14,13 +14,7 @@ const form = ref({
   email: '',
   password: '',
   confirmPassword: '',
-  role: 'Student',
 });
-
-const roleOptions = computed(() => [
-  { label: t('auth.role-student'),     value: 'Student' },
-  { label: t('auth.role-coordinator'), value: 'Coordinator' },
-]);
 
 const submitting = ref(false);
 const passwordMismatch = computed(() =>
@@ -34,7 +28,6 @@ function submit() {
     username: form.value.username,
     email: form.value.email,
     password: form.value.password,
-    role: form.value.role,
   })
       .then(() => router.push({ name: 'home' }))
       .catch(() => {})
@@ -59,11 +52,6 @@ function submit() {
           <label class="field-label">{{ t('auth.email') }}</label>
           <pv-input-text v-model="form.email" type="email" placeholder="example@upc.edu.pe" fluid required autocomplete="email"/>
           <small class="field-hint"><i class="pi pi-info-circle mr-1"/> {{ t('auth.email-hint') }}</small>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label">{{ t('auth.role') }}</label>
-          <pv-select v-model="form.role" :options="roleOptions" option-label="label" option-value="value" fluid/>
         </div>
 
         <div class="field-group">

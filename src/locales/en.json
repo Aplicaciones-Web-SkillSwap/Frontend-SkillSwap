@@ -261,7 +261,7 @@
     "type": "Type",
     "status": "Status",
     "description": "Description",
-    "createdAt": "Created At",
+    "createdAt": "Date Received",
     "actions": "Actions",
     "new": "New Transaction",
     "confirm-delete": "Are you sure you want to delete transaction #{id}?",

@@ -46,6 +46,11 @@ const learnerSentRequests  = computed(() => learnerSessions.value.filter(s => s.
 /** True si me corresponde responder (no fui yo quien propuso la fecha/hora actual) */
 const isMyTurn = (session) => session.proposedByUserId !== authStore.user?.id;
 
+/** Cantidad de solicitudes pendientes por responder en cada pestaña, para el círculo rojo del toggle */
+const learnerTurnCount = computed(() => learnerSentRequests.value.filter(isMyTurn).length);
+const tutorTurnCount   = computed(() => tutorPendingRequests.value.filter(isMyTurn).length);
+const badgeCountFor = (mode) => mode === 'learner' ? learnerTurnCount.value : tutorTurnCount.value;
+
 const rescheduleDialogVisible = ref(false);
 const rescheduleTarget = ref(null);
 const rescheduleDate   = ref(null);
@@ -78,7 +83,6 @@ onMounted(() => {
 const userName = (id) => authStore.getUsername(id) || `Usuario #${id}`;
 
 const navigateToEdit      = (id) => router.push({name: 'workspace-sessions-edit', params: {id}});
-const navigateToNew       = ()    => router.push({name: 'workspace-sessions-new'});
 const navigateToWorkspace = (id)  => router.push({name: 'workspace-sessions-view', params: {id}});
 
 
@@ -121,13 +125,6 @@ const confirmCancel = (session) => {
 
     <div class="header-actions flex justify-content-between align-items-center mb-4">
       <h1 class="page-title m-0">{{ t('sessions.title') }}</h1>
-      <pv-button
-          v-if="viewMode === 'learner'"
-          :label="t('sessions.new')"
-          @click="navigateToNew"
-          class="btn-new"
-          icon="pi pi-plus"
-      />
     </div>
 
     <div class="mb-4">
@@ -137,7 +134,16 @@ const confirmCancel = (session) => {
           :options="viewModeOptions"
           option-label="label"
           option-value="value"
-          class="view-toggle"/>
+          class="view-toggle">
+        <template #option="slotProps">
+          <span class="toggle-option-label">
+            {{ slotProps.option.label }}
+            <span v-if="badgeCountFor(slotProps.option.value) > 0" class="toggle-badge">
+              {{ badgeCountFor(slotProps.option.value) }}
+            </span>
+          </span>
+        </template>
+      </pv-select-button>
     </div>
 
     <div class="sessions-grid">
@@ -353,17 +359,6 @@ const confirmCancel = (session) => {
   font-size: 2rem;
 }
 
-.btn-new {
-  background-color: #e53e4f !important;
-  border: none !important;
-  font-weight: bold;
-  border-radius: 8px;
-  padding: 0.6rem 1.2rem;
-}
-
-.btn-new:hover {
-  background-color: #d03544 !important;
-}
 
 
 .table-card {
@@ -454,6 +449,20 @@ const confirmCancel = (session) => {
   background-color: #1a2a40;
   border-color: #1a2a40;
   color: #ffffff;
+}
+
+.toggle-option-label { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+.toggle-badge {
+  background-color: #e53e4f;
+  color: #ffffff;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  min-width: 18px;
+  line-height: 1.3;
+  text-align: center;
 }
 
 /* Layout de dos columnas: lista + caja lateral */

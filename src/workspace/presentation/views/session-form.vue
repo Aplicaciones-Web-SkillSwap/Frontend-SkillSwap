@@ -148,7 +148,11 @@ const saveSession = async () => {
 const navigateBack = () => {
 
   if (route.query.tutorId && !isEdit.value) {
-    router.push({ name: 'discovery-search' });
+    if (tutorForRequest.value?.id) {
+      router.push({ name: 'discovery-profile', params: { id: tutorForRequest.value.id } });
+    } else {
+      router.push({ name: 'discovery-search' });
+    }
   } else {
     router.push({name: 'workspace-sessions'});
   }

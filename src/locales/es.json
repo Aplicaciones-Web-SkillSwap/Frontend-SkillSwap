@@ -141,10 +141,6 @@
     "action-cancel": "Cancelar",
     "action-edit": "Editar",
     "action-delete": "Eliminar",
-    "initial-message":     "Mensaje inicial",
-    "initial-message-ph":  "Escribí tu duda o lo que querés repasar...",
-    "initial-message-hint":"Este mensaje se mostrará al tutor junto con tu solicitud, antes de que la acepte o rechace.",
-    "optional":             "opcional",
     "sidebar-title-tutor": "Solicitudes pendientes",
     "sidebar-title-learner": "Estado de tus solicitudes",
     "waiting-for-learner": "Esperando respuesta del aprendiz",
@@ -175,7 +171,11 @@
     "course-placeholder": "Selecciona un curso que dicte este tutor",
     "course-empty": "Este tutor aún no agregó cursos a su perfil.",
     "pending-warning-title": "Ya tienes una solicitud pendiente",
-    "pending-warning-sub": "Ya enviaste una solicitud de tutoría a {tutorName} que sigue pendiente de aprobación. Espera su respuesta antes de enviar otra."
+    "pending-warning-sub": "Ya enviaste una solicitud de tutoría a {tutorName} que sigue pendiente de aprobación. Espera su respuesta antes de enviar otra.",
+    "initial-message": "Mensaje inicial",
+    "initial-message-ph": "Escribí tu duda o lo que querés repasar...",
+    "initial-message-hint": "Este mensaje se mostrará al tutor junto con tu solicitud, antes de que la acepte o rechace.",
+    "optional": "opcional"
   },
   "workspace": {
     "title": "Sala de Trabajo",
@@ -229,15 +229,21 @@
   "wallet": {
     "title": "Billetera",
     "userId": "ID Usuario",
-    "balance": "Saldo Disponible",
+    "net-balance": "Saldo Neto",
+    "after-commission": "Después de la comisión del 5% de SkillSwap",
+    "skillswap-commission": "Comisión de SkillSwap",
+    "commission-rate": "5% de cada donación",
     "currency": "Moneda",
     "total-transactions": "Transacciones",
+    "donations-received": "donaciones recibidas",
     "transactions-cta-title": "Historial de Transacciones",
     "transactions-cta-sub": "{count} transacciones registradas",
     "btn-new-transaction": "Nueva Transaccion",
     "btn-view-transactions": "Ver Todas las Transacciones",
     "recent-transactions": "Transacciones Recientes",
-    "see-all-transactions": "Ver todas las transacciones"
+    "see-all-transactions": "Ver todas las transacciones",
+    "no-donations-title": "Aún no has recibido ninguna donación.",
+    "no-donations-sub": "Completa sesiones de tutoría para empezar a acumular saldo."
   },
   "transactions": {
     "title": "Transacciones",
@@ -249,11 +255,13 @@
     "walletId": "ID Billetera",
     "senderId": "ID Emisor",
     "receiverId": "ID Receptor",
-    "amount": "Monto",
+    "original-amount": "Monto Original",
+    "commission-fee": "-5% Comisión",
+    "net-amount": "Monto Neto",
     "type": "Tipo",
     "status": "Estado",
     "description": "Descripcion",
-    "createdAt": "Fecha de Creacion",
+    "createdAt": "Fecha de Recepción",
     "actions": "Acciones",
     "new": "Nueva Transaccion",
     "confirm-delete": "Estas seguro de que quieres eliminar la transaccion #{id}?",
@@ -265,10 +273,14 @@
     "walletId": "ID Billetera",
     "senderId": "ID Emisor",
     "receiverId": "ID Receptor",
-    "amount": "Monto",
+    "original-amount": "Monto de la Donación",
     "type": "Tipo",
     "status": "Estado",
     "description": "Descripcion",
+    "breakdown-title": "Desglose del Pago",
+    "learner-pays": "El aprendiz paga",
+    "skillswap-commission": "Comisión de SkillSwap",
+    "tutor-receives": "El tutor recibe",
     "save": "Guardar",
     "cancel": "Cancelar",
     "checking-wallet":       "Verificando billetera del tutor...",
@@ -423,7 +435,8 @@
     "confirm-delete": "Estas seguro de que quieres eliminar la reseña #{id}?",
     "delete-header": "Confirmar eliminacion",
     "title-filtered": "Reseñas — {tutorName}",
-    "filter-label": "Filtrado por tutor"
+    "filter-label": "Filtrado por tutor",
+    "reviewerId": "ID del estudiante"
   },
   "review": {
     "new-title": "Escribir una Reseña",
@@ -435,8 +448,7 @@
     "comment": "Comentario",
     "status": "Estado",
     "save": "Guardar",
-    "cancel": "Cancelar",
-    "reviewerId": "ID del estudiante"
+    "cancel": "Cancelar"
   },
   "reputations": {
     "title": "Reputaciones de Tutores",
