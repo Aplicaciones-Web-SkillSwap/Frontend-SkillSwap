@@ -1,8 +1,9 @@
 import {BaseApi} from "@/shared/infrastructure/base-api.js";
 import {BaseEndpoint} from "@/shared/infrastructure/base-endpoint.js";
 
-const walletsEndpointPath      = import.meta.env.VITE_WALLETS_ENDPOINT_PATH;
-const transactionsEndpointPath = import.meta.env.VITE_TRANSACTIONS_ENDPOINT_PATH;
+const walletsEndpointPath        = import.meta.env.VITE_WALLETS_ENDPOINT_PATH;
+const transactionsEndpointPath   = import.meta.env.VITE_TRANSACTIONS_ENDPOINT_PATH;
+const paymentMethodsEndpointPath = import.meta.env.VITE_PAYMENT_METHODS_ENDPOINT_PATH;
 
 export class PaymentApi extends BaseApi {
     #walletsEndpoint;
@@ -47,5 +48,15 @@ export class PaymentApi extends BaseApi {
         return this.http.post(`${transactionsEndpointPath}/donate`, {
             fromUserId, toUserId, amount, description
         });
+    }
+
+    /** GET /PaymentMethods/me — método de pago guardado del usuario autenticado, si tiene uno */
+    getMyPaymentMethod() {
+        return this.http.get(`${paymentMethodsEndpointPath}/me`);
+    }
+
+    /** PUT /PaymentMethods/me — crea o reemplaza el método de pago guardado (simulado) */
+    saveMyPaymentMethod({ type, displayLabel }) {
+        return this.http.put(`${paymentMethodsEndpointPath}/me`, { type, displayLabel });
     }
 }

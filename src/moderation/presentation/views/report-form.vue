@@ -19,11 +19,16 @@ const form = ref({
 });
 
 const errors = ref({ reason: '' });
+const showSuccessDialog = ref(false);
+const submitting        = ref(false);
+const submitError       = ref('');
 
 onMounted(() => {
   if (!form.value.sessionId || !form.value.reportedUserId) {
     router.push({ name: 'workspace-sessions' });
+    return;
   }
+  if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 });
 
 function validate() {
@@ -31,16 +36,31 @@ function validate() {
   return !errors.value.reason;
 }
 
-function submit() {
+function navigateBackToWorkspace() {
+  router.push({ name: 'workspace-sessions-view', params: { id: form.value.sessionId } });
+}
+
+async function submit() {
   if (!validate()) return;
+  submitting.value  = true;
+  submitError.value = '';
+
   const report = new Report({
     reporterUserId: authStore.user?.id,
     reportedUserId: Number(form.value.reportedUserId),
     sessionId:      form.value.sessionId,
     reason:         form.value.reason,
   });
-  store.addReport(report);
-  router.push({ name: 'moderation-reports' });
+  const result = await store.addReport(report);
+  submitting.value = false;
+
+  if (result.ok) {
+    showSuccessDialog.value = true;
+  } else if (result.errorType === 'duplicate-pending') {
+    submitError.value = t('moderation.err-duplicate-pending');
+  } else {
+    submitError.value = t('moderation.err-submit');
+  }
 }
 </script>
 
@@ -56,7 +76,7 @@ function submit() {
 
         <div class="field-group">
           <label class="field-label">{{ t('moderation.field-reported') }}</label>
-          <div class="readonly-value">Usuario #{{ form.reportedUserId }}</div>
+          <div class="readonly-value">{{ authStore.getUsername(form.reportedUserId) || `Usuario #${form.reportedUserId}` }}</div>
           <small class="field-hint">
             <i class="pi pi-info-circle mr-1"/> Pre-cargado desde la sesión
           </small>
@@ -64,27 +84,40 @@ function submit() {
 
         <div class="field-group">
           <label class="field-label">{{ t('moderation.field-reason') }}</label>
-          <pv-textarea v-model="form.reason" :placeholder="t('moderation.field-reason-ph')" rows="3" fluid :invalid="!!errors.reason"/>
+          <pv-textarea v-model="form.reason" :placeholder="t('moderation.field-reason-ph')" rows="3" auto-resize fluid :invalid="!!errors.reason"/>
           <small v-if="errors.reason" class="field-error">{{ errors.reason }}</small>
         </div>
 
+        <small v-if="submitError" class="field-error">{{ submitError }}</small>
+
         <div class="btn-row">
-          <button class="btn-primary" type="submit">
+          <button class="btn-primary" type="submit" :disabled="submitting">
             <i class="pi pi-save" style="font-size:14px;"></i>
             {{ t('moderation.btn-create-report') }}
           </button>
-          <button class="btn-secondary" type="button" @click="router.push({ name: 'moderation-reports' })">
+          <button class="btn-secondary" type="button" @click="navigateBackToWorkspace">
             {{ t('moderation.btn-cancel') }}
           </button>
         </div>
 
       </form>
     </div>
+
+    <pv-dialog v-model:visible="showSuccessDialog" modal :closable="false" style="width: 380px;">
+      <div class="success-dialog-body">
+        <i class="pi pi-check-circle success-icon"/>
+        <p class="success-title">{{ t('moderation.report-success-title') }}</p>
+        <p class="success-sub">{{ t('moderation.report-success-sub') }}</p>
+        <button class="btn-primary w-full" type="button" @click="navigateBackToWorkspace">
+          {{ t('moderation.btn-back-to-workspace') }}
+        </button>
+      </div>
+    </pv-dialog>
   </div>
 </template>
 
 <style scoped>
-.form-page   { max-width: 600px; }
+.form-page   { max-width: 600px; margin: 0 auto; }
 .page-header { margin-bottom: 24px; }
 .page-title  { font-size: 22px; font-weight: 700; color: #1a2a40; margin: 0 0 4px; }
 .page-sub    { font-size: 13px; color: #9ca3af; margin: 0; }
@@ -111,6 +144,8 @@ function submit() {
   cursor: pointer; transition: background 0.15s; font-family: inherit;
 }
 .btn-primary:hover { background: #d03544; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-primary.w-full { width: 100%; justify-content: center; }
 .btn-secondary {
   display: inline-flex; align-items: center;
   background: none; color: #6b7280; border: 1px solid #e5e7eb;
@@ -118,4 +153,9 @@ function submit() {
   font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: inherit;
 }
 .btn-secondary:hover { border-color: #1e4d8c; color: #1e4d8c; }
+
+.success-dialog-body { text-align: center; padding: 0.5rem 0.5rem 0; }
+.success-icon  { font-size: 3rem; color: #16a34a; display: block; margin-bottom: 1rem; }
+.success-title { color: #1a2a40; font-weight: 700; font-size: 1.1rem; margin: 0 0 0.4rem; }
+.success-sub   { color: #6b7280; font-size: 0.9rem; margin: 0 0 1.5rem; }
 </style>

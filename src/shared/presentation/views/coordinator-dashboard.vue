@@ -1,14 +1,16 @@
 <script setup>
+import { ref }     from 'vue';
 import { useI18n } from 'vue-i18n';
 import QuizList    from '@/learning/presentation/views/quiz-list.vue';
+import ReportList  from '@/moderation/presentation/views/report-list.vue';
 
 const { t } = useI18n();
 
-/** Pestañas del panel de coordinador. Por ahora solo Quizzes; se irán agregando más. */
-const activeTab = 'quizzes';
 const tabs = [
   { key: 'quizzes', label: 'coordinator.tab-quizzes', icon: 'pi pi-question-circle' },
+  { key: 'reports', label: 'coordinator.tab-reports', icon: 'pi pi-flag' },
 ];
+const activeTab = ref('quizzes');
 </script>
 
 <template>
@@ -28,14 +30,20 @@ const tabs = [
     </div>
 
     <div class="tabs-bar">
-      <div v-for="tab in tabs" :key="tab.key" class="tab-item" :class="{ active: tab.key === activeTab }">
+      <div
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="tab-item"
+          :class="{ active: tab.key === activeTab }"
+          @click="activeTab = tab.key">
         <i :class="tab.icon"/>
         <span>{{ t(tab.label) }}</span>
       </div>
     </div>
 
     <div class="tab-content">
-      <QuizList v-if="activeTab === 'quizzes'"/>
+      <QuizList   v-if="activeTab === 'quizzes'"/>
+      <ReportList v-else-if="activeTab === 'reports'"/>
     </div>
 
   </div>
@@ -71,6 +79,7 @@ const tabs = [
   color: #8c98a4;
   font-weight: 700;
   font-size: 0.9rem;
+  cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
 }

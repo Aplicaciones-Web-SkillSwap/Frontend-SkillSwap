@@ -94,7 +94,7 @@ const useWorkspaceStore = defineStore('workspace', () => {
     }
 
     function updateSession(session) {
-        workspaceApi.updateSession(session).then(response => {
+        return workspaceApi.updateSession(session).then(response => {
             const resource       = response.data;
             const updatedSession = SessionAssembler.toEntityFromResource(resource);
             const index = sessions.value.findIndex(s => s['id'] === updatedSession.id);

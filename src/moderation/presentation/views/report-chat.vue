@@ -4,7 +4,7 @@ import { useRoute, useRouter }  from 'vue-router';
 import { useI18n }              from 'vue-i18n';
 import useModerationStore       from '@/moderation/application/moderation.store.js';
 import useWorkspaceStore        from '@/workspace/application/workspace.store.js';
-import useDiscoveryStore        from '@/discovery/application/discovery.store.js';
+import useAuthStore             from '@/iam/application/auth.store.js';
 import { formatDateTime }       from '@/shared/utils/format-date.js';
 
 const { t }  = useI18n();
@@ -12,7 +12,7 @@ const route  = useRoute();
 const router = useRouter();
 const moderationStore = useModerationStore();
 const workspaceStore  = useWorkspaceStore();
-const discoveryStore  = useDiscoveryStore();
+const authStore       = useAuthStore();
 
 const userId = computed(() => Number(route.params.userId));
 
@@ -34,30 +34,35 @@ const sessionMessages = computed(() =>
     session.value ? workspaceStore.getMessagesBySessionId(session.value.id) : []
 );
 
-const userName = (id) => {
-  const tutor = discoveryStore.tutors.find(t => t.userId === id);
-  return tutor ? tutor.name : `Usuario #${id}`;
-};
+const userName = (id) => authStore.getUsername(id) || `Usuario #${id}`;
 
 const caseDate = computed(() => report.value
     ? formatDateTime(report.value.reportedAt)
     : '—'
 );
-const status = computed(() => report.value?.status ?? '—');
+
+/** Sancionado / Desestimado / Pendiente, igual que en la lista de reportes */
+const status = computed(() => {
+  if (!report.value) return 'pending';
+  if (!report.value.closed) return 'pending';
+  const sanction = moderationStore.sanctions.find(s => s.reportId === report.value.id);
+  if (sanction && sanction.type !== 'dismissed') return 'sanctioned';
+  return 'dismissed';
+});
 
 onMounted(() => {
   if (moderationStore.reports.length === 0) moderationStore.fetchReports();
+  moderationStore.fetchSanctions();
   if (!workspaceStore.sessionsLoaded)        workspaceStore.fetchSessions();
   if (!workspaceStore.messagesLoaded)        workspaceStore.fetchMessages();
-  if (!discoveryStore.tutorsLoaded)          discoveryStore.fetchTutors();
+  authStore.fetchAllUsers();
 });
 
 function statusLabel(s) {
   const map = {
-    pending:   t('moderation.status-pending'),
-    warning:   t('moderation.status-warning'),
-    dismissed: t('moderation.status-dismissed'),
-    resolved:  t('moderation.status-resolved')
+    pending:    t('moderation.status-pending'),
+    sanctioned: t('moderation.status-sanctioned'),
+    dismissed:  t('moderation.status-dismissed')
   };
   return map[s] ?? s;
 }
@@ -89,10 +94,9 @@ const navigateToSanction = () => {
           <p class="session-subtitle">{{ t('moderation.chat-sub') }}</p>
         </div>
         <span class="chip" :class="{
-          'chip-pending':   status === 'pending',
-          'chip-warning':   status === 'warning',
-          'chip-dismissed': status === 'dismissed',
-          'chip-resolved':  status === 'resolved'
+          'chip-pending':    status === 'pending',
+          'chip-sanctioned': status === 'sanctioned',
+          'chip-dismissed':  status === 'dismissed'
         }">{{ statusLabel(status) }}</span>
       </div>
 
@@ -278,11 +282,10 @@ const navigateToSanction = () => {
   line-height: 1.5;
 }
 
-.chip           { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-.chip-pending   { background: #fef9ee; color: #d97706; border: 1px solid #fde68a; }
-.chip-warning   { background: #fff1f0; color: #ef4444; border: 1px solid #fecaca; }
-.chip-dismissed { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
-.chip-resolved  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.chip            { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.chip-pending    { background: #fef9ee; color: #d97706; border: 1px solid #fde68a; }
+.chip-sanctioned { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+.chip-dismissed  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
 
 .sanction-row {
   margin-top: 20px;

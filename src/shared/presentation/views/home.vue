@@ -52,14 +52,30 @@ const mySessions = computed(() => {
   return store.sessions.filter(s => s.learnerId === userId || s.tutorId === userId);
 });
 
-const scheduledSessions = computed(() =>
-    mySessions.value.filter(s => s.status === 'scheduled' || s.status === 'completed').slice(0, 3)
-);
-
 /** Solicitudes entrantes: sesiones pendientes donde el usuario actual es el tutor */
 const pendingSessions = computed(() =>
     store.sessions.filter(s => s.tutorId === authStore.user?.id && s.status === 'pending')
 );
+
+/** Resumen para el panel principal: conteos, no listados completos (esos ya viven en Sesiones) */
+const scheduledCount = computed(() =>
+    mySessions.value.filter(s => s.status === 'scheduled').length
+);
+
+/** Pendientes donde me toca responder a mí (el otro fue quien propuso la fecha actual) */
+const pendingAsLearnerCount = computed(() => {
+  const userId = authStore.user?.id;
+  return store.sessions.filter(s =>
+      s.learnerId === userId && s.status === 'pending' && s.proposedByUserId !== userId
+  ).length;
+});
+
+const pendingAsTutorCount = computed(() => {
+  const userId = authStore.user?.id;
+  return store.sessions.filter(s =>
+      s.tutorId === userId && s.status === 'pending' && s.proposedByUserId !== userId
+  ).length;
+});
 
 /** Tutores mejor calificados — usando el rating real del summary, no el campo estático */
 const recommendedTutors = computed(() =>
@@ -69,29 +85,6 @@ const recommendedTutors = computed(() =>
         .slice(0, 3)
 );
 
-const statusClass = (status) => {
-  const map = {
-    scheduled: 'badge-scheduled',
-    completed: 'badge-completed',
-    pending:   'badge-pending',
-    cancelled: 'badge-cancelled',
-    rejected:  'badge-rejected',
-  };
-  return 'status-badge ' + (map[status] || '');
-};
-
-const statusLabel = (status) => {
-  const map = {
-    scheduled: 'Confirmada',
-    completed: 'Completada',
-    pending:   'Pendiente',
-    cancelled: 'Cancelada',
-    rejected:  'Rechazada',
-  };
-  return map[status] || status;
-};
-
-const navigateToSession  = (id) => router.push({ name: 'workspace-sessions-view', params: { id } });
 const navigateToSessions = ()   => router.push({ name: 'workspace-sessions' });
 const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
 </script>
@@ -109,37 +102,29 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
         </div>
 
         <div class="section">
-          <h2 class="section-title">Sesiones programadas</h2>
+          <h2 class="section-title">Resumen</h2>
 
           <div v-if="!store.sessionsLoaded" class="loading-state">
             <i class="pi pi-spin pi-spinner"/> Cargando sesiones...
           </div>
 
-          <div v-else-if="scheduledSessions.length === 0" class="empty-sessions">
-            <p>No tienes sesiones programadas aún.</p>
-          </div>
+          <div v-else class="summary-grid">
+            <div class="summary-card">
+              <i class="pi pi-calendar-check summary-icon summary-icon-scheduled"/>
+              <span class="summary-value">{{ scheduledCount }}</span>
+              <span class="summary-label">Sesiones programadas</span>
+            </div>
 
-          <div v-else class="sessions-list">
-            <div
-                v-for="session in scheduledSessions"
-                :key="session.id"
-                class="session-card">
+            <div class="summary-card">
+              <i class="pi pi-graduation-cap summary-icon summary-icon-learner"/>
+              <span class="summary-value">{{ pendingAsLearnerCount }}</span>
+              <span class="summary-label">Pendientes por responder<br>(como aprendiz)</span>
+            </div>
 
-              <div class="session-card-header">
-                <h3 class="session-topic">{{ session.topic }}</h3>
-                <span :class="statusClass(session.status)">{{ statusLabel(session.status) }}</span>
-              </div>
-
-              <div class="session-card-body">
-                <p><strong>Tutor:</strong> {{ userName(session.tutorId) }}</p>
-                <p><strong>Estudiante:</strong> {{ userName(session.learnerId) }}</p>
-                <p v-if="session.scheduledAt"><strong>Fecha:</strong> {{ formatDateTime(session.scheduledAt) }}</p>
-              </div>
-
-              <pv-button
-                  label="Ver detalles"
-                  class="btn-details w-full"
-                  @click="navigateToSession(session.id)"/>
+            <div class="summary-card">
+              <i class="pi pi-user-edit summary-icon summary-icon-tutor"/>
+              <span class="summary-value">{{ pendingAsTutorCount }}</span>
+              <span class="summary-label">Pendientes por responder<br>(como tutor)</span>
             </div>
           </div>
 
@@ -324,65 +309,43 @@ const navigateToSearch   = ()   => router.push({ name: 'discovery-search' });
   background-color: #e09518 !important;
 }
 
-/* Tarjetas de sesión */
-.sessions-list { display: flex; flex-direction: column; gap: 1rem; }
+/* Resumen (conteos) */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
 
-.session-card {
-  background-color: #ffffff;
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  background-color: #f8fafc;
   border: 1px solid #e8ecf0;
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1.25rem 0.75rem;
 }
 
-.session-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
+.summary-icon { font-size: 1.6rem; }
+.summary-icon-scheduled { color: #16a34a; }
+.summary-icon-learner   { color: #0284c7; }
+.summary-icon-tutor     { color: #7c3aed; }
 
-.session-topic {
+.summary-value {
   color: #1a2a40;
   font-weight: 800;
-  font-size: 1.1rem;
-  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1;
 }
 
-.session-card-body { margin-bottom: 1rem; }
-
-.session-card-body p {
-  color: #4a5568;
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
+.summary-label {
+  color: #718096;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
-
-.session-card-body strong { color: #1a2a40; }
-
-/* Status badges */
-.status-badge {
-  padding: 0.35rem 1rem;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 0.82rem;
-}
-
-.badge-scheduled { background-color: #dcfce7; color: #16a34a; }
-.badge-completed  { background-color: #e0f2fe; color: #0284c7; }
-.badge-pending    { background-color: #fef3c7; color: #d97706; }
-.badge-cancelled,
-.badge-rejected   { background-color: #fee2e2; color: #dc2626; }
-
-/* Botones */
-.btn-details {
-  background-color: #1e4d8c !important;
-  border: none !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
-  padding: 0.75rem !important;
-}
-
-.btn-details:hover { background-color: #163d72 !important; }
 
 .btn-calendar {
   background-color: #1e4d8c !important;

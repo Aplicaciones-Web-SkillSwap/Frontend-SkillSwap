@@ -3,11 +3,13 @@ import {useI18n}                from "vue-i18n";
 import {useRoute, useRouter}    from "vue-router";
 import useWorkspaceStore        from "@/workspace/application/workspace.store.js";
 import useLearningStore         from "@/learning/application/learning.store.js";
+import useReputationStore       from "@/reputation/application/reputation.store.js";
 import {uploadFile, validateFile} from "@/workspace/infrastructure/cloudinary-service.js";
 import {computed, onMounted, ref, watch} from "vue";
 import {Message}                from "@/workspace/domain/model/message-entity.js";
 import {formatDateTime}         from "@/shared/utils/format-date.js";
 import { Session } from "@/workspace/domain/model/session-entity.js";
+import { Review }  from "@/reputation/domain/model/review-entity.js";
 import useAuthStore from "@/iam/application/auth.store.js";
 
 const {t}    = useI18n();
@@ -15,6 +17,7 @@ const route  = useRoute();
 const router = useRouter();
 const store  = useWorkspaceStore();
 const learningStore = useLearningStore();
+const reputationStore = useReputationStore();
 const authStore = useAuthStore();
 const { fetchSessions, fetchMessages, addMessage, addFileMessage, errors } = store;
 
@@ -29,8 +32,9 @@ const sharingQuiz      = ref(false);
 
 const session        = computed(() => store.getSessionById(route.params.id));
 const sessionMessages = computed(() => store.getMessagesBySessionId(route.params.id));
-const isChatEnabled  = computed(() => session.value?.status === 'scheduled');
+const isChatEnabled  = computed(() => ['scheduled', 'in_progress'].includes(session.value?.status));
 const isVideoEnabled = computed(() => session.value?.status === 'scheduled');
+const isCallActive   = computed(() => session.value?.status === 'in_progress');
 const isCompleted    = computed(() => session.value?.status === 'completed');
 const isLearner      = computed(() => session.value?.learnerId === authStore.user?.id);
 
@@ -48,7 +52,13 @@ onMounted(() => {
   if (!store.messagesLoaded) fetchMessages();
   if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
   if (!learningStore.quizzes.length) learningStore.fetchQuizzes();
+  if (!reputationStore.reviewsLoaded) reputationStore.fetchReviews();
 });
+
+/** La reseña que YO ya dejé para esta sesión, si existe (evita volver a calificar) */
+const myReview = computed(() =>
+    reputationStore.reviews.find(r => r.sessionId === parseInt(route.params.id) && r.reviewerId === CURRENT_USER_ID.value)
+);
 
 /** Intentos de los quizzes compartidos en esta sesión, para mostrar el resultado directo en el chat */
 const quizAttempts = ref([]);
@@ -144,26 +154,55 @@ const goToQuiz = (msg) => {
 
 const startVideoCall = async () => {
   if (!isVideoEnabled.value) return;
-  // Marca la sesión como completada al iniciar la videollamada
   const current = session.value;
   if (current && current.status === 'scheduled') {
-    const updated = new Session({
-      ...current,
-      status: 'completed',
-    });
-    store.updateSession(updated);
+    const updated = new Session({ ...current, status: 'in_progress' });
+    await store.updateSession(updated);
   }
-  alert(t('workspace.video-call-message'));
+};
+
+const endVideoCall = async () => {
+  const current = session.value;
+  if (current && current.status === 'in_progress') {
+    const updated = new Session({ ...current, status: 'completed' });
+    await store.updateSession(updated);
+  }
 };
 const navigateToDonation = () => { router.push({ name: 'payment-transactions-new', query: { tutorId: session.value?.tutorId, tutorName: session.value?.tutorId } }); };
-const navigateToReview   = () => { router.push({ name: 'reputation-reviews-new',   query: { tutorId: session.value?.tutorId, sessionId: route.params.id } }); };
 const navigateBack       = () => { router.push({ name: 'workspace-sessions' }); };
+
+/** Reseña: se deja sin salir del workspace, como un diálogo encima */
+const showReviewDialog = ref(false);
+const reviewRating     = ref(0);
+const reviewComment    = ref('');
+const reviewSubmitting = ref(false);
+
+const openReviewDialog  = () => { if (!myReview.value) showReviewDialog.value = true; };
+const closeReviewDialog = () => {
+  showReviewDialog.value = false;
+  reviewRating.value  = 0;
+  reviewComment.value = '';
+};
+
+const submitReview = async () => {
+  if (!reviewRating.value || !session.value || myReview.value) return;
+  reviewSubmitting.value = true;
+  await reputationStore.addReview(new Review({
+    tutorId:    session.value.tutorId,
+    reviewerId: CURRENT_USER_ID.value,
+    sessionId:  parseInt(route.params.id),
+    rating:     reviewRating.value,
+    comment:    reviewComment.value.trim(),
+  }));
+  reviewSubmitting.value = false;
+  closeReviewDialog();
+};
 const navigateToReport = () => {
   router.push({
     name:  'moderation-reports-new',
     query: {
       sessionId:      route.params.id,
-      reportedUserId: session.value?.tutorId,
+      reportedUserId: counterpartId.value,
     }
   });
 };
@@ -182,7 +221,7 @@ const navigateToReport = () => {
             <span class="mx-2 text-300">|</span>
             {{ t('workspace.status') }}:
             <span :class="'status-badge status-' + session.status">
-              {{ session.status }}
+              {{ t('sessions.status-' + session.status) }}
             </span>
           </p>
         </div>
@@ -202,6 +241,16 @@ const navigateToReport = () => {
             :disabled="!isVideoEnabled"
             :title="!isVideoEnabled ? t('workspace.call-locked') : ''"
             @click="startVideoCall"/>
+      </div>
+    </div>
+
+    <div v-if="isCallActive" class="video-call-box mb-4">
+      <div class="video-call-screen">
+        <i class="pi pi-video video-placeholder-icon"/>
+        <p class="video-placeholder-text">{{ t('workspace.video-call-message') }}</p>
+      </div>
+      <div class="video-call-controls">
+        <pv-button icon="pi pi-phone" :label="t('workspace.end-call')" class="btn-hangup" @click="endVideoCall"/>
       </div>
     </div>
 
@@ -228,26 +277,43 @@ const navigateToReport = () => {
       </div>
     </div>
 
-    <div v-else-if="isCompleted && isLearner" class="completed-actions mb-4">
+    <div v-else-if="isCompleted" class="completed-actions mb-4">
 
-      <div class="action-banner review-banner">
+      <div v-if="myReview" class="action-banner review-banner review-banner-done">
+        <div class="banner-content">
+          <div class="icon-wrapper">
+            <i class="pi pi-check-circle banner-icon review-icon"/>
+          </div>
+          <div>
+            <p class="banner-title">{{ t('workspace.review-already-title') }}</p>
+            <p class="banner-sub">
+              <span class="mini-stars">
+                <i v-for="n in 5" :key="n" class="pi" :class="n <= myReview.rating ? 'pi-star-fill' : 'pi-star'"/>
+              </span>
+              {{ myReview.rating }} / 5
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="action-banner review-banner">
         <div class="banner-content">
           <div class="icon-wrapper">
             <i class="pi pi-star-fill banner-icon review-icon"/>
           </div>
           <div>
-            <p class="banner-title">{{ t('workspace.review-title') }}</p>
-            <p class="banner-sub">{{ t('workspace.review-sub') }}</p>
+            <p class="banner-title">{{ t(isLearner ? 'workspace.review-title' : 'workspace.review-title-tutor') }}</p>
+            <p class="banner-sub">{{ t(isLearner ? 'workspace.review-sub' : 'workspace.review-sub-tutor') }}</p>
           </div>
         </div>
         <pv-button
             :label="t('workspace.btn-review')"
             icon="pi pi-star"
             class="btn-action btn-review"
-            @click="navigateToReview"/>
+            @click="openReviewDialog"/>
       </div>
 
-      <div class="action-banner donation-banner">
+      <div v-if="isLearner" class="action-banner donation-banner">
         <div class="banner-content">
           <div class="icon-wrapper">
             <i class="pi pi-heart banner-icon donation-icon"/>
@@ -407,6 +473,35 @@ const navigateToReport = () => {
       </div>
     </pv-dialog>
 
+    <pv-dialog v-model:visible="showReviewDialog" modal :header="t('workspace.btn-review')" style="width: 420px;" @hide="closeReviewDialog">
+      <div class="review-dialog-body">
+        <div class="field">
+          <label class="custom-label">{{ t(isLearner ? 'review.tutorId' : 'review.studentId') }}</label>
+          <div class="readonly-value">{{ counterpartName }}</div>
+        </div>
+
+        <div class="field">
+          <label class="custom-label">{{ t('review.score') }}</label>
+          <div class="rating-wrap">
+            <pv-rating v-model="reviewRating" :stars="5" :cancel="false"/>
+            <span class="score-number">{{ reviewRating }} / 5</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="custom-label">
+            {{ t('review.comment') }}
+            <span class="optional-tag">({{ t('session.optional') }})</span>
+          </label>
+          <pv-textarea v-model="reviewComment" rows="3" class="w-full"/>
+        </div>
+      </div>
+      <template #footer>
+        <pv-button :label="t('session.cancel')" text @click="closeReviewDialog"/>
+        <pv-button :label="t('review.save')" class="btn-save" :loading="reviewSubmitting" :disabled="!reviewRating || reviewSubmitting" @click="submitReview"/>
+      </template>
+    </pv-dialog>
+
     <pv-toast/>
   </div>
 </template>
@@ -450,11 +545,49 @@ const navigateToReport = () => {
   margin-left: 0.5rem;
 }
 
-.status-scheduled { background-color: #e0f2fe; color: #0284c7; }
-.status-pending   { background-color: #fef3c7; color: #d97706; }
-.status-completed { background-color: #dcfce7; color: #16a34a; }
+.status-scheduled  { background-color: #e0f2fe; color: #0284c7; }
+.status-pending    { background-color: #fef3c7; color: #d97706; }
+.status-completed  { background-color: #dcfce7; color: #16a34a; }
+.status-in_progress { background-color: #ede9fe; color: #7c3aed; }
 .status-cancelled,
 .status-rejected  { background-color: #fee2e2; color: #dc2626; }
+
+/* Simulación de videollamada */
+.video-call-box {
+  background: #0f172a;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.video-call-screen {
+  aspect-ratio: 16 / 9;
+  max-height: 420px;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.video-placeholder-icon { font-size: 2.5rem; color: #4b5563; }
+.video-placeholder-text { color: #6b7280; font-size: 0.9rem; margin: 0; }
+
+.video-call-controls {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.btn-hangup {
+  background-color: #dc2626 !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-radius: 30px;
+  padding: 0.6rem 1.8rem;
+}
+.btn-hangup:hover { background-color: #b91c1c !important; }
 
 /* Tarjeta base */
 .table-card {
@@ -598,6 +731,8 @@ const navigateToReport = () => {
 
 .donation-banner { background: linear-gradient(135deg, #1a2a40 0%, #2d4a6e 100%); }
 .review-banner   { background: linear-gradient(135deg, #1a4731 0%, #166534 100%); }
+.review-banner-done { background: linear-gradient(135deg, #374151 0%, #4b5563 100%); }
+.mini-stars { display: inline-flex; gap: 2px; margin-right: 0.4rem; color: #fbbf24; font-size: 0.85rem; }
 
 .btn-action {
   border: none !important;
@@ -824,4 +959,23 @@ const navigateToReport = () => {
 .quiz-picker-item:hover { background: #f0f4ff; border-color: #c7d2fe; }
 .quiz-picker-title { color: #1a2a40; font-weight: 700; font-size: 0.9rem; margin: 0; }
 .quiz-picker-meta  { color: #94a3b8; font-size: 0.78rem; margin: 0.15rem 0 0; }
+
+/* Diálogo de reseña */
+.review-dialog-body { display: flex; flex-direction: column; gap: 1.25rem; }
+.field { display: flex; flex-direction: column; gap: 0.5rem; }
+.custom-label { color: #8c98a4; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+.optional-tag { color: #a0aec0; font-weight: 500; font-size: 0.75rem; text-transform: none; letter-spacing: normal; }
+.readonly-value {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  color: #1a2a40;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.rating-wrap { display: flex; align-items: center; gap: 1rem; }
+.score-number { color: #1a2a40; font-weight: 700; font-size: 1rem; }
+.btn-save { background-color: #e53e4f !important; border: none !important; font-weight: bold; border-radius: 8px; }
+.btn-save:hover:not(:disabled) { background-color: #d03544 !important; }
 </style>

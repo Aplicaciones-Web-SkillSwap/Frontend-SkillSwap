@@ -24,6 +24,7 @@ export class SanctionAssembler {
             type:             entity.type,
             description:      entity.description,
             durationDays:     entity.durationDays,
+            isPermanent:      entity.isPermanent,
             createdAt:        entity.createdAt instanceof Date
                                   ? entity.createdAt.toISOString()
                                   : entity.createdAt

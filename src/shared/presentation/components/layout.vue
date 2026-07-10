@@ -1,16 +1,20 @@
 <script lang="js" setup>
 import { useI18n }           from "vue-i18n";
-import { useRouter }         from "vue-router";
-import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ref, computed, onMounted, watch } from "vue";
 import LanguageSwitcher      from "@/shared/presentation/components/language-switcher.vue";
 import FooterContent         from "@/shared/presentation/components/footer-content.vue";
+import SanctionNotice        from "@/moderation/presentation/components/sanction-notice.vue";
 import useWorkspaceStore     from "@/workspace/application/workspace.store.js";
+import useModerationStore    from "@/moderation/application/moderation.store.js";
 import useAuthStore          from "@/iam/application/auth.store.js";
 
 const { t }  = useI18n();
+const route  = useRoute();
 const router = useRouter();
 const drawer = ref(false);
 const store  = useWorkspaceStore();
+const moderationStore = useModerationStore();
 const authStore = useAuthStore();
 
 const logout = () => {
@@ -20,6 +24,12 @@ const logout = () => {
 
 onMounted(() => {
   if (!store.sessionsLoaded) store.fetchSessions();
+  moderationStore.fetchMySanctions();
+});
+
+/** Revisa si hay sanciones nuevas sin reconocer cada vez que el usuario navega */
+watch(() => route.fullPath, () => {
+  moderationStore.fetchMySanctions();
 });
 
 const pendingCount = computed(() =>
@@ -32,17 +42,20 @@ const navigateToPending = () => { router.push({ name: 'workspace-sessions' }); }
 
 const isCoordinator = computed(() => authStore.user?.role === 'Coordinator');
 
-const items = computed(() => [
-  { label: 'option.home',     path: isCoordinator.value ? '/dashboard' : '/home' },
-  { label: 'option.sessions', path: '/workspace/sessions' },
-  { label: 'option.wallets',  path: '/payment/wallets'    },
-  ...(isCoordinator.value ? [{ label: 'option.quizzes', path: '/learning/quizzes' }] : []),
-]);
+const items = computed(() => {
+  if (isCoordinator.value) return [];
+  return [
+    { label: 'option.home',     path: '/home' },
+    { label: 'option.sessions', path: '/workspace/sessions' },
+    { label: 'option.wallets',  path: '/payment/wallets'    },
+  ];
+});
 </script>
 
 <template>
   <pv-toast/>
   <pv-confirm-dialog :pt="{ footer: { style: 'display: flex; width: 100%; box-sizing: border-box; flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: 0.75rem;' } }"/>
+  <sanction-notice/>
 
   <div class="app-shell">
 

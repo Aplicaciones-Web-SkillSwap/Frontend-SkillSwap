@@ -18,6 +18,18 @@ const useModerationStore = defineStore('moderation', () => {
     const activeReports   = computed(() => reports.value.filter(r => !r.closed));
     const resolvedReports = computed(() => reports.value.filter(r => r.closed));
 
+    /** Sanciones del usuario autenticado, para el popup de advertencia/ban */
+    const mySanctions       = ref([]);
+    const mySanctionsLoaded = ref(false);
+
+    /** La sanción propia más antigua que aún no fue reconocida, si hay alguna */
+    const nextUnacknowledgedSanction = computed(() => {
+        const pending = mySanctions.value
+            .filter(s => !s.acknowledgedAt)
+            .sort((a, b) => a.createdAt - b.createdAt);
+        return pending[0] ?? null;
+    });
+
     // ── Reports ───────────────────────────────────────────────────
 
     function fetchReports() {
@@ -34,15 +46,23 @@ const useModerationStore = defineStore('moderation', () => {
             });
     }
 
-    function addReport(report) {
+    /**
+     * @returns {Promise<{ok: boolean, data?: object, errorType?: 'duplicate-pending'|'invalid'|'unknown'}>}
+     */
+    async function addReport(report) {
         const resource = ReportAssembler.toResourceFromEntity(report);
-        return moderationApi.createReport(resource)
-            .then(response => {
-                const newReport = ReportAssembler.toEntityFromResource(response.data);
-                reports.value.push(newReport);
-                return newReport;
-            })
-            .catch(err => { error.value = err.message; return null; });
+        try {
+            const response = await moderationApi.createReport(resource);
+            const newReport = ReportAssembler.toEntityFromResource(response.data);
+            reports.value.push(newReport);
+            return { ok: true, data: newReport };
+        } catch (err) {
+            const status = err.response?.status;
+            error.value = err.message;
+            if (status === 409) return { ok: false, errorType: 'duplicate-pending' };
+            if (status === 400) return { ok: false, errorType: 'invalid' };
+            return { ok: false, errorType: 'unknown' };
+        }
     }
 
     /** PATCH /Reports/{id}/close — la única transición de estado soportada */
@@ -92,11 +112,35 @@ const useModerationStore = defineStore('moderation', () => {
         return sanctions.value.find(s => s.id === parseInt(id));
     }
 
+    /** GET /Sanctions/me — se llama al montar el layout y en cada navegación */
+    function fetchMySanctions() {
+        return moderationApi.getMySanctions()
+            .then(response => {
+                mySanctions.value = SanctionAssembler.toEntitiesFromResponse(response);
+                mySanctionsLoaded.value = true;
+            })
+            .catch(err => { error.value = err.message; });
+    }
+
+    /** PATCH /Sanctions/{id}/acknowledge */
+    function acknowledgeSanction(id) {
+        return moderationApi.acknowledgeSanction(id)
+            .then(response => {
+                const updated = SanctionAssembler.toEntityFromResource(response.data);
+                const index   = mySanctions.value.findIndex(s => s.id === updated.id);
+                if (index !== -1) mySanctions.value[index] = updated;
+                return updated;
+            })
+            .catch(err => { error.value = err.message; return null; });
+    }
+
     return {
         reports, sanctions, loading, error,
         reportCount, sanctionCount, activeReports, resolvedReports,
         fetchReports, addReport, closeReport, getReportById,
-        fetchSanctions, addSanction, getSanctionById
+        fetchSanctions, addSanction, getSanctionById,
+        mySanctions, mySanctionsLoaded, nextUnacknowledgedSanction,
+        fetchMySanctions, acknowledgeSanction
     };
 });
 

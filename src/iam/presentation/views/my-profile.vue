@@ -71,6 +71,7 @@ const loadTutorTab = () => {
 onMounted(async () => {
   if (!discoveryStore.tutorsLoaded) await discoveryStore.fetchTutors();
   if (!reputationStore.reviewsLoaded) reputationStore.fetchReviews();
+  if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 
   if (authStore.user?.id) {
     const response = await iamApi.getUserById(authStore.user.id);
@@ -138,9 +139,20 @@ const saveTutorProfile = async () => {
   tutorSaved.value  = true;
 };
 
-/** Mis reseñas, como aprendiz (las que escribí) y como tutor (las que recibí) */
-const reviewsWritten  = computed(() => reputationStore.reviews.filter(r => r.reviewerId === authStore.user?.id));
-const reviewsReceived = computed(() => reputationStore.reviews.filter(r => r.tutorId === authStore.user?.id));
+/** Reseñas que me dejaron los tutores como aprendiz (no las que yo escribí) */
+const reviewsReceivedAsLearner = computed(() =>
+    reputationStore.reviews.filter(r => r.learnerId === authStore.user?.id && r.reviewerId !== authStore.user?.id)
+);
+/** Reseñas que me dejaron los aprendices como tutor (no las que yo escribí) */
+const reviewsReceivedAsTutor = computed(() =>
+    reputationStore.reviews.filter(r => r.tutorId === authStore.user?.id && r.reviewerId !== authStore.user?.id)
+);
+
+/** Una sola lista de reseñas visible a la vez, según la pestaña activa */
+const activeReviews = computed(() => viewMode.value === 'learner' ? reviewsReceivedAsLearner.value : reviewsReceivedAsTutor.value);
+
+/** Resuelve el nombre real de cualquier usuario por su userId */
+const userName = (id) => authStore.getUsername(id) || `Usuario #${id}`;
 
 const navigateBack = () => router.push({name: 'home'});
 </script>
@@ -249,45 +261,19 @@ const navigateBack = () => router.push({name: 'home'});
       </div>
     </div>
 
-    <!-- Mis reseñas -->
+    <!-- Mis reseñas: cambia según la pestaña activa -->
     <div class="section-card mt-4">
-      <h3 class="section-title">{{ t('profile.reviews-written') }}</h3>
-      <div v-if="reviewsWritten.length === 0" class="empty-reviews">
-        <p class="empty-title">{{ t('profile.no-reviews-written') }}</p>
+      <h3 class="section-title">{{ t(viewMode === 'learner' ? 'profile.reviews-received-learner' : 'profile.reviews-received') }}</h3>
+      <div v-if="activeReviews.length === 0" class="empty-reviews">
+        <p class="empty-title">{{ t(viewMode === 'learner' ? 'profile.no-reviews-received-learner' : 'profile.no-reviews-received') }}</p>
       </div>
       <div v-else class="reviews-list">
-        <div v-for="review in reviewsWritten" :key="review.id" class="review-card">
+        <div v-for="review in activeReviews" :key="review.id" class="review-card">
           <div class="review-header">
             <div class="reviewer-info">
               <div class="reviewer-avatar"><i class="pi pi-user reviewer-avatar-icon"/></div>
               <div>
-                <p class="reviewer-name">Tutor #{{ review.tutorId }}</p>
-                <p class="review-date">{{ formatDate(review.reviewedAt) }}</p>
-              </div>
-            </div>
-            <div class="review-stars">
-              <span v-for="n in Math.floor(review.rating)" :key="'f'+n" class="star star-full">★</span>
-              <span v-for="n in (5 - Math.floor(review.rating))" :key="'e'+n" class="star star-empty">★</span>
-              <span class="score-badge">{{ review.rating }}</span>
-            </div>
-          </div>
-          <p class="review-comment">{{ review.comment }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card mt-4">
-      <h3 class="section-title">{{ t('profile.reviews-received') }}</h3>
-      <div v-if="reviewsReceived.length === 0" class="empty-reviews">
-        <p class="empty-title">{{ t('profile.no-reviews-received') }}</p>
-      </div>
-      <div v-else class="reviews-list">
-        <div v-for="review in reviewsReceived" :key="review.id" class="review-card">
-          <div class="review-header">
-            <div class="reviewer-info">
-              <div class="reviewer-avatar"><i class="pi pi-user reviewer-avatar-icon"/></div>
-              <div>
-                <p class="reviewer-name">Usuario #{{ review.reviewerId }}</p>
+                <p class="reviewer-name">{{ userName(review.reviewerId) }}</p>
                 <p class="review-date">{{ formatDate(review.reviewedAt) }}</p>
               </div>
             </div>

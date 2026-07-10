@@ -113,8 +113,13 @@ function getSessionById(id) {
 /**
  * Packs transaction records into explicit session domains and pushes save streams.
  */
+const submitting = ref(false);
+
 const saveSession = async () => {
+  if (submitting.value) return;
   if (comesFromDiscovery.value && (!selectedCourse.value || hasPendingRequest.value)) return;
+
+  submitting.value = true;
 
   const session = new Session({
     id:          isEdit.value ? parseInt(route.params.id) : null,
@@ -128,10 +133,12 @@ const saveSession = async () => {
   });
 
   if (isEdit.value) {
-    updateSession(session);
+    await updateSession(session);
   } else {
     await addSession(session);
   }
+
+  submitting.value = false;
   navigateBack();
 };
 
@@ -315,7 +322,7 @@ const navigateBack = () => {
 
         <div class="flex justify-content-end gap-3 mt-4 pt-4 border-top-1 border-300">
           <pv-button :label="t('session.cancel')" text class="btn-cancel" @click="navigateBack"/>
-          <pv-button :label="t('session.save')"   type="submit" class="btn-save"/>
+          <pv-button :label="t('session.save')" type="submit" class="btn-save" :loading="submitting" :disabled="submitting"/>
         </div>
 
       </form>

@@ -33,7 +33,7 @@ const tutorSessions   = computed(() =>
 );
 
 /** Lista principal: solo el historial resuelto (agendadas, rechazadas, completadas) — lo pendiente vive en la caja lateral */
-const resolvedStatuses = ['scheduled', 'rejected', 'completed'];
+const resolvedStatuses = ['scheduled', 'in_progress', 'rejected', 'completed'];
 const sessions = computed(() => {
   const source = viewMode.value === 'learner' ? learnerSessions.value : tutorSessions.value;
   return source.filter(s => resolvedStatuses.includes(s.status));
@@ -69,7 +69,9 @@ onMounted(() => {
     sessionsLoaded.value = store.sessionsLoaded;
   }
   if (!discoveryStore.tutorsLoaded) discoveryStore.fetchTutors();
-  if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
+  // Siempre se refresca (no solo la primera vez) para incluir cuentas creadas después
+  // de que el directorio ya se hubiera cargado en esta misma sesión del navegador.
+  authStore.fetchAllUsers();
 });
 
 /** Resuelve el nombre real de cualquier usuario (tutor o aprendiz) por su userId */
@@ -414,9 +416,10 @@ const confirmCancel = (session) => {
   text-transform: capitalize;
 }
 
-.status-scheduled { background-color: #e0f2fe; color: #0284c7; }
-.status-pending   { background-color: #fef3c7; color: #d97706; }
-.status-completed { background-color: #dcfce7; color: #16a34a; }
+.status-scheduled   { background-color: #e0f2fe; color: #0284c7; }
+.status-pending     { background-color: #fef3c7; color: #d97706; }
+.status-completed   { background-color: #dcfce7; color: #16a34a; }
+.status-in_progress { background-color: #ede9fe; color: #7c3aed; }
 .status-cancelled,
 .status-rejected  { background-color: #fee2e2; color: #dc2626; }
 

@@ -36,4 +36,14 @@ export class ModerationApi extends BaseApi {
     getSanctionsByReportId(reportId) {
         return this.http.get(`${sanctionsPath}/report/${reportId}`);
     }
+
+    /** GET /Sanctions/me — sanciones del usuario autenticado */
+    getMySanctions() {
+        return this.http.get(`${sanctionsPath}/me`);
+    }
+
+    /** PATCH /Sanctions/{id}/acknowledge */
+    acknowledgeSanction(id) {
+        return this.http.patch(`${sanctionsPath}/${id}/acknowledge`);
+    }
 }

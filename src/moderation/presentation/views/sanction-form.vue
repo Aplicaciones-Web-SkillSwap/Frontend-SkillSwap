@@ -3,19 +3,20 @@ import { ref, onMounted }      from 'vue';
 import { useI18n }             from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import useModerationStore      from '@/moderation/application/moderation.store.js';
+import useAuthStore            from '@/iam/application/auth.store.js';
 import { Sanction }            from '@/moderation/domain/model/sanction-entity.js';
 
 const { t }  = useI18n();
 const router = useRouter();
 const route  = useRoute();
 const store  = useModerationStore();
+const authStore = useAuthStore();
 
 const form = ref({
   reportId:         0,
   sanctionedUserId: 0,
   type:             'warning',
-  description:      '',
-  durationDays:     0
+  description:      ''
 });
 
 const errors = ref({ reportId: '', sanctionedUserId: '', description: '' });
@@ -26,10 +27,21 @@ const typeOptions = [
   { value: 'dismissed', label: 'moderation.type-dismissed', icon: 'pi pi-check-circle'         },
 ];
 
+const durationOption = ref('week');
+const durationOptions = [
+  { value: 'week',      label: 'moderation.duration-week',      icon: 'pi pi-calendar-minus' },
+  { value: 'month',     label: 'moderation.duration-month',     icon: 'pi pi-calendar'        },
+  { value: 'permanent', label: 'moderation.duration-permanent', icon: 'pi pi-lock'            },
+];
+const durationDaysByOption = { week: 7, month: 30, permanent: 0 };
+
 onMounted(() => {
   if (route.query.reportId)         form.value.reportId         = Number(route.query.reportId);
   if (route.query.sanctionedUserId) form.value.sanctionedUserId = Number(route.query.sanctionedUserId);
+  if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 });
+
+const sanctionedUserName = () => authStore.getUsername(form.value.sanctionedUserId) || `Usuario #${form.value.sanctionedUserId}`;
 
 function validate() {
   errors.value.reportId         = form.value.reportId < 1         ? t('moderation.err-id')    : '';
@@ -40,12 +52,14 @@ function validate() {
 
 async function submit() {
   if (!validate()) return;
+  const isBan = form.value.type === 'ban';
   const sanction = new Sanction({
     reportId:         Number(form.value.reportId),
     sanctionedUserId: Number(form.value.sanctionedUserId),
     type:             form.value.type,
     description:      form.value.description,
-    durationDays:     Number(form.value.durationDays) ?? 0,
+    durationDays:     isBan ? durationDaysByOption[durationOption.value] : 0,
+    isPermanent:      isBan && durationOption.value === 'permanent',
   });
 
   await store.addSanction(sanction);
@@ -55,7 +69,7 @@ async function submit() {
     await store.closeReport(form.value.reportId);
   }
 
-  router.push({ name: 'moderation-sanctions' });
+  router.push({ name: 'moderation-reports' });
 }
 </script>
 
@@ -79,17 +93,11 @@ async function submit() {
 
     <div class="form-card">
 
-      <!-- Info del reporte vinculado -->
+      <!-- Usuario a sancionar -->
       <div class="report-ref">
-        <i class="pi pi-link ref-icon"/>
-        <span class="ref-label">Reporte vinculado:</span>
-        <span class="ref-value">#{{ form.reportId }}</span>
-        <span class="ref-sep">·</span>
-        <span class="ref-label">Usuario infractor:</span>
-        <span class="ref-value ref-user">
-          <i class="pi pi-user" style="font-size:11px;"/>
-          #{{ form.sanctionedUserId }}
-        </span>
+        <i class="pi pi-user ref-icon"/>
+        <span class="ref-label">{{ t('moderation.field-sanctioned-user') }}:</span>
+        <span class="ref-value">{{ sanctionedUserName() }}</span>
       </div>
 
       <form class="form-wrap" @submit.prevent="submit">
@@ -122,6 +130,7 @@ async function submit() {
               v-model="form.description"
               :placeholder="t('moderation.field-notes-ph')"
               rows="3"
+              auto-resize
               fluid
               :invalid="!!errors.description"/>
           <small v-if="errors.description" class="field-error">{{ errors.description }}</small>
@@ -133,9 +142,16 @@ async function submit() {
             <i class="pi pi-clock" style="margin-right:4px;"/>
             {{ t('moderation.field-duration') }}
           </label>
-          <div class="duration-row">
-            <pv-input-number v-model="form.durationDays" :min="1" fluid/>
-            <span class="duration-unit">días</span>
+          <div class="type-cards">
+            <div
+                v-for="opt in durationOptions"
+                :key="opt.value"
+                class="type-card"
+                :class="{ 'type-card-active': durationOption === opt.value }"
+                @click="durationOption = opt.value">
+              <i :class="opt.icon" class="type-card-icon"/>
+              <span class="type-card-label">{{ t(opt.label) }}</span>
+            </div>
           </div>
         </div>
 
@@ -201,8 +217,6 @@ async function submit() {
 .ref-icon  { color: #1e4d8c; }
 .ref-label { color: #6b7280; font-weight: 500; }
 .ref-value { color: #1a2a40; font-weight: 700; }
-.ref-user  { display: inline-flex; align-items: center; gap: 3px; }
-.ref-sep   { color: #d1d5db; }
 
 .form-wrap   { display: flex; flex-direction: column; gap: 20px; padding: 24px; }
 .field-group { display: flex; flex-direction: column; gap: 8px; }
@@ -252,8 +266,6 @@ async function submit() {
 
 /* Duración */
 .duration-group { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px; }
-.duration-row   { display: flex; align-items: center; gap: 10px; }
-.duration-unit  { font-size: 13px; font-weight: 600; color: #6b7280; white-space: nowrap; }
 
 /* Botones */
 .btn-row { display: flex; gap: 12px; padding-top: 4px; }

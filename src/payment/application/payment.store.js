@@ -3,6 +3,7 @@ import {defineStore} from "pinia";
 import {computed, ref} from "vue";
 import {WalletAssembler} from "@/payment/infrastructure/wallet.assembler.js";
 import {TransactionAssembler} from "@/payment/infrastructure/transaction.assembler.js";
+import {PaymentMethodAssembler} from "@/payment/infrastructure/payment-method.assembler.js";
 
 const paymentApi = new PaymentApi();
 
@@ -12,6 +13,9 @@ const usePaymentStore = defineStore('payment', () => {
     const errors       = ref([]);
     const walletsLoaded      = ref(false);
     const transactionsLoaded = ref(false);
+
+    const paymentMethod       = ref(null);
+    const paymentMethodLoaded = ref(false);
 
     const walletsCount = computed(() => walletsLoaded.value ? wallets.value.length : 0);
     const transactionsCount = computed(() => transactionsLoaded.value ? transactions.value.length : 0);
@@ -92,6 +96,37 @@ const usePaymentStore = defineStore('payment', () => {
         });
     }
 
+    /**
+     * Carga el método de pago guardado del usuario autenticado, si existe.
+     * Un 404 es un estado válido (nunca guardó uno) y no se trata como error.
+     */
+    async function fetchMyPaymentMethod() {
+        try {
+            const response = await paymentApi.getMyPaymentMethod();
+            paymentMethod.value = PaymentMethodAssembler.toEntityFromResource(response.data);
+        } catch (error) {
+            if (error.response?.status !== 404) errors.value.push(error);
+            paymentMethod.value = null;
+        } finally {
+            paymentMethodLoaded.value = true;
+        }
+    }
+
+    /**
+     * Guarda (crea o reemplaza) el único método de pago del usuario autenticado.
+     */
+    async function savePaymentMethod({ type, displayLabel }) {
+        try {
+            const response = await paymentApi.saveMyPaymentMethod({ type, displayLabel });
+            paymentMethod.value = PaymentMethodAssembler.toEntityFromResource(response.data);
+            paymentMethodLoaded.value = true;
+            return paymentMethod.value;
+        } catch (error) {
+            errors.value.push(error);
+            return null;
+        }
+    }
+
     return {
         wallets, transactions, errors,
         walletsLoaded, transactionsLoaded,
@@ -99,6 +134,8 @@ const usePaymentStore = defineStore('payment', () => {
         fetchWallets, fetchTransactions,
         getWalletById, getWalletByUserId, getTransactionById, getTransactionsByWalletId,
         checkWalletExists, donate, addWallet,
+        paymentMethod, paymentMethodLoaded,
+        fetchMyPaymentMethod, savePaymentMethod,
     };
 });
 

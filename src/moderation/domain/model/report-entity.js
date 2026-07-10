@@ -7,7 +7,8 @@ export class Report {
                     reason         = '',
                     status         = 'pending',
                     closed         = false,
-                    reportedAt     = new Date().toISOString()
+                    reportedAt     = new Date().toISOString(),
+                    resolvedAt     = null
                 }) {
         this.id             = id;
         this.reportedUserId = reportedUserId;
@@ -17,6 +18,7 @@ export class Report {
         this.status         = status;
         this.closed         = closed ?? false;
         this.reportedAt     = new Date(reportedAt);
+        this.resolvedAt     = resolvedAt ? new Date(resolvedAt) : null;
     }
 
     getFormattedReportedAt() {

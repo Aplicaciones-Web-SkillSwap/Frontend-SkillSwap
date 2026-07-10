@@ -15,26 +15,18 @@ const authStore = useAuthStore();
 
 const CURRENT_USER_ID = computed(() => authStore.user?.id);
 
-/** Pasos: 'form' → 'gateway' → 'success' | 'error' */
+/** Pasos: 'form' → 'method-select' → 'method-form' → 'checkout' → 'success' | 'error' */
 const step = ref('form');
 
 const tutorId      = computed(() => route.query.tutorId ? Number(route.query.tutorId) : null);
 const amount       = ref(null);
 const description  = ref('');
 
-const checkingWallet  = ref(true);
-const tutorHasWallet  = ref(true);
-const senderHasWallet = ref(true);
-
 const tutor = computed(() =>
     tutorId.value ? discoveryStore.tutors.find(t => t.userId === tutorId.value) : null
 );
 const tutorName = computed(() => tutor.value?.name ?? `Usuario #${tutorId.value}`);
 
-// Simulación de tarjeta
-const cardNumber = ref('');
-const cardExpiry = ref('');
-const cardCvv    = ref('');
 const processing = ref(false);
 
 const donationResult = ref(null); // respuesta real del backend
@@ -42,26 +34,43 @@ const donationError  = ref('');
 
 onMounted(async () => {
   if (!discoveryStore.tutorsLoaded) await discoveryStore.fetchTutors();
-
-  const checks = [store.checkWalletExists(CURRENT_USER_ID.value)];
-  if (tutorId.value) checks.push(store.checkWalletExists(tutorId.value));
-  else checks.push(Promise.resolve(true));
-
-  const [senderOk, tutorOk] = await Promise.all(checks);
-  senderHasWallet.value = senderOk;
-  tutorHasWallet.value  = tutorOk;
-  checkingWallet.value  = false;
+  if (!store.paymentMethodLoaded) await store.fetchMyPaymentMethod();
 });
 
 const platformFeePreview = computed(() => amount.value ? +(amount.value * 0.05).toFixed(2) : 0);
 const tutorReceivesPreview = computed(() => amount.value ? +(amount.value - platformFeePreview.value).toFixed(2) : 0);
 
-const canContinue = computed(() => amount.value > 0 && tutorHasWallet.value && senderHasWallet.value);
+const canContinue = computed(() => amount.value > 0);
 
-const goToGateway = () => {
+const hasSavedMethod = computed(() => !!store.paymentMethod);
+
+/** Método activo para esta donación: el guardado, o el recién ingresado (aunque no se guarde). */
+const activeMethod = ref(null); // { type, displayLabel }
+
+const goToPaymentStep = () => {
   if (!canContinue.value) return;
-  step.value = 'gateway';
+  if (hasSavedMethod.value) {
+    activeMethod.value = { type: store.paymentMethod.type, displayLabel: store.paymentMethod.displayLabel };
+    step.value = 'checkout';
+  } else {
+    step.value = 'method-select';
+  }
 };
+
+// ── Selección + captura de método de pago ──
+const methodType      = ref(null); // 'card' | 'bank' | 'yape'
+const saveMethod      = ref(true);
+const yapeQrShown     = ref(false);
+
+const cardNumber = ref('');
+const cardExpiry = ref('');
+const cardCvv    = ref('');
+const cardHolder = ref('');
+
+const bankName    = ref('');
+const bankAccount = ref('');
+
+const yapePhone = ref('');
 
 const formatCardNumber = () => {
   let digits = cardNumber.value.replace(/\D/g, '').slice(0, 16);
@@ -77,11 +86,58 @@ const formatExpiry = () => {
 const cardValid = computed(() =>
     cardNumber.value.replace(/\s/g, '').length === 16 &&
     cardExpiry.value.length === 5 &&
-    cardCvv.value.length === 3
+    cardCvv.value.length === 3 &&
+    cardHolder.value.trim().length > 0
 );
 
+const bankValid = computed(() => bankName.value.trim().length > 0 && bankAccount.value.replace(/\D/g, '').length >= 4);
+
+const yapePhoneValid = computed(() => yapePhone.value.replace(/\D/g, '').length === 9);
+
+const methodFormValid = computed(() => {
+  if (methodType.value === 'card') return cardValid.value;
+  if (methodType.value === 'bank') return bankValid.value;
+  if (methodType.value === 'yape') return yapeQrShown.value;
+  return false;
+});
+
+const selectMethodType = (type) => {
+  methodType.value  = type;
+  yapeQrShown.value = false;
+  step.value = 'method-form';
+};
+
+const backToMethodSelect = () => {
+  step.value = 'method-select';
+};
+
+const generateYapeQr = () => {
+  if (!yapePhoneValid.value) return;
+  yapeQrShown.value = true;
+};
+
+const continueFromMethodForm = async () => {
+  if (!methodFormValid.value) return;
+
+  let displayLabel = '';
+  if (methodType.value === 'card') {
+    displayLabel = `${t('transaction.method-card')} •••• ${cardNumber.value.replace(/\s/g, '').slice(-4)}`;
+  } else if (methodType.value === 'bank') {
+    displayLabel = `${bankName.value} •••${bankAccount.value.replace(/\D/g, '').slice(-4)}`;
+  } else if (methodType.value === 'yape') {
+    displayLabel = `${t('transaction.method-yape')} •••${yapePhone.value.replace(/\D/g, '').slice(-3)}`;
+  }
+
+  activeMethod.value = { type: methodType.value, displayLabel };
+
+  if (saveMethod.value) {
+    await store.savePaymentMethod({ type: methodType.value, displayLabel });
+  }
+
+  step.value = 'checkout';
+};
+
 const confirmPayment = async () => {
-  if (!cardValid.value) return;
   processing.value = true;
 
   // Simulación visual de pasarela (no afecta el resultado real)
@@ -124,26 +180,7 @@ const navigateToWorkspace = () => router.push({ name: 'workspace-sessions' });
     <!-- ── PASO 1: Formulario de monto ── -->
     <div v-if="step === 'form'" class="table-card form-wrapper">
 
-      <div v-if="checkingWallet" class="loading-wallet">
-        <i class="pi pi-spin pi-spinner" style="font-size:1.5rem; color:#1e4d8c;"></i>
-        <p>{{ t('transaction.checking-wallet') }}</p>
-      </div>
-
-      <div v-else-if="!senderHasWallet" class="wallet-error">
-        <i class="pi pi-exclamation-triangle wallet-error-icon"/>
-        <p class="wallet-error-title">{{ t('transaction.no-sender-wallet-title') }}</p>
-        <p class="wallet-error-sub">{{ t('transaction.no-sender-wallet-sub') }}</p>
-        <pv-button :label="t('transaction.back-to-session')" class="btn-cancel mt-3" @click="navigateToWorkspace"/>
-      </div>
-
-      <div v-else-if="!tutorHasWallet" class="wallet-error">
-        <i class="pi pi-exclamation-triangle wallet-error-icon"/>
-        <p class="wallet-error-title">{{ t('transaction.no-wallet-title') }}</p>
-        <p class="wallet-error-sub">{{ t('transaction.no-wallet-sub', { name: tutorName }) }}</p>
-        <pv-button :label="t('transaction.back-to-session')" class="btn-cancel mt-3" @click="navigateToWorkspace"/>
-      </div>
-
-      <form v-else @submit.prevent="goToGateway" class="p-fluid">
+      <form @submit.prevent="goToPaymentStep" class="p-fluid">
 
         <div class="recipient-card">
           <div class="recipient-avatar"><i class="pi pi-user"/></div>
@@ -202,23 +239,52 @@ const navigateToWorkspace = () => router.push({ name: 'workspace-sessions' });
       </form>
     </div>
 
-    <!-- ── PASO 2: Pasarela simulada ── -->
-    <div v-else-if="step === 'gateway'" class="table-card gateway-card">
+    <!-- ── PASO 2a: Selección de método de pago ── -->
+    <div v-else-if="step === 'method-select'" class="table-card">
+      <div class="gateway-header">
+        <p class="gateway-title">{{ t('transaction.method-select-title') }}</p>
+        <p class="gateway-sub">{{ t('transaction.method-select-sub') }}</p>
+      </div>
 
-      <div v-if="!processing" class="gateway-form">
-        <div class="gateway-header">
-          <i class="pi pi-shield gateway-shield"/>
-          <p class="gateway-title">{{ t('transaction.gateway-title') }}</p>
-          <p class="gateway-sub">{{ t('transaction.gateway-sub') }}</p>
+      <div class="method-options">
+        <button type="button" class="method-option" @click="selectMethodType('card')">
+          <i class="pi pi-credit-card method-option-icon"/>
+          <span>{{ t('transaction.method-card') }}</span>
+          <i class="pi pi-chevron-right method-option-arrow"/>
+        </button>
+        <button type="button" class="method-option" @click="selectMethodType('bank')">
+          <i class="pi pi-building-columns method-option-icon"/>
+          <span>{{ t('transaction.method-bank') }}</span>
+          <i class="pi pi-chevron-right method-option-arrow"/>
+        </button>
+        <button type="button" class="method-option" @click="selectMethodType('yape')">
+          <i class="pi pi-qrcode method-option-icon"/>
+          <span>{{ t('transaction.method-yape') }}</span>
+          <i class="pi pi-chevron-right method-option-arrow"/>
+        </button>
+      </div>
+
+      <pv-button :label="t('transaction.cancel')" text class="btn-cancel w-full mt-3" @click="step = 'form'"/>
+    </div>
+
+    <!-- ── PASO 2b: Datos del método de pago ── -->
+    <div v-else-if="step === 'method-form'" class="table-card gateway-card">
+
+      <div class="gateway-header">
+        <i class="pi pi-shield gateway-shield"/>
+        <p class="gateway-title">{{ t(`transaction.method-${methodType}`) }}</p>
+      </div>
+
+      <!-- Tarjeta -->
+      <template v-if="methodType === 'card'">
+        <div class="field mb-3">
+          <label class="custom-label">{{ t('transaction.card-holder') }}</label>
+          <pv-input-text v-model="cardHolder" :placeholder="t('transaction.card-holder-ph')" class="w-full"/>
         </div>
-
-        <div class="gateway-amount">USD {{ Number(amount).toFixed(2) }}</div>
-
         <div class="field mb-3">
           <label class="custom-label">{{ t('transaction.card-number') }}</label>
           <pv-input-text v-model="cardNumber" maxlength="19" placeholder="4242 4242 4242 4242" class="w-full" @input="formatCardNumber"/>
         </div>
-
         <div class="grid">
           <div class="col-6 field mb-3">
             <label class="custom-label">{{ t('transaction.card-expiry') }}</label>
@@ -229,14 +295,94 @@ const navigateToWorkspace = () => router.push({ name: 'workspace-sessions' });
             <pv-input-text v-model="cardCvv" maxlength="3" placeholder="123" class="w-full"/>
           </div>
         </div>
+      </template>
+
+      <!-- Cuenta de banco -->
+      <template v-else-if="methodType === 'bank'">
+        <div class="field mb-3">
+          <label class="custom-label">{{ t('transaction.bank-name') }}</label>
+          <pv-input-text v-model="bankName" :placeholder="t('transaction.bank-name-ph')" class="w-full"/>
+        </div>
+        <div class="field mb-3">
+          <label class="custom-label">{{ t('transaction.bank-account') }}</label>
+          <pv-input-text v-model="bankAccount" :placeholder="t('transaction.bank-account-ph')" class="w-full"/>
+        </div>
+      </template>
+
+      <!-- Yape (QR simulado) -->
+      <template v-else-if="methodType === 'yape'">
+        <div v-if="!yapeQrShown">
+          <div class="field mb-3">
+            <label class="custom-label">{{ t('transaction.yape-phone') }}</label>
+            <pv-input-text v-model="yapePhone" maxlength="9" :placeholder="t('transaction.yape-phone-ph')" class="w-full"/>
+          </div>
+          <pv-button :label="t('transaction.yape-generate')" class="btn-save w-full" :disabled="!yapePhoneValid" @click="generateYapeQr"/>
+        </div>
+        <div v-else class="yape-qr-block">
+          <p class="yape-qr-title">{{ t('transaction.yape-scan-title') }}</p>
+          <div class="yape-qr-box">
+            <i class="pi pi-qrcode"/>
+          </div>
+          <p class="yape-qr-sub">{{ t('transaction.yape-scan-sub') }}</p>
+        </div>
+      </template>
+
+      <div v-if="methodType !== 'yape' || yapeQrShown" class="save-method-row">
+        <pv-checkbox v-model="saveMethod" :binary="true" inputId="saveMethod"/>
+        <label for="saveMethod" class="save-method-label">{{ t('transaction.save-method-toggle') }}</label>
+      </div>
+
+      <pv-button
+          v-if="methodType !== 'yape' || yapeQrShown"
+          :label="t('transaction.continue')"
+          class="btn-save w-full mt-3"
+          :disabled="!methodFormValid"
+          @click="continueFromMethodForm"/>
+      <pv-button :label="t('transaction.back')" text class="btn-cancel w-full mt-2" @click="backToMethodSelect"/>
+    </div>
+
+    <!-- ── PASO 3: Checkout ── -->
+    <div v-else-if="step === 'checkout'" class="table-card gateway-card">
+
+      <div v-if="!processing">
+        <div class="gateway-header">
+          <p class="gateway-title">{{ t('transaction.checkout-title') }}</p>
+        </div>
+
+        <div class="gateway-amount">USD {{ Number(amount).toFixed(2) }}</div>
+
+        <div class="commission-breakdown">
+          <div class="breakdown-rows">
+            <div class="breakdown-row">
+              <span class="breakdown-label">{{ t('transaction.learner-pays') }}</span>
+              <span class="breakdown-original">USD {{ Number(amount).toFixed(2) }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label commission-label">
+                {{ t('transaction.skillswap-commission') }}
+                <span class="rate-tag">5%</span>
+              </span>
+              <span class="breakdown-commission">- USD {{ platformFeePreview.toFixed(2) }}</span>
+            </div>
+            <div class="breakdown-divider"/>
+            <div class="breakdown-row">
+              <span class="breakdown-label net-label">{{ t('transaction.tutor-receives') }}</span>
+              <span class="breakdown-net">USD {{ tutorReceivesPreview.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-method-row">
+          <span class="breakdown-label">{{ t('transaction.checkout-method-label') }}</span>
+          <span class="checkout-method-value">{{ activeMethod?.displayLabel }}</span>
+        </div>
 
         <pv-button
-            :label="t('transaction.pay-now', { amount: Number(amount).toFixed(2) })"
+            :label="t('transaction.checkout-pay', { amount: Number(amount).toFixed(2) })"
             class="btn-save w-full mt-3"
             icon="pi pi-lock"
-            :disabled="!cardValid"
             @click="confirmPayment"/>
-        <pv-button :label="t('transaction.cancel')" text class="btn-cancel w-full mt-2" @click="step = 'form'"/>
+        <pv-button :label="t('transaction.change-method')" text class="btn-cancel w-full mt-2" @click="step = 'method-select'"/>
       </div>
 
       <div v-else class="gateway-processing">
@@ -288,13 +434,6 @@ const navigateToWorkspace = () => router.push({ name: 'workspace-sessions' });
 .table-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04); padding: 2.5rem; border: 1px solid #f0f2f5; }
 .custom-label { display: block; font-weight: 700; color: #1a2a40; margin-bottom: 0.6rem; font-size: 0.95rem; }
 .optional-tag { color: #a0aec0; font-weight: 500; font-size: 0.8rem; }
-
-/* Loading / wallet error */
-.loading-wallet { text-align: center; padding: 2rem; color: #718096; }
-.wallet-error { text-align: center; padding: 1.5rem; }
-.wallet-error-icon { font-size: 2.5rem; color: #f59e0b; display: block; margin-bottom: 0.75rem; }
-.wallet-error-title { color: #1a2a40; font-weight: 800; font-size: 1.1rem; margin: 0 0 0.4rem; }
-.wallet-error-sub { color: #718096; font-size: 0.9rem; margin: 0; }
 
 /* Recipient card */
 .recipient-card {
@@ -350,4 +489,35 @@ const navigateToWorkspace = () => router.push({ name: 'workspace-sessions' });
 .btn-save:disabled { opacity: 0.5; }
 .btn-cancel { color: #4a5568 !important; font-weight: bold; border-radius: 8px; padding: 0.6rem 1.5rem; }
 .btn-cancel:hover { background-color: #f8f9fa !important; }
+
+/* Method selection */
+.method-options { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+.method-option {
+  display: flex; align-items: center; gap: 1rem;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 1rem 1.25rem; cursor: pointer; font-size: 1rem; font-weight: 700; color: #1a2a40;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.method-option:hover { background: #f0f4ff; border-color: #1e4d8c; }
+.method-option-icon { font-size: 1.3rem; color: #1e4d8c; }
+.method-option-arrow { margin-left: auto; color: #a0aec0; }
+
+/* Yape QR simulado */
+.yape-qr-block { text-align: center; padding: 0.5rem 0 1rem; }
+.yape-qr-title { color: #1a2a40; font-weight: 700; margin: 0 0 1rem; }
+.yape-qr-box {
+  width: 180px; height: 180px; margin: 0 auto 1rem;
+  display: flex; align-items: center; justify-content: center;
+  background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 12px;
+  font-size: 5rem; color: #1a2a40;
+}
+.yape-qr-sub { color: #a0aec0; font-size: 0.85rem; margin: 0; }
+
+/* Guardar método */
+.save-method-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 1rem; }
+.save-method-label { color: #4a5568; font-size: 0.9rem; cursor: pointer; }
+
+/* Checkout */
+.checkout-method-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.25rem; margin-bottom: 0.5rem; }
+.checkout-method-value { color: #1a2a40; font-weight: 700; }
 </style>
