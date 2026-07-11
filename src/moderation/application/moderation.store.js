@@ -32,16 +32,20 @@ const useModerationStore = defineStore('moderation', () => {
 
     // ── Reports ───────────────────────────────────────────────────
 
-    function fetchReports() {
-        loading.value = true;
-        moderationApi.getReports()
+    /**
+     * @param {{silent?: boolean}} options - `silent: true` refreshes data without
+     *     toggling `loading` (used by background polling, to avoid flashing the spinner).
+     */
+    function fetchReports({ silent = false } = {}) {
+        if (!silent) loading.value = true;
+        return moderationApi.getReports()
             .then(response => {
                 reports.value = ReportAssembler.toEntitiesFromResponse(response);
-                loading.value = false;
+                if (!silent) loading.value = false;
             })
             .catch(err => {
-                error.value   = err.message || 'Failed to load reports';
-                loading.value = false;
+                error.value = err.message || 'Failed to load reports';
+                if (!silent) loading.value = false;
                 console.error('Error fetching reports:', err);
             });
     }
@@ -83,16 +87,20 @@ const useModerationStore = defineStore('moderation', () => {
 
     // ── Sanctions ─────────────────────────────────────────────────
 
-    function fetchSanctions() {
-        loading.value = true;
-        moderationApi.getSanctions()
+    /**
+     * @param {{silent?: boolean}} options - `silent: true` refreshes data without
+     *     toggling `loading` (used by background polling, to avoid flashing the spinner).
+     */
+    function fetchSanctions({ silent = false } = {}) {
+        if (!silent) loading.value = true;
+        return moderationApi.getSanctions()
             .then(response => {
                 sanctions.value = SanctionAssembler.toEntitiesFromResponse(response);
-                loading.value   = false;
+                if (!silent) loading.value = false;
             })
             .catch(err => {
-                error.value   = err.message || 'Failed to load sanctions';
-                loading.value = false;
+                error.value = err.message || 'Failed to load sanctions';
+                if (!silent) loading.value = false;
                 console.error('Error fetching sanctions:', err);
             });
     }

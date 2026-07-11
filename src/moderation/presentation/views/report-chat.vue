@@ -81,7 +81,7 @@ const navigateToSanction = () => {
 <template>
   <div class="chat-page">
 
-    <button class="back-btn" @click="router.push({ name: 'moderation-reports' })">
+    <button class="back-btn" @click="router.push({ name: 'coordinator-dashboard', query: { tab: 'reports' } })">
       <i class="pi pi-arrow-left"></i>
       {{ t('moderation.btn-back') }}
     </button>

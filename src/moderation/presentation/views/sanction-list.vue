@@ -29,7 +29,7 @@ function durationLabel(days) {
   return days === 0 ? t('moderation.duration-na') : `${days} ${t('moderation.duration-days')}`;
 }
 
-const navigateBack = () => router.push({ name: 'moderation-reports' });
+const navigateBack = () => router.push({ name: 'coordinator-dashboard', query: { tab: 'reports' } });
 </script>
 
 <template>

@@ -57,9 +57,14 @@ const app = createApp(App)
     .component('pv-toolbar',        Toolbar)
     .component('pv-toast',          Toast)
     .component('tooltip',           Tooltip)
-    .use(router)
-    .use(pinia);
+    .use(pinia)
+    .use(router);
 
+// Pinia must be installed before the router: installing the router triggers its
+// initial navigation right away (running the `beforeEach` guard, which reads
+// `useAuthStore()`), so on a fresh load Pinia needs to already be active or that
+// first guard silently sees no store and the role-based redirect never happens.
+//
 // Wait for the router to resolve the initial route before mounting, otherwise
 // `route.meta` can briefly be empty on first render and let `layout.vue` mount
 // (and fire an authenticated fetch) before the auth guard has had a chance to run.

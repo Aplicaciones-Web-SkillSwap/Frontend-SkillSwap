@@ -31,17 +31,21 @@ const routes = [
     { path: '/reputation',      name: 'reputation', children: reputationRoutes                                },
     { path: '/learning',        name: 'learning',   children: learningRoutes                                  },
 
-    { path: '/',                redirect: '/home'                                                             },
+    { path: '/',                redirect: () => ({ name: homeRouteNameFor(useAuthStore()) })                 },
     { path: '/:pathMatch(.*)*', name: 'not-found',  component: pageNotFound, meta: { title: 'Page Not Found', public: true } }
 ];
+
+/** A dónde debe ir un usuario autenticado que no pide una ruta específica */
+function homeRouteNameFor(authStore) {
+    return authStore.user?.role === 'Coordinator' ? 'coordinator-dashboard' : 'home';
+}
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: routes,
 });
 
-router.beforeEach((to, from) => {
-    console.log(`Navigating from ${from.name} to ${to.name}`);
+router.beforeEach((to) => {
     let baseTitle = 'SkillSwap';
     document.title = `${baseTitle} - ${to.meta['title']}`;
 
@@ -52,7 +56,7 @@ router.beforeEach((to, from) => {
     }
 
     if (authStore.isAuthenticated && (to.name === 'login' || to.name === 'register')) {
-        return { name: 'home' };
+        return { name: homeRouteNameFor(authStore) };
     }
 
     if (to.meta.requiresRole && authStore.user?.role !== to.meta.requiresRole) {

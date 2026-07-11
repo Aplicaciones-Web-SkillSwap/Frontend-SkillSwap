@@ -41,15 +41,20 @@ const filteredReports = computed(() => {
 });
 
 onMounted(() => {
+  store.fetchReports();
+  store.fetchSanctions();
   if (!authStore.usersDirectoryLoaded) authStore.fetchAllUsers();
 });
 
-/** Refresca reportes y sanciones periódicamente para que el moderador vea casos nuevos sin recargar. */
+/**
+ * Refresca reportes y sanciones periódicamente para que el moderador vea casos nuevos
+ * sin recargar. `silent: true` evita que cada tick vuelva a mostrar el spinner de carga.
+ */
 const REPORTS_POLL_INTERVAL_MS = 6000;
 usePolling(() => {
-  store.fetchReports();
-  store.fetchSanctions();
-}, REPORTS_POLL_INTERVAL_MS);
+  store.fetchReports({ silent: true });
+  store.fetchSanctions({ silent: true });
+}, REPORTS_POLL_INTERVAL_MS, { immediate: false });
 
 const userName = (id) => authStore.getUsername(id) || `Usuario #${id}`;
 

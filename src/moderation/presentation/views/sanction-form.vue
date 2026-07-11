@@ -69,7 +69,7 @@ async function submit() {
     await store.closeReport(form.value.reportId);
   }
 
-  router.push({ name: 'moderation-reports' });
+  router.push({ name: 'coordinator-dashboard', query: { tab: 'reports' } });
 }
 </script>
 

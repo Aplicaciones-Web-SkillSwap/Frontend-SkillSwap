@@ -1,16 +1,20 @@
 <script setup>
-import { ref }     from 'vue';
-import { useI18n } from 'vue-i18n';
-import QuizList    from '@/learning/presentation/views/quiz-list.vue';
-import ReportList  from '@/moderation/presentation/views/report-list.vue';
+import { ref }        from 'vue';
+import { useI18n }    from 'vue-i18n';
+import { useRoute }   from 'vue-router';
+import QuizList       from '@/learning/presentation/views/quiz-list.vue';
+import ReportList     from '@/moderation/presentation/views/report-list.vue';
 
-const { t } = useI18n();
+const { t }  = useI18n();
+const route  = useRoute();
 
 const tabs = [
   { key: 'quizzes', label: 'coordinator.tab-quizzes', icon: 'pi pi-question-circle' },
   { key: 'reports', label: 'coordinator.tab-reports', icon: 'pi pi-flag' },
 ];
-const activeTab = ref('quizzes');
+/** Permite volver directo a la pestaña de reportes (p. ej. desde el chat de un caso o una sanción) */
+const validTabKeys = tabs.map(tab => tab.key);
+const activeTab = ref(validTabKeys.includes(route.query.tab) ? route.query.tab : 'quizzes');
 </script>
 
 <template>

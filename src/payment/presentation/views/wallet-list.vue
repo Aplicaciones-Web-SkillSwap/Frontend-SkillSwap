@@ -3,7 +3,8 @@ import {useI18n} from "vue-i18n";
 import {useRouter} from "vue-router";
 import usePaymentStore from "@/payment/application/payment.store.js";
 import useAuthStore    from "@/iam/application/auth.store.js";
-import {computed, onMounted} from "vue";
+import {computed, watch} from "vue";
+import {usePolling} from "@/shared/composables/use-polling.js";
 
 const {t}    = useI18n();
 const router = useRouter();
@@ -13,12 +14,17 @@ const authStore = useAuthStore();
 /** Cada cuenta tiene un único balance: el de su propia billetera de donaciones recibidas */
 const myWallet = computed(() => store.getWalletByUserId(authStore.user?.id));
 
-onMounted(async () => {
-  if (!store.walletsLoaded) await store.fetchWallets();
-  if (myWallet.value) {
-    router.replace({ name: 'payment-wallets-view', params: { id: myWallet.value.id } });
-  }
-});
+/**
+ * Si todavía no tenía billetera (nunca recibió una donación), se sigue consultando
+ * en segundo plano: en cuanto el backend la provisiona con la primera donación,
+ * se redirige automáticamente sin que el usuario tenga que recargar la página.
+ */
+const WALLET_POLL_INTERVAL_MS = 6000;
+usePolling(() => store.fetchWallets(), WALLET_POLL_INTERVAL_MS);
+
+watch(myWallet, (wallet) => {
+  if (wallet) router.replace({ name: 'payment-wallets-view', params: { id: wallet.id } });
+}, { immediate: true });
 </script>
 
 <template>
